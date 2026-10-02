@@ -11,6 +11,8 @@ const CAMINHOS = {
   menos: 'M5 12h14',
   baixo: 'M6 9l6 6 6-6',
   voltar: 'M15 6l-6 6 6 6',
+  fechar: 'M6 6l12 12M18 6L6 18',
+  editar: 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
 } as const;
 
 export type IconName = keyof typeof CAMINHOS | 'estrela';

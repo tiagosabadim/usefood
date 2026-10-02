@@ -52,7 +52,9 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Dinheiro em centavos inteiros** (`price_cents`): R$ 14,00 = 1400. Use `formatarPreco` e `lerPreco` de `@usefood/core`; nunca guarde preço como número com vírgula.
 - Toda loja nasce com a praça **Cozinha**. Produto sem praça vai para a praça padrão.
 - Equipe da loja vê o cardápio; só dono e gerente editam. A vitrine vê só produtos ativos de lojas no ar. Testes em `supabase/tests/cardapio.test.sql`.
-- Fotos ficam no bucket público `cardapio`, numa pasta por loja (`<restaurant_id>/arquivo.jpg`).
+- Fotos ficam no bucket público `cardapio`, numa pasta por loja (`<restaurant_id>/arquivo.webp`). O navegador reduz a foto para no máximo 1200 px e converte para WebP antes de enviar (JPG se o navegador não gerar WebP); a foto antiga é apagada ao trocar.
+- Na tela: tocar no nome do produto abre o painel de edição (foto, dados, tamanhos, adicionais e excluir). A aba **Adicionais** cria grupos reaproveitáveis, com regra de mínimo e máximo, e os itens de cada grupo.
+- O PDV ainda vende pelo preço principal: tamanhos e adicionais entram no PDV na E05 parte 2.
 
 ## PDV e pedidos (E05)
 

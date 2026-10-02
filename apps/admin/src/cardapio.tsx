@@ -1,13 +1,32 @@
 import { formatarPreco, lerPreco } from '@usefood/core';
 import type { AppSupabaseClient, Tables } from '@usefood/db';
-import { Alert, Button, EmptyState, Panel, StatusPill, Switch, TextField } from '@usefood/ui';
+import {
+  Alert,
+  Button,
+  EmptyState,
+  Panel,
+  SegmentedControl,
+  StatusPill,
+  Switch,
+  TextField,
+} from '@usefood/ui';
 import { useEffect, useState, type FormEvent } from 'react';
+import { Adicionais, type Grupo, type ItemAdicional } from './adicionais';
+import { EditorProduto } from './editor-produto';
+import { urlDaFoto } from './foto';
 import { Tela, Titulo } from './tela';
 
 type Categoria = Pick<Tables<'categories'>, 'id' | 'name' | 'position'>;
 type Produto = Pick<
   Tables<'products'>,
-  'id' | 'category_id' | 'name' | 'description' | 'price_cents' | 'is_active' | 'position'
+  | 'id'
+  | 'category_id'
+  | 'name'
+  | 'description'
+  | 'price_cents'
+  | 'is_active'
+  | 'position'
+  | 'photo_path'
 >;
 interface NovoProduto {
   nome: string;
@@ -34,6 +53,10 @@ export function Cardapio({
   const [criandoCategoria, setCriandoCategoria] = useState(false);
   const [produtoNaCategoria, setProdutoNaCategoria] = useState<string | null>(null);
   const [erro, setErro] = useState('');
+  const [aba, setAba] = useState<'produtos' | 'adicionais'>('produtos');
+  const [grupos, setGrupos] = useState<Grupo[]>([]);
+  const [itensAdicionais, setItensAdicionais] = useState<ItemAdicional[]>([]);
+  const [editando, setEditando] = useState<Produto | null>(null);
 
   useEffect(() => {
     let ativo = true;
@@ -46,18 +69,32 @@ export function Cardapio({
         .order('created_at'),
       supabase
         .from('products')
-        .select('id, category_id, name, description, price_cents, is_active, position')
+        .select('id, category_id, name, description, price_cents, is_active, position, photo_path')
         .eq('restaurant_id', loja.id)
         .order('position')
         .order('created_at'),
-    ]).then(([cats, prods]) => {
+      supabase
+        .from('modifier_groups')
+        .select('id, name, min_select, max_select')
+        .eq('restaurant_id', loja.id)
+        .order('position')
+        .order('created_at'),
+      supabase
+        .from('modifiers')
+        .select('id, group_id, name, price_cents')
+        .eq('restaurant_id', loja.id)
+        .order('position')
+        .order('created_at'),
+    ]).then(([cats, prods, grps, mods]) => {
       if (!ativo) return;
-      if (cats.error || prods.error) {
+      if (cats.error || prods.error || grps.error || mods.error) {
         setEstado('erro');
         return;
       }
       setCategorias(cats.data);
       setProdutos(prods.data);
+      setGrupos(grps.data);
+      setItensAdicionais(mods.data);
       setEstado('pronto');
     });
     return () => {
@@ -133,15 +170,41 @@ export function Cardapio({
                 : 'Só o dono e o gerente podem alterar o cardápio.'
             }
           />
-          {podeEditar && estado === 'pronto' && categorias.length > 0 && !criandoCategoria && (
-            <Button variant="secondary" onClick={() => setCriandoCategoria(true)}>
-              Nova categoria
-            </Button>
-          )}
+          {podeEditar &&
+            estado === 'pronto' &&
+            aba === 'produtos' &&
+            categorias.length > 0 &&
+            !criandoCategoria && (
+              <Button variant="secondary" onClick={() => setCriandoCategoria(true)}>
+                Nova categoria
+              </Button>
+            )}
         </div>
       </div>
 
+      <SegmentedControl
+        label="Parte do cardápio"
+        className="self-start"
+        options={[
+          { value: 'produtos', label: 'Produtos' },
+          { value: 'adicionais', label: 'Adicionais' },
+        ]}
+        value={aba}
+        onChange={setAba}
+      />
+
       <Alert>{erro}</Alert>
+
+      {estado === 'pronto' && aba === 'adicionais' && (
+        <Adicionais
+          supabase={supabase}
+          lojaId={loja.id}
+          grupos={grupos}
+          itens={itensAdicionais}
+          podeEditar={podeEditar}
+          onAlterado={recarregar}
+        />
+      )}
 
       {estado === 'carregando' && (
         <p className="text-body text-ink-muted">Carregando o cardápio…</p>
@@ -156,7 +219,7 @@ export function Cardapio({
         </div>
       )}
 
-      {estado === 'pronto' && (
+      {estado === 'pronto' && aba === 'produtos' && (
         <div className="flex flex-col gap-6">
           {criandoCategoria && (
             <NovaCategoria
@@ -197,8 +260,28 @@ export function Cardapio({
                   <ul className="flex flex-col divide-y divide-line">
                     {itens.map((produto) => (
                       <li key={produto.id} className="flex items-center gap-4 py-3">
+                        <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-surface-strong">
+                          {produto.photo_path && (
+                            <img
+                              src={urlDaFoto(supabase, produto.photo_path) ?? undefined}
+                              alt=""
+                              loading="lazy"
+                              className="size-full object-cover"
+                            />
+                          )}
+                        </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-body-strong text-ink">{produto.name}</p>
+                          {podeEditar ? (
+                            <button
+                              type="button"
+                              onClick={() => setEditando(produto)}
+                              className="text-left text-body-strong text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                            >
+                              {produto.name}
+                            </button>
+                          ) : (
+                            <p className="text-body-strong text-ink">{produto.name}</p>
+                          )}
                           {produto.description && (
                             <p className="truncate text-caption text-ink-muted">
                               {produto.description}
@@ -241,6 +324,16 @@ export function Cardapio({
             );
           })}
         </div>
+      )}
+      {editando && (
+        <EditorProduto
+          supabase={supabase}
+          lojaId={loja.id}
+          produto={editando}
+          grupos={grupos}
+          onAlterado={recarregar}
+          onFechar={() => setEditando(null)}
+        />
       )}
     </Tela>
   );
