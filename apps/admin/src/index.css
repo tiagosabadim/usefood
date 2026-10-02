@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+@import '@usefood/ui/theme.css';
+
+/* Tailwind precisa enxergar as classes usadas nos pacotes compartilhados. */
+@source '../../../packages/ui/src';
+@source '../../../packages/app/src';

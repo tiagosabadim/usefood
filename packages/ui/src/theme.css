@@ -1,0 +1,76 @@
+/*
+ * Tokens provisórios. A direção visual definitiva sai da E02 (variáveis do Figma
+ * exportadas para cá). Os nomes ficam; os valores mudam.
+ *
+ * Uso no app:  @import "tailwindcss";  @import "@usefood/ui/theme.css";
+ */
+
+@layer base {
+  :root {
+    --uf-canvas: #ffffff;
+    --uf-surface: #f4f5f2;
+    --uf-ink: #15171a;
+    --uf-ink-muted: #5d636b;
+    --uf-line: #e2e4df;
+    --uf-brand: #1d6b46;
+    --uf-brand-strong: #155236;
+    --uf-brand-contrast: #ffffff;
+    --uf-radius-control: 12px;
+    --uf-radius-panel: 18px;
+    --uf-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --uf-canvas: #101213;
+      --uf-surface: #191c1d;
+      --uf-ink: #eef0ee;
+      --uf-ink-muted: #a2a8ad;
+      --uf-line: #2a2e30;
+      --uf-brand: #3fae79;
+      --uf-brand-strong: #5cc792;
+      --uf-brand-contrast: #06140d;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --uf-canvas: #101213;
+    --uf-surface: #191c1d;
+    --uf-ink: #eef0ee;
+    --uf-ink-muted: #a2a8ad;
+    --uf-line: #2a2e30;
+    --uf-brand: #3fae79;
+    --uf-brand-strong: #5cc792;
+    --uf-brand-contrast: #06140d;
+    color-scheme: dark;
+  }
+
+  /* Cada marca sobrescreve só o que é dela. Na E03 isso passa a vir de brands.theme. */
+  :root[data-brand='guapifood'] {
+    --uf-brand: #b4441b;
+    --uf-brand-strong: #8f3514;
+  }
+
+  body {
+    background: var(--uf-canvas);
+    color: var(--uf-ink);
+    font-family: var(--uf-font);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--uf-canvas);
+  --color-surface: var(--uf-surface);
+  --color-ink: var(--uf-ink);
+  --color-ink-muted: var(--uf-ink-muted);
+  --color-line: var(--uf-line);
+  --color-brand: var(--uf-brand);
+  --color-brand-strong: var(--uf-brand-strong);
+  --color-brand-contrast: var(--uf-brand-contrast);
+  --radius-control: var(--uf-radius-control);
+  --radius-panel: var(--uf-radius-panel);
+  --font-sans: var(--uf-font);
+}

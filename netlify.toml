@@ -1,0 +1,29 @@
+# Projeto único no Netlify (Base directory e Package directory vazios).
+[build]
+  command = "pnpm build:site"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Cada área é um app próprio. A primeira regra que casar vence, então a vitrine
+# (que também responde por /[loja]) fica por último.
+[[redirects]]
+  from = "/pdv/*"
+  to = "/pdv/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/garcom/*"
+  to = "/garcom/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/console/*"
+  to = "/console/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

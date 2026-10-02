@@ -1,0 +1,29 @@
+{
+  "name": "@usefood/app",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sentry/react": "^11.1.0",
+    "@usefood/core": "workspace:*",
+    "@usefood/db": "workspace:*",
+    "@usefood/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.1"
+  }
+}
