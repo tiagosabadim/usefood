@@ -290,6 +290,138 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          order_id: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          restaurant_id: string
+          station_id: string | null
+          total_cents: number
+          unit_price_cents: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          order_id: string
+          product_id?: string | null
+          product_name: string
+          quantity: number
+          restaurant_id: string
+          station_id?: string | null
+          total_cents: number
+          unit_price_cents: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          order_id?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          restaurant_id?: string
+          station_id?: string | null
+          total_cents?: number
+          unit_price_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_restaurant_id_fkey"
+            columns: ["order_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          day: string
+          discount_cents: number
+          id: string
+          identifier: string
+          identifier_type: Database["public"]["Enums"]["identifier_type"]
+          notes: string | null
+          number: number
+          paid_cents: number
+          restaurant_id: string
+          service_fee_cents: number
+          status: Database["public"]["Enums"]["order_status"]
+          subtotal_cents: number
+          total_cents: number
+          type: Database["public"]["Enums"]["order_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          day: string
+          discount_cents?: number
+          id?: string
+          identifier: string
+          identifier_type?: Database["public"]["Enums"]["identifier_type"]
+          notes?: string | null
+          number: number
+          paid_cents?: number
+          restaurant_id: string
+          service_fee_cents?: number
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal_cents?: number
+          total_cents?: number
+          type: Database["public"]["Enums"]["order_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          day?: string
+          discount_cents?: number
+          id?: string
+          identifier?: string
+          identifier_type?: Database["public"]["Enums"]["identifier_type"]
+          notes?: string | null
+          number?: number
+          paid_cents?: number
+          restaurant_id?: string
+          service_fee_cents?: number
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal_cents?: number
+          total_cents?: number
+          type?: Database["public"]["Enums"]["order_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           brand_id: string
@@ -322,6 +454,47 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "brands"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount_cents: number
+          change_cents: number
+          created_at: string
+          created_by: string | null
+          id: string
+          method: Database["public"]["Enums"]["payment_method"]
+          order_id: string
+          restaurant_id: string
+        }
+        Insert: {
+          amount_cents: number
+          change_cents?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          method: Database["public"]["Enums"]["payment_method"]
+          order_id: string
+          restaurant_id: string
+        }
+        Update: {
+          amount_cents?: number
+          change_cents?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          order_id?: string
+          restaurant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_restaurant_id_fkey"
+            columns: ["order_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id", "restaurant_id"]
           },
         ]
       }
@@ -629,14 +802,69 @@ export type Database = {
           },
         ]
       }
+      ticket_sequences: {
+        Row: {
+          day: string
+          last_number: number
+          restaurant_id: string
+        }
+        Insert: {
+          day: string
+          last_number: number
+          restaurant_id: string
+        }
+        Update: {
+          day?: string
+          last_number?: number
+          restaurant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_sequences_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      criar_pedido: {
+        Args: {
+          p_identificador: string | null
+          p_identificador_tipo: Database["public"]["Enums"]["identifier_type"]
+          p_itens: Json
+          p_observacao?: string | null
+          p_restaurant_id: string
+          p_taxa_servico?: boolean
+          p_tipo: Database["public"]["Enums"]["order_type"]
+        }
+        Returns: {
+          id: string
+          identificador: string
+          numero: number
+          total_cents: number
+        }[]
+      }
       criar_restaurante: {
         Args: { p_marca: string; p_nome: string; p_slug: string }
         Returns: string
+      }
+      registrar_pagamento: {
+        Args: {
+          p_metodo: Database["public"]["Enums"]["payment_method"]
+          p_pedido: string
+          p_valor_cents: number
+        }
+        Returns: {
+          falta_cents: number
+          pago_cents: number
+          troco_cents: number
+        }[]
       }
       resolver_dominio: {
         Args: { p_hostname: string }
@@ -652,6 +880,10 @@ export type Database = {
       brand_status: "rascunho" | "ativa" | "suspensa"
       domain_kind: "marca" | "loja"
       domain_status: "pendente" | "verificando" | "ativo" | "erro"
+      identifier_type: "senha" | "nome" | "mesa" | "comanda"
+      order_status: "aberto" | "em_preparo" | "pronto" | "concluido" | "cancelado"
+      order_type: "balcao" | "mesa" | "retirada" | "delivery"
+      payment_method: "dinheiro" | "pix" | "credito" | "debito" | "vale_refeicao" | "outro"
       restaurant_role: "dono" | "gerente" | "caixa" | "garcom" | "cozinha"
       restaurant_status: "rascunho" | "ativo" | "pausado" | "encerrado"
       sales_channel: "salao" | "balcao" | "delivery" | "marketplace"

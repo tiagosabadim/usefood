@@ -54,6 +54,15 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - Equipe da loja vê o cardápio; só dono e gerente editam. A vitrine vê só produtos ativos de lojas no ar. Testes em `supabase/tests/cardapio.test.sql`.
 - Fotos ficam no bucket público `cardapio`, numa pasta por loja (`<restaurant_id>/arquivo.jpg`).
 
+## PDV e pedidos (E05)
+
+- O PDV fica em `/pdv` → **Abrir o PDV** (dono, gerente e caixa).
+- Pedidos e pagamentos **só** nascem pelas funções `criar_pedido` e `registrar_pagamento`. Nenhum app grava direto nas tabelas `orders`, `order_items` e `payments`.
+- `criar_pedido` recebe só produto e quantidade. O preço vem do cardápio no banco; a tela nunca define preço.
+- Cada loja numera os pedidos do dia (#001, #002…) no próprio fuso; o número também serve de senha.
+- Pagamento parcial é aceito. Só dinheiro pode passar do valor (gera troco). Garçom lança pedido, mas não cobra; cozinha não lança.
+- Testes em `supabase/tests/pedidos.test.sql`.
+
 ## Design system
 
 O visual segue o design system **usefood** (direção Pop). Os tokens dele ficam em `packages/ui/tokens/usefood.tokens.json`, e o `packages/ui/src/theme.css` é **gerado** a partir desse arquivo:

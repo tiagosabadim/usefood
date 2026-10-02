@@ -3,6 +3,7 @@ import { Button } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { Cardapio } from './cardapio';
 import { CriarRestaurante } from './criar-restaurante';
+import { Pdv } from './pdv';
 import { Aviso, Tela, Titulo } from './tela';
 
 type Papel = Enums<'restaurant_role'>;
@@ -31,7 +32,7 @@ export function AreaDoRestaurante({
   const [estado, setEstado] = useState<Estado>({ tipo: 'carregando' });
   const [versao, setVersao] = useState(0);
   const [selecionada, setSelecionada] = useState(0);
-  const [tela, setTela] = useState<'inicio' | 'cardapio'>('inicio');
+  const [tela, setTela] = useState<'inicio' | 'cardapio' | 'pdv'>('inicio');
 
   useEffect(() => {
     let ativo = true;
@@ -79,6 +80,11 @@ export function AreaDoRestaurante({
   const atual = estado.vinculos[selecionada] ?? estado.vinculos[0]!;
   const noAr = atual.loja.status === 'ativo';
   const podeEditar = atual.papel === 'dono' || atual.papel === 'gerente';
+  const podeVender = podeEditar || atual.papel === 'caixa';
+
+  if (tela === 'pdv') {
+    return <Pdv supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />;
+  }
 
   if (tela === 'cardapio') {
     return (
@@ -99,10 +105,17 @@ export function AreaDoRestaurante({
       />
 
       <section className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-5">
-        <h2 className="font-display text-title-section text-ink">Próximos passos</h2>
-        <Button className="self-start" onClick={() => setTela('cardapio')}>
-          Montar o cardápio
-        </Button>
+        <h2 className="font-display text-title-section text-ink">O que fazer agora</h2>
+        <div className="flex flex-wrap gap-2">
+          {podeVender && (
+            <Button className="h-target-pdv" onClick={() => setTela('pdv')}>
+              Abrir o PDV
+            </Button>
+          )}
+          <Button variant="secondary" className="h-target-pdv" onClick={() => setTela('cardapio')}>
+            {podeEditar ? 'Montar o cardápio' : 'Ver o cardápio'}
+          </Button>
+        </div>
         <ul className="flex flex-col gap-2 text-body text-ink-muted">
           <li>Convidar a equipe: caixa, garçons e cozinha (em breve).</li>
           <li>Configurar as impressoras da cozinha (em breve).</li>
