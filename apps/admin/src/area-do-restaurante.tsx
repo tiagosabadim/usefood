@@ -3,6 +3,7 @@ import { Alert, Button, Panel } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { Cardapio } from './cardapio';
 import { CriarRestaurante } from './criar-restaurante';
+import { PdvComCaixa } from './caixa';
 import { Pdv } from './pdv';
 import { Tela, Titulo } from './tela';
 
@@ -83,7 +84,18 @@ export function AreaDoRestaurante({
   const podeVender = podeEditar || atual.papel === 'caixa';
 
   if (tela === 'pdv') {
-    return <Pdv supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />;
+    return (
+      <PdvComCaixa supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')}>
+        {(cabecalho) => (
+          <Pdv
+            supabase={supabase}
+            loja={atual.loja}
+            onVoltar={() => setTela('inicio')}
+            cabecalhoDoCaixa={cabecalho}
+          />
+        )}
+      </PdvComCaixa>
+    );
   }
 
   if (tela === 'cardapio') {

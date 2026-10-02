@@ -30,7 +30,7 @@ import {
   TextField,
   type Option,
 } from '@usefood/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { MontarItem, type GrupoDeOpcoes, type OpcaoTamanho } from './montar-item';
 
 type Categoria = Pick<Tables<'categories'>, 'id' | 'name'>;
@@ -85,10 +85,13 @@ export function Pdv({
   supabase,
   loja,
   onVoltar,
+  cabecalhoDoCaixa,
 }: {
   supabase: AppSupabaseClient;
   loja: { id: string; name: string };
   onVoltar: () => void;
+  /** Situação do caixa e o botão que abre o painel do caixa. */
+  cabecalhoDoCaixa?: ReactNode;
 }) {
   const [carregando, setCarregando] = useState(true);
   const [falhou, setFalhou] = useState(false);
@@ -410,13 +413,14 @@ export function Pdv({
       <main className="flex min-w-0 flex-col gap-5 p-5 lg:overflow-y-auto lg:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <span className="text-caption text-ink-muted">{loja.name} · Caixa</span>
+            <span className="text-caption text-ink-muted">{loja.name}</span>
             <h1 className="font-display text-title-screen text-ink">
               {busca
                 ? 'Busca'
                 : (categorias.find((c) => c.id === categoriaAtual)?.name ?? 'Produtos')}
             </h1>
           </div>
+          {cabecalhoDoCaixa}
           <TextField
             label="Buscar produto"
             className="w-full sm:w-72"

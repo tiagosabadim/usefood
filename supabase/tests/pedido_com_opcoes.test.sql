@@ -37,6 +37,9 @@ insert into public.product_modifier_groups (restaurant_id, product_id, group_id)
   ('33000000-0000-4000-8000-000000000001', '53000000-0000-4000-8000-000000000002', '73000000-0000-4000-8000-000000000001'),
   ('33000000-0000-4000-8000-000000000001', '53000000-0000-4000-8000-000000000002', '73000000-0000-4000-8000-000000000002');
 
+-- Pagamento exige caixa aberto (E06)
+insert into public.cash_sessions (restaurant_id, opening_cents) values ('33000000-0000-4000-8000-000000000001', 0);
+
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "00000000-0000-4000-8000-0000000000d1", "role": "authenticated"}';
 

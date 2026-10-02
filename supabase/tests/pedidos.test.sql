@@ -33,6 +33,9 @@ insert into public.products (id, restaurant_id, category_id, name, price_cents, 
   ('52000000-0000-4000-8000-0000000000b1', '32000000-0000-4000-8000-00000000000b', '42000000-0000-4000-8000-00000000000b', 'X-Burguer', 2200, true);
 
 -- Caixa da loja A
+-- Pagamento exige caixa aberto (E06)
+insert into public.cash_sessions (restaurant_id, opening_cents) values ('32000000-0000-4000-8000-00000000000a', 0);
+
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "00000000-0000-4000-8000-0000000000c1", "role": "authenticated"}';
 

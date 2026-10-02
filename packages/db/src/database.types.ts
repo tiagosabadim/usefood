@@ -78,6 +78,103 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_movements: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          created_by: string | null
+          id: string
+          reason: string | null
+          restaurant_id: string
+          session_id: string
+          type: Database["public"]["Enums"]["cash_movement_type"]
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          restaurant_id: string
+          session_id: string
+          type: Database["public"]["Enums"]["cash_movement_type"]
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          restaurant_id?: string
+          session_id?: string
+          type?: Database["public"]["Enums"]["cash_movement_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_movements_session_id_restaurant_id_fkey"
+            columns: ["session_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+        ]
+      }
+      cash_sessions: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          closing_notes: string | null
+          counted_cents: number | null
+          difference_cents: number | null
+          expected_cents: number | null
+          id: string
+          opened_at: string
+          opened_by: string | null
+          opening_cents: number
+          register_name: string
+          restaurant_id: string
+          status: Database["public"]["Enums"]["cash_session_status"]
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          closing_notes?: string | null
+          counted_cents?: number | null
+          difference_cents?: number | null
+          expected_cents?: number | null
+          id?: string
+          opened_at?: string
+          opened_by?: string | null
+          opening_cents: number
+          register_name?: string
+          restaurant_id: string
+          status?: Database["public"]["Enums"]["cash_session_status"]
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          closing_notes?: string | null
+          counted_cents?: number | null
+          difference_cents?: number | null
+          expected_cents?: number | null
+          id?: string
+          opened_at?: string
+          opened_by?: string | null
+          opening_cents?: number
+          register_name?: string
+          restaurant_id?: string
+          status?: Database["public"]["Enums"]["cash_session_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_sessions_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -511,6 +608,7 @@ export type Database = {
       payments: {
         Row: {
           amount_cents: number
+          cash_session_id: string | null
           change_cents: number
           created_at: string
           created_by: string | null
@@ -521,6 +619,7 @@ export type Database = {
         }
         Insert: {
           amount_cents: number
+          cash_session_id?: string | null
           change_cents?: number
           created_at?: string
           created_by?: string | null
@@ -531,6 +630,7 @@ export type Database = {
         }
         Update: {
           amount_cents?: number
+          cash_session_id?: string | null
           change_cents?: number
           created_at?: string
           created_by?: string | null
@@ -884,6 +984,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      abrir_caixa: {
+        Args: { p_caixa?: string; p_fundo_cents: number; p_restaurant_id: string }
+        Returns: string
+      }
       criar_pedido: {
         Args: {
           p_identificador: string | null
@@ -900,6 +1004,23 @@ export type Database = {
           numero: number
           total_cents: number
         }[]
+      }
+      fechar_caixa: {
+        Args: { p_contado_cents: number; p_observacao?: string | null; p_sessao: string }
+        Returns: {
+          contado_cents: number
+          diferenca_cents: number
+          esperado_cents: number
+        }[]
+      }
+      movimentar_caixa: {
+        Args: {
+          p_motivo?: string | null
+          p_sessao: string
+          p_tipo: Database["public"]["Enums"]["cash_movement_type"]
+          p_valor_cents: number
+        }
+        Returns: string
       }
       criar_restaurante: {
         Args: { p_marca: string; p_nome: string; p_slug: string }
@@ -918,6 +1039,22 @@ export type Database = {
           troco_cents: number
         }[]
       }
+      resumo_do_caixa: {
+        Args: { p_sessao: string }
+        Returns: {
+          credito_cents: number
+          debito_cents: number
+          dinheiro_cents: number
+          esperado_cents: number
+          fundo_cents: number
+          outros_cents: number
+          pedidos: number
+          pix_cents: number
+          sangrias_cents: number
+          suprimentos_cents: number
+          vendido_cents: number
+        }[]
+      }
       resolver_dominio: {
         Args: { p_hostname: string }
         Returns: {
@@ -930,6 +1067,8 @@ export type Database = {
     Enums: {
       brand_role: "franqueado" | "suporte"
       brand_status: "rascunho" | "ativa" | "suspensa"
+      cash_movement_type: "sangria" | "suprimento"
+      cash_session_status: "aberto" | "fechado"
       domain_kind: "marca" | "loja"
       domain_status: "pendente" | "verificando" | "ativo" | "erro"
       identifier_type: "senha" | "nome" | "mesa" | "comanda"

@@ -67,6 +67,15 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - Conta aberta de mesa (rodadas) chega com a comanda do garçom, na E08.
 - Testes em `supabase/tests/pedidos.test.sql` e `supabase/tests/pedido_com_opcoes.test.sql`.
 
+## Caixa (E06)
+
+- Ao abrir o PDV sem caixa aberto, o app pede o **fundo de troco** (`abrir_caixa`). Sem caixa aberto, `registrar_pagamento` recusa: todo pagamento cai num turno (`payments.cash_session_id`).
+- No PDV, o botão **Caixa** abre o resumo do turno, a sangria e o suprimento (`movimentar_caixa`, com motivo) e o fechamento.
+- Dinheiro esperado na gaveta = fundo + vendas em dinheiro + suprimentos − sangrias (`resumo_do_caixa`). Vendas em dinheiro contam o valor da venda; o troco já saiu da nota recebida.
+- No fechamento (`fechar_caixa`), a pessoa conta sem ver o esperado; a diferença fica gravada no turno ("Bateu certinho", "Sobrou", "Faltou").
+- Um caixa aberto por vez em cada ponto de venda (`register_name`, hoje sempre "Caixa 1"). Vários caixas na mesma loja ficam para quando houver mais de um ponto de venda.
+- Testes em `supabase/tests/caixa.test.sql`.
+
 ## Design system
 
 O visual segue o design system **usefood** (direção Pop). Os tokens dele ficam em `packages/ui/tokens/usefood.tokens.json`, e o `packages/ui/src/theme.css` é **gerado** a partir desse arquivo:
