@@ -22,12 +22,3 @@ export function Titulo({ titulo, texto }: { titulo: string; texto: ReactNode }) 
     </header>
   );
 }
-
-export function Aviso({ children }: { children: ReactNode }) {
-  if (!children) return null;
-  return (
-    <p role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-body text-danger">
-      {children}
-    </p>
-  );
-}

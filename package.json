@@ -20,6 +20,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "tokens": "node scripts/gerar-tema.mjs && prettier --write packages/ui/src/theme.css",
+    "ds:bundle": "node scripts/gerar-bundle-ds.mjs",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
@@ -29,13 +30,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "^4.3.3",
     "eslint": "^10.11.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.12.0",
     "prettier": "^3.9.9",
     "supabase": "^2.119.0",
+    "tailwindcss": "^4.3.3",
     "turbo": "^2.11.5",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.71.0"
+    "typescript-eslint": "^8.71.0",
+    "vite": "^8.3.1"
   }
 }

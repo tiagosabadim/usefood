@@ -73,6 +73,8 @@ pnpm tokens
 
 Nunca edite o `theme.css` à mão. Para mudar uma cor, fonte ou raio, atualize o design system, exporte o `tokens.json` para essa pasta e rode o comando.
 
+**Componentes** ficam em `packages/ui` e são os mesmos que aparecem, com prévia ao vivo, no design system: Button, Chip, TextField, Switch, SegmentedControl, ChoiceGrid, ProductTile, QuantityStepper, StoreCard, BottomNav, Alert, StatusPill, EmptyState, Panel e Icon. Telas novas se montam com eles; não redesenhe um botão ou um card dentro de uma tela. Depois de mudar um componente, rode `pnpm ds:bundle` e publique `packages/ui/dist-ds/` no design system.
+
 As cores de cada marca (`brand`, `brand-ink`, `brand-soft`, `brand-text`) vêm do campo `theme` da tabela `brands`, com valores separados para o modo claro e o escuro. Só cores hexadecimais são aceitas; qualquer outra coisa é ignorada.
 
 ## Comandos

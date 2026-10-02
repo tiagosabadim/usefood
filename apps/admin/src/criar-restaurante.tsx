@@ -1,9 +1,9 @@
 import { useAppContext } from '@usefood/app';
 import { checkStoreSlug, mensagemErroCriarLoja, slugify } from '@usefood/core';
 import type { AppSupabaseClient } from '@usefood/db';
-import { Button, TextField } from '@usefood/ui';
+import { Alert, Button, TextField } from '@usefood/ui';
 import { useState, type FormEvent } from 'react';
-import { Aviso, Tela, Titulo } from './tela';
+import { Tela, Titulo } from './tela';
 
 /** Primeira loja da conta: nome e endereço. O resto do cadastro vem na E04. */
 export function CriarRestaurante({
@@ -78,7 +78,7 @@ export function CriarRestaurante({
               : 'É o link que seus clientes vão usar.'
           }
         />
-        <Aviso>{erro}</Aviso>
+        <Alert>{erro}</Alert>
         <Button type="submit" loading={aguardando} disabled={!checagem?.ok || !nome.trim()}>
           Criar minha loja
         </Button>

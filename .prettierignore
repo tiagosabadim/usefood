@@ -1,3 +1,4 @@
 pnpm-lock.yaml
 **/dist
+**/dist-ds
 packages/db/src/database.types.ts

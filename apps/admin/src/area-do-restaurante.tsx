@@ -1,10 +1,10 @@
 import type { AppSupabaseClient, Enums, Session } from '@usefood/db';
-import { Button } from '@usefood/ui';
+import { Alert, Button, Panel } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { Cardapio } from './cardapio';
 import { CriarRestaurante } from './criar-restaurante';
 import { Pdv } from './pdv';
-import { Aviso, Tela, Titulo } from './tela';
+import { Tela, Titulo } from './tela';
 
 type Papel = Enums<'restaurant_role'>;
 interface Vinculo {
@@ -67,7 +67,7 @@ export function AreaDoRestaurante({
   if (estado.tipo === 'erro') {
     return (
       <Tela>
-        <Aviso>Não conseguimos carregar suas lojas. Confira a internet e tente de novo.</Aviso>
+        <Alert>Não conseguimos carregar suas lojas. Confira a internet e tente de novo.</Alert>
         <Button onClick={() => setVersao((v) => v + 1)}>Tentar de novo</Button>
       </Tela>
     );
@@ -104,8 +104,7 @@ export function AreaDoRestaurante({
         texto={`${PAPEL[atual.papel]} · ${noAr ? 'Loja no ar' : 'Loja em cadastro'}`}
       />
 
-      <section className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-5">
-        <h2 className="font-display text-title-section text-ink">O que fazer agora</h2>
+      <Panel title="O que fazer agora">
         <div className="flex flex-wrap gap-2">
           {podeVender && (
             <Button className="h-target-pdv" onClick={() => setTela('pdv')}>
@@ -125,7 +124,7 @@ export function AreaDoRestaurante({
             ? `Sua loja está em ${window.location.host}/${atual.loja.slug}`
             : `Quando for ativada, sua loja vai aparecer em ${window.location.host}/${atual.loja.slug}`}
         </p>
-      </section>
+      </Panel>
 
       {estado.vinculos.length > 1 && (
         <section className="flex flex-col gap-2">

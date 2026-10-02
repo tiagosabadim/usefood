@@ -1,8 +1,8 @@
 import { mensagemErroLogin } from '@usefood/core';
 import type { AppSupabaseClient } from '@usefood/db';
-import { Button, TextField } from '@usefood/ui';
+import { Alert, Button, TextField } from '@usefood/ui';
 import { useState, type FormEvent } from 'react';
-import { Aviso, Tela, Titulo } from './tela';
+import { Tela, Titulo } from './tela';
 
 /** Entrada sem senha: e-mail → código (6 a 8 números, conforme o projeto). Conta nova é criada no primeiro acesso. */
 export function Login({ supabase }: { supabase: AppSupabaseClient }) {
@@ -69,7 +69,7 @@ export function Login({ supabase }: { supabase: AppSupabaseClient }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Aviso>{erro}</Aviso>
+          <Alert>{erro}</Alert>
           <Button type="submit" loading={aguardando}>
             Receber código
           </Button>
@@ -101,7 +101,7 @@ export function Login({ supabase }: { supabase: AppSupabaseClient }) {
           onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 8))}
           hint={aviso || 'Não chegou? Olhe a caixa de spam.'}
         />
-        <Aviso>{erro}</Aviso>
+        <Alert>{erro}</Alert>
         <Button type="submit" loading={aguardando} disabled={codigo.length < 6}>
           Entrar
         </Button>

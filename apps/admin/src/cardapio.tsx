@@ -1,8 +1,8 @@
 import { formatarPreco, lerPreco } from '@usefood/core';
 import type { AppSupabaseClient, Tables } from '@usefood/db';
-import { Button, Switch, TextField } from '@usefood/ui';
+import { Alert, Button, EmptyState, Panel, StatusPill, Switch, TextField } from '@usefood/ui';
 import { useEffect, useState, type FormEvent } from 'react';
-import { Aviso, Tela, Titulo } from './tela';
+import { Tela, Titulo } from './tela';
 
 type Categoria = Pick<Tables<'categories'>, 'id' | 'name' | 'position'>;
 type Produto = Pick<
@@ -141,7 +141,7 @@ export function Cardapio({
         </div>
       </div>
 
-      <Aviso>{erro}</Aviso>
+      <Alert>{erro}</Alert>
 
       {estado === 'carregando' && (
         <p className="text-body text-ink-muted">Carregando o cardápio…</p>
@@ -149,7 +149,7 @@ export function Cardapio({
 
       {estado === 'erro' && (
         <div className="flex flex-col gap-4">
-          <Aviso>Não conseguimos carregar o cardápio. Confira a internet e tente de novo.</Aviso>
+          <Alert>Não conseguimos carregar o cardápio. Confira a internet e tente de novo.</Alert>
           <Button className="self-start" onClick={recarregar}>
             Tentar de novo
           </Button>
@@ -166,40 +166,33 @@ export function Cardapio({
           )}
 
           {categorias.length === 0 && !criandoCategoria && (
-            <section className="flex flex-col items-start gap-4 rounded-lg border border-line bg-surface p-6">
-              <h2 className="font-display text-title-section text-ink">Comece pelas categorias</h2>
-              <p className="text-body text-ink-muted">
-                Categorias organizam o cardápio, como Pastéis, Bebidas e Sobremesas. Depois é só
-                colocar os produtos dentro de cada uma.
-              </p>
-              {podeEditar && (
-                <Button onClick={() => setCriandoCategoria(true)}>
-                  Criar a primeira categoria
-                </Button>
-              )}
-            </section>
+            <EmptyState
+              title="Comece pelas categorias"
+              description="Categorias organizam o cardápio, como Pastéis, Bebidas e Sobremesas. Depois é só colocar os produtos dentro de cada uma."
+              action={
+                podeEditar && (
+                  <Button onClick={() => setCriandoCategoria(true)}>
+                    Criar a primeira categoria
+                  </Button>
+                )
+              }
+            />
           )}
 
           {categorias.map((categoria) => {
             const itens = produtos.filter((p) => p.category_id === categoria.id);
             return (
-              <section
+              <Panel
                 key={categoria.id}
-                aria-labelledby={`cat-${categoria.id}`}
-                className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-5"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2
-                    id={`cat-${categoria.id}`}
-                    className="font-display text-title-section text-ink"
-                  >
-                    {categoria.name}
-                  </h2>
+                id={`cat-${categoria.id}`}
+                className="gap-2"
+                title={categoria.name}
+                actions={
                   <span className="text-caption text-ink-muted">
                     {itens.length === 1 ? '1 produto' : `${itens.length} produtos`}
                   </span>
-                </div>
-
+                }
+              >
                 {itens.length > 0 && (
                   <ul className="flex flex-col divide-y divide-line">
                     {itens.map((produto) => (
@@ -222,11 +215,7 @@ export function Cardapio({
                             label={`${produto.name}: disponível`}
                           />
                         ) : (
-                          !produto.is_active && (
-                            <span className="rounded-pill bg-surface-strong px-3 py-1 text-micro text-ink-muted">
-                              Pausado
-                            </span>
-                          )
+                          !produto.is_active && <StatusPill>Pausado</StatusPill>
                         )}
                       </li>
                     ))}
@@ -248,7 +237,7 @@ export function Cardapio({
                       + Novo produto
                     </Button>
                   ))}
-              </section>
+              </Panel>
             );
           })}
         </div>

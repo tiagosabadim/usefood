@@ -8,6 +8,7 @@ export default defineConfig(
   {
     ignores: [
       '**/dist/**',
+      '**/dist-ds/**',
       '**/.turbo/**',
       '**/node_modules/**',
       'packages/db/src/database.types.ts',

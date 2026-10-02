@@ -10,7 +10,19 @@ import {
   type ItemCarrinho,
 } from '@usefood/core';
 import type { AppSupabaseClient, Enums, Tables } from '@usefood/db';
-import { Button, cn, Switch, TextField } from '@usefood/ui';
+import {
+  Alert,
+  Button,
+  ChoiceGrid,
+  cn,
+  Icon,
+  ProductTile,
+  QuantityStepper,
+  SegmentedControl,
+  Switch,
+  TextField,
+  type Option,
+} from '@usefood/ui';
 import { useEffect, useMemo, useState } from 'react';
 
 type Categoria = Pick<Tables<'categories'>, 'id' | 'name'>;
@@ -31,16 +43,16 @@ interface Concluido {
   trocoCentavos: number;
 }
 
-const METODOS: { valor: Metodo; rotulo: string }[] = [
-  { valor: 'dinheiro', rotulo: 'Dinheiro' },
-  { valor: 'pix', rotulo: 'Pix' },
-  { valor: 'credito', rotulo: 'Crédito' },
-  { valor: 'debito', rotulo: 'Débito' },
+const METODOS: Option<Metodo>[] = [
+  { value: 'dinheiro', label: 'Dinheiro' },
+  { value: 'pix', label: 'Pix' },
+  { value: 'credito', label: 'Crédito' },
+  { value: 'debito', label: 'Débito' },
 ];
-const IDENTIFICACOES: { valor: Identificacao; rotulo: string }[] = [
-  { valor: 'senha', rotulo: 'Senha' },
-  { valor: 'nome', rotulo: 'Nome' },
-  { valor: 'mesa', rotulo: 'Mesa' },
+const IDENTIFICACOES: Option<Identificacao>[] = [
+  { value: 'senha', label: 'Senha' },
+  { value: 'nome', label: 'Nome' },
+  { value: 'mesa', label: 'Mesa' },
 ];
 const ERROS_CONHECIDOS = new Set(['P0001', 'P0002', '22023', '42501']);
 
@@ -254,9 +266,9 @@ export function Pdv({
           type="button"
           onClick={onVoltar}
           aria-label={`Sair do PDV e voltar para ${loja.name}`}
-          className="flex min-h-14 shrink-0 items-center justify-center rounded-md px-4 font-display text-title-card text-brand-ink"
+          className="flex min-h-14 shrink-0 items-center justify-center rounded-md px-4 text-brand-ink hover:bg-canvas/15"
         >
-          ←
+          <Icon name="voltar" />
         </button>
         {categorias.map((c) => {
           const selecionada = c.id === categoriaAtual && !busca;
@@ -304,33 +316,16 @@ export function Pdv({
           <p className="text-body text-ink-muted">Nenhum produto aqui.</p>
         ) : (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-            {visiveis.map((p) => {
-              const qtd = quantidadeNoCarrinho(p.id);
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  disabled={etapa !== 'montando'}
-                  onClick={() => setCarrinho((c) => adicionarItem(c, p))}
-                  aria-label={`Adicionar ${p.name}, ${formatarPreco(p.price_cents)}${qtd ? `, ${qtd} no pedido` : ''}`}
-                  className={cn(
-                    'relative flex h-32 flex-col justify-between rounded-lg border bg-surface p-4 text-left transition',
-                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50',
-                    qtd ? 'border-brand' : 'border-line',
-                  )}
-                >
-                  <span className="pr-8 text-body-strong text-ink">{p.name}</span>
-                  <span className="text-body-strong text-ink tabular-nums">
-                    {formatarPreco(p.price_cents)}
-                  </span>
-                  {qtd > 0 && (
-                    <span className="absolute top-3 right-3 flex min-w-7 items-center justify-center rounded-pill bg-brand px-2 py-1 text-micro text-brand-ink">
-                      {qtd}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+            {visiveis.map((p) => (
+              <ProductTile
+                key={p.id}
+                name={p.name}
+                priceLabel={formatarPreco(p.price_cents)}
+                quantity={quantidadeNoCarrinho(p.id)}
+                disabled={etapa !== 'montando'}
+                onClick={() => setCarrinho((c) => adicionarItem(c, p))}
+              />
+            ))}
           </div>
         )}
       </main>
@@ -352,7 +347,7 @@ export function Pdv({
                 {concluido.tipo === 'mesa' && `Mesa ${concluido.identificador}`}
               </span>
               <span className="text-body text-ink-muted">
-                {METODOS.find((m) => m.valor === concluido.metodo)?.rotulo}
+                {METODOS.find((m) => m.value === concluido.metodo)?.label}
               </span>
             </div>
             {concluido.trocoCentavos > 0 && (
@@ -375,27 +370,15 @@ export function Pdv({
                 {formatarPreco(total)}
               </span>
             </div>
-            <div role="group" aria-label="Forma de pagamento" className="grid grid-cols-2 gap-2">
-              {METODOS.map((m) => (
-                <button
-                  key={m.valor}
-                  type="button"
-                  aria-pressed={metodo === m.valor}
-                  onClick={() => {
-                    setMetodo(m.valor);
-                    setErro('');
-                  }}
-                  className={cn(
-                    'h-target-pdv rounded-md border text-label',
-                    metodo === m.valor
-                      ? 'border-brand bg-brand text-brand-ink'
-                      : 'border-line bg-canvas text-ink',
-                  )}
-                >
-                  {m.rotulo}
-                </button>
-              ))}
-            </div>
+            <ChoiceGrid
+              label="Forma de pagamento"
+              options={METODOS}
+              value={metodo}
+              onChange={(m) => {
+                setMetodo(m);
+                setErro('');
+              }}
+            />
             {metodo === 'dinheiro' && (
               <div className="flex flex-col gap-3">
                 <TextField
@@ -435,11 +418,7 @@ export function Pdv({
                 )}
               </div>
             )}
-            {erro && (
-              <p role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-body text-danger">
-                {erro}
-              </p>
-            )}
+            <Alert>{erro}</Alert>
             <div className="mt-auto flex flex-col gap-2">
               <Button
                 className="h-target-pdv"
@@ -459,26 +438,13 @@ export function Pdv({
         ) : (
           <>
             <div className="flex flex-col gap-3 border-b border-line p-5">
-              <div
-                role="group"
-                aria-label="Identificação do pedido"
-                className="inline-flex gap-1 self-start rounded-md border border-line bg-canvas p-1"
-              >
-                {IDENTIFICACOES.map((i) => (
-                  <button
-                    key={i.valor}
-                    type="button"
-                    aria-pressed={identificacao === i.valor}
-                    onClick={() => escolherIdentificacao(i.valor)}
-                    className={cn(
-                      'min-h-10 rounded-sm px-4 text-label',
-                      identificacao === i.valor ? 'bg-brand text-brand-ink' : 'text-ink',
-                    )}
-                  >
-                    {i.rotulo}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                label="Identificação do pedido"
+                className="self-start"
+                options={IDENTIFICACOES}
+                value={identificacao}
+                onChange={escolherIdentificacao}
+              />
               {identificacao === 'senha' ? (
                 <p className="text-caption text-ink-muted">
                   A senha sai sozinha quando o pedido for pago.
@@ -509,35 +475,20 @@ export function Pdv({
                           {formatarPreco(i.precoCentavos * i.quantidade)}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="secondary"
-                          className="min-h-target-min w-11 px-0"
-                          aria-label={`Tirar um ${i.nome}`}
-                          onClick={() => setCarrinho((c) => removerUnidade(c, i.productId))}
-                        >
-                          −
-                        </Button>
-                        <span className="w-8 text-center text-body-strong text-ink tabular-nums">
-                          {i.quantidade}
-                        </span>
-                        <Button
-                          variant="secondary"
-                          className="min-h-target-min w-11 px-0"
-                          aria-label={`Mais um ${i.nome}`}
-                          onClick={() =>
-                            setCarrinho((c) =>
-                              adicionarItem(c, {
-                                id: i.productId,
-                                name: i.nome,
-                                price_cents: i.precoCentavos,
-                              }),
-                            )
-                          }
-                        >
-                          +
-                        </Button>
-                      </div>
+                      <QuantityStepper
+                        value={i.quantidade}
+                        itemName={i.nome}
+                        onDecrement={() => setCarrinho((c) => removerUnidade(c, i.productId))}
+                        onIncrement={() =>
+                          setCarrinho((c) =>
+                            adicionarItem(c, {
+                              id: i.productId,
+                              name: i.nome,
+                              price_cents: i.precoCentavos,
+                            }),
+                          )
+                        }
+                      />
                     </li>
                   ))}
                 </ul>
