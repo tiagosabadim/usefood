@@ -41,6 +41,12 @@ importers:
       '@usefood/app':
         specifier: workspace:*
         version: link:../../packages/app
+      '@usefood/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@usefood/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@usefood/ui':
         specifier: workspace:*
         version: link:../../packages/ui

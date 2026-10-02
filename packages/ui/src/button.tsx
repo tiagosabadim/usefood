@@ -11,13 +11,25 @@ const variants: Record<Variant, string> = {
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
+  /** Mostra que a ação está em andamento e impede clique duplo. */
+  loading?: boolean;
 }
 
 /** Alvo de toque de 48 px (target-control); cantos radius-md. */
-export function Button({ variant = 'primary', className, type = 'button', ...props }: ButtonProps) {
+export function Button({
+  variant = 'primary',
+  loading = false,
+  className,
+  type = 'button',
+  disabled,
+  children,
+  ...props
+}: ButtonProps) {
   return (
     <button
       type={type}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
       className={cn(
         'inline-flex min-h-target-control items-center justify-center gap-2 rounded-md px-5 text-label',
         'transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
@@ -26,6 +38,8 @@ export function Button({ variant = 'primary', className, type = 'button', ...pro
         className,
       )}
       {...props}
-    />
+    >
+      {loading ? 'Aguarde…' : children}
+    </button>
   );
 }

@@ -38,6 +38,14 @@ O domínio decide o que abre, igual em produção (dados do seed):
 - `http://guapifood.localhost:5175` → vitrine da guapifood
 - `http://lanchoneteria.localhost:5175` → loja com domínio próprio, direto na loja
 
+## Login (E03)
+
+O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 números e digita o código. A conta é criada no primeiro acesso, e em seguida ela cria a loja (nome e endereço).
+
+- **Local:** os e-mails não saem do computador; veja-os no Mailpit, em `http://127.0.0.1:54324`.
+- **Homologação e produção:** em Authentication → Emails, nos modelos **Confirm signup** e **Magic Link**, cole o HTML de `supabase/templates/codigo.html` (ele mostra `{{ .Token }}`, o código). Sem isso, o e-mail chega com um link em vez do código.
+- O envio padrão de e-mails do Supabase tem limite baixo por hora e serve para testes. Antes de abrir para clientes, configure um serviço de e-mail próprio (SMTP) no painel.
+
 ## Design system
 
 O visual segue o design system **usefood** (direção Pop). Os tokens dele ficam em `packages/ui/tokens/usefood.tokens.json`, e o `packages/ui/src/theme.css` é **gerado** a partir desse arquivo:
