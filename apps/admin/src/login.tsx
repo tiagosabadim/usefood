@@ -4,7 +4,7 @@ import { Button, TextField } from '@usefood/ui';
 import { useState, type FormEvent } from 'react';
 import { Aviso, Tela, Titulo } from './tela';
 
-/** Entrada sem senha: e-mail → código de 6 números. Conta nova é criada no primeiro acesso. */
+/** Entrada sem senha: e-mail → código (6 a 8 números, conforme o projeto). Conta nova é criada no primeiro acesso. */
 export function Login({ supabase }: { supabase: AppSupabaseClient }) {
   const [etapa, setEtapa] = useState<'email' | 'codigo'>('email');
   const [email, setEmail] = useState('');
@@ -57,7 +57,7 @@ export function Login({ supabase }: { supabase: AppSupabaseClient }) {
       <Tela>
         <Titulo
           titulo="Entre no seu restaurante"
-          texto="Digite seu e-mail. Vamos mandar um código de 6 números, sem senha para decorar."
+          texto="Digite seu e-mail. Vamos mandar um código de acesso, sem senha para decorar."
         />
         <form className="flex flex-col gap-5" onSubmit={enviarEmail}>
           <TextField
@@ -94,15 +94,15 @@ export function Login({ supabase }: { supabase: AppSupabaseClient }) {
           label="Código"
           inputMode="numeric"
           autoComplete="one-time-code"
-          pattern="[0-9]{6}"
-          maxLength={6}
+          pattern="[0-9]{6,8}"
+          maxLength={8}
           required
           value={codigo}
-          onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+          onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 8))}
           hint={aviso || 'Não chegou? Olhe a caixa de spam.'}
         />
         <Aviso>{erro}</Aviso>
-        <Button type="submit" loading={aguardando} disabled={codigo.length !== 6}>
+        <Button type="submit" loading={aguardando} disabled={codigo.length < 6}>
           Entrar
         </Button>
       </form>

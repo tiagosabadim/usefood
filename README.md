@@ -46,6 +46,14 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Homologação e produção:** em Authentication → Emails, nos modelos **Confirm signup** e **Magic Link**, cole o HTML de `supabase/templates/codigo.html` (ele mostra `{{ .Token }}`, o código). Sem isso, o e-mail chega com um link em vez do código.
 - O envio padrão de e-mails do Supabase tem limite baixo por hora e serve para testes. Antes de abrir para clientes, configure um serviço de e-mail próprio (SMTP) no painel.
 
+## Cardápio (E04)
+
+- Tabelas: `stations` (praças), `categories`, `products`, `product_variants` (tamanhos), `modifier_groups` e `modifiers` (adicionais), `product_modifier_groups`.
+- **Dinheiro em centavos inteiros** (`price_cents`): R$ 14,00 = 1400. Use `formatarPreco` e `lerPreco` de `@usefood/core`; nunca guarde preço como número com vírgula.
+- Toda loja nasce com a praça **Cozinha**. Produto sem praça vai para a praça padrão.
+- Equipe da loja vê o cardápio; só dono e gerente editam. A vitrine vê só produtos ativos de lojas no ar. Testes em `supabase/tests/cardapio.test.sql`.
+- Fotos ficam no bucket público `cardapio`, numa pasta por loja (`<restaurant_id>/arquivo.jpg`).
+
 ## Design system
 
 O visual segue o design system **usefood** (direção Pop). Os tokens dele ficam em `packages/ui/tokens/usefood.tokens.json`, e o `packages/ui/src/theme.css` é **gerado** a partir desse arquivo:

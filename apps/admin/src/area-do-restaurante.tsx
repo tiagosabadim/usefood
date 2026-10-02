@@ -1,6 +1,7 @@
 import type { AppSupabaseClient, Enums, Session } from '@usefood/db';
 import { Button } from '@usefood/ui';
 import { useEffect, useState } from 'react';
+import { Cardapio } from './cardapio';
 import { CriarRestaurante } from './criar-restaurante';
 import { Aviso, Tela, Titulo } from './tela';
 
@@ -30,6 +31,7 @@ export function AreaDoRestaurante({
   const [estado, setEstado] = useState<Estado>({ tipo: 'carregando' });
   const [versao, setVersao] = useState(0);
   const [selecionada, setSelecionada] = useState(0);
+  const [tela, setTela] = useState<'inicio' | 'cardapio'>('inicio');
 
   useEffect(() => {
     let ativo = true;
@@ -76,6 +78,18 @@ export function AreaDoRestaurante({
 
   const atual = estado.vinculos[selecionada] ?? estado.vinculos[0]!;
   const noAr = atual.loja.status === 'ativo';
+  const podeEditar = atual.papel === 'dono' || atual.papel === 'gerente';
+
+  if (tela === 'cardapio') {
+    return (
+      <Cardapio
+        supabase={supabase}
+        loja={atual.loja}
+        podeEditar={podeEditar}
+        onVoltar={() => setTela('inicio')}
+      />
+    );
+  }
 
   return (
     <Tela>
@@ -86,10 +100,12 @@ export function AreaDoRestaurante({
 
       <section className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-5">
         <h2 className="font-display text-title-section text-ink">Próximos passos</h2>
+        <Button className="self-start" onClick={() => setTela('cardapio')}>
+          Montar o cardápio
+        </Button>
         <ul className="flex flex-col gap-2 text-body text-ink-muted">
-          <li>Montar o cardápio, com fotos e adicionais.</li>
-          <li>Convidar a equipe: caixa, garçons e cozinha.</li>
-          <li>Configurar as impressoras da cozinha.</li>
+          <li>Convidar a equipe: caixa, garçons e cozinha (em breve).</li>
+          <li>Configurar as impressoras da cozinha (em breve).</li>
         </ul>
         <p className="text-caption text-ink-muted">
           {noAr

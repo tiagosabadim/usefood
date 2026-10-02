@@ -78,6 +78,47 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          position: number
+          restaurant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          position?: number
+          restaurant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          position?: number
+          restaurant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       domains: {
         Row: {
           brand_id: string
@@ -167,6 +208,88 @@ export type Database = {
           },
         ]
       }
+      modifier_groups: {
+        Row: {
+          created_at: string
+          id: string
+          max_select: number | null
+          min_select: number
+          name: string
+          position: number
+          restaurant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_select?: number | null
+          min_select?: number
+          name: string
+          position?: number
+          restaurant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_select?: number | null
+          min_select?: number
+          name?: string
+          position?: number
+          restaurant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modifier_groups_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modifiers: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          is_active: boolean
+          name: string
+          position: number
+          price_cents: number
+          restaurant_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          position?: number
+          price_cents?: number
+          restaurant_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          position?: number
+          price_cents?: number
+          restaurant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modifiers_group_id_restaurant_id_fkey"
+            columns: ["group_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "modifier_groups"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           brand_id: string
@@ -216,6 +339,156 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      product_modifier_groups: {
+        Row: {
+          group_id: string
+          position: number
+          product_id: string
+          restaurant_id: string
+        }
+        Insert: {
+          group_id: string
+          position?: number
+          product_id: string
+          restaurant_id: string
+        }
+        Update: {
+          group_id?: string
+          position?: number
+          product_id?: string
+          restaurant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_modifier_groups_group_id_restaurant_id_fkey"
+            columns: ["group_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "modifier_groups"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+          {
+            foreignKeyName: "product_modifier_groups_product_id_restaurant_id_fkey"
+            columns: ["product_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+        ]
+      }
+      product_variants: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          position: number
+          price_cents: number
+          product_id: string
+          restaurant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          position?: number
+          price_cents: number
+          product_id: string
+          restaurant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          position?: number
+          price_cents?: number
+          product_id?: string
+          restaurant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_restaurant_id_fkey"
+            columns: ["product_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          available_channels: Database["public"]["Enums"]["sales_channel"][]
+          category_id: string
+          code: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          photo_path: string | null
+          position: number
+          price_cents: number
+          restaurant_id: string
+          station_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          available_channels?: Database["public"]["Enums"]["sales_channel"][]
+          category_id: string
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          photo_path?: string | null
+          position?: number
+          price_cents: number
+          restaurant_id: string
+          station_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          available_channels?: Database["public"]["Enums"]["sales_channel"][]
+          category_id?: string
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          photo_path?: string | null
+          position?: number
+          price_cents?: number
+          restaurant_id?: string
+          station_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_restaurant_id_fkey"
+            columns: ["category_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+          {
+            foreignKeyName: "products_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_station_id_restaurant_id_fkey"
+            columns: ["station_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+        ]
       }
       reserved_slugs: {
         Row: {
@@ -280,6 +553,38 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id", "brand_id"]
+          },
+        ]
+      }
+      stations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          position: number
+          restaurant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          position?: number
+          restaurant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number
+          restaurant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stations_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -349,6 +654,7 @@ export type Database = {
       domain_status: "pendente" | "verificando" | "ativo" | "erro"
       restaurant_role: "dono" | "gerente" | "caixa" | "garcom" | "cozinha"
       restaurant_status: "rascunho" | "ativo" | "pausado" | "encerrado"
+      sales_channel: "salao" | "balcao" | "delivery" | "marketplace"
     }
     CompositeTypes: {
       [_ in never]: never

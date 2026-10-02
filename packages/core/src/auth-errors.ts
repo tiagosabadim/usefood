@@ -17,7 +17,7 @@ export function mensagemErroLogin(erro: ErroLike | null | undefined): string {
     return 'Muitos códigos pedidos em pouco tempo. Espere alguns minutos e tente de novo.';
   }
   if (code === 'otp_expired' || code === 'invalid_credentials') {
-    return 'Código inválido ou vencido. Confira os 6 números ou peça um código novo.';
+    return 'Código inválido ou vencido. Confira os números ou peça um código novo.';
   }
   if (code === 'email_address_invalid' || code === 'validation_failed') {
     return 'Esse e-mail não parece válido. Confira e tente de novo.';
