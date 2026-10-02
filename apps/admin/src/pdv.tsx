@@ -1,13 +1,20 @@
 import {
   adicionarItem,
+  detalheDoItem,
+  dividirIgual,
   formatarPreco,
+  itemSimples,
   lerPreco,
+  precoParaCampo,
+  quantidadeDoProduto,
   quantidadeTotal,
   removerUnidade,
+  somarUnidade,
   subtotalCentavos,
   sugestoesDeNotas,
   taxaServicoCentavos,
   type ItemCarrinho,
+  type NovoItem,
 } from '@usefood/core';
 import type { AppSupabaseClient, Enums, Tables } from '@usefood/db';
 import {
@@ -24,22 +31,25 @@ import {
   type Option,
 } from '@usefood/ui';
 import { useEffect, useMemo, useState } from 'react';
+import { MontarItem, type GrupoDeOpcoes, type OpcaoTamanho } from './montar-item';
 
 type Categoria = Pick<Tables<'categories'>, 'id' | 'name'>;
 type Produto = Pick<Tables<'products'>, 'id' | 'category_id' | 'name' | 'price_cents'>;
 type Identificacao = 'senha' | 'nome' | 'mesa';
 type Metodo = Enums<'payment_method'>;
+interface Opcoes {
+  tamanhos: OpcaoTamanho[];
+  grupos: GrupoDeOpcoes[];
+}
 interface PedidoCriado {
   id: string;
   numero: number;
   identificador: string;
   totalCentavos: number;
 }
-interface Concluido {
-  numero: number;
-  identificador: string;
-  tipo: Identificacao;
+interface PagamentoFeito {
   metodo: Metodo;
+  valorCentavos: number;
   trocoCentavos: number;
 }
 
@@ -54,15 +64,23 @@ const IDENTIFICACOES: Option<Identificacao>[] = [
   { value: 'nome', label: 'Nome' },
   { value: 'mesa', label: 'Mesa' },
 ];
+const DIVISOES: Option<'1' | '2' | '3' | '4'>[] = [
+  { value: '1', label: 'Inteira' },
+  { value: '2', label: '÷ 2' },
+  { value: '3', label: '÷ 3' },
+  { value: '4', label: '÷ 4' },
+];
 const ERROS_CONHECIDOS = new Set(['P0001', 'P0002', '22023', '42501']);
+const SEM_OPCOES: Opcoes = { tamanhos: [], grupos: [] };
 
 function mensagem(erro: { code?: string; message?: string }): string {
   return erro.code && ERROS_CONHECIDOS.has(erro.code) && erro.message
     ? erro.message
     : 'Não deu certo agora. Confira a internet e tente de novo.';
 }
+const rotuloDoMetodo = (m: Metodo) => METODOS.find((x) => x.value === m)?.label ?? m;
 
-/** Venda de balcão: tocar nos produtos, identificar, cobrar. */
+/** Venda de balcão: tocar nos produtos, montar opções, identificar e cobrar (inteira ou em partes). */
 export function Pdv({
   supabase,
   loja,
@@ -76,8 +94,10 @@ export function Pdv({
   const [falhou, setFalhou] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [opcoes, setOpcoes] = useState<Map<string, Opcoes>>(new Map());
   const [categoriaAtual, setCategoriaAtual] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
+  const [montando, setMontando] = useState<Produto | null>(null);
 
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
   const [identificacao, setIdentificacao] = useState<Identificacao>('senha');
@@ -85,39 +105,100 @@ export function Pdv({
   const [taxa, setTaxa] = useState(false);
 
   const [etapa, setEtapa] = useState<'montando' | 'cobrando' | 'concluido'>('montando');
+  const [pedidoCriado, setPedidoCriado] = useState<PedidoCriado | null>(null);
+  const [pagamentos, setPagamentos] = useState<PagamentoFeito[]>([]);
+  const [dividirPor, setDividirPor] = useState(1);
+  const [parteDigitada, setParteDigitada] = useState<string | null>(null);
   const [metodo, setMetodo] = useState<Metodo | null>(null);
   const [recebido, setRecebido] = useState('');
-  const [pedidoCriado, setPedidoCriado] = useState<PedidoCriado | null>(null);
-  const [concluido, setConcluido] = useState<Concluido | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState('');
 
   useEffect(() => {
     let ativo = true;
+    const loja_ = loja.id;
     void Promise.all([
       supabase
         .from('categories')
         .select('id, name')
-        .eq('restaurant_id', loja.id)
+        .eq('restaurant_id', loja_)
         .eq('is_active', true)
         .order('position')
         .order('created_at'),
       supabase
         .from('products')
         .select('id, category_id, name, price_cents')
-        .eq('restaurant_id', loja.id)
+        .eq('restaurant_id', loja_)
         .eq('is_active', true)
         .order('position')
         .order('created_at'),
-    ]).then(([cats, prods]) => {
+      supabase
+        .from('product_variants')
+        .select('id, product_id, name, price_cents')
+        .eq('restaurant_id', loja_)
+        .eq('is_active', true)
+        .order('position'),
+      supabase
+        .from('product_modifier_groups')
+        .select('product_id, group_id, position')
+        .eq('restaurant_id', loja_)
+        .order('position'),
+      supabase
+        .from('modifier_groups')
+        .select('id, name, min_select, max_select')
+        .eq('restaurant_id', loja_),
+      supabase
+        .from('modifiers')
+        .select('id, group_id, name, price_cents')
+        .eq('restaurant_id', loja_)
+        .eq('is_active', true)
+        .order('position'),
+    ]).then(([cats, prods, tamanhos, ligacoes, grupos, itens]) => {
       if (!ativo) return;
-      if (cats.error || prods.error) {
+      if (
+        cats.error ||
+        prods.error ||
+        tamanhos.error ||
+        ligacoes.error ||
+        grupos.error ||
+        itens.error
+      ) {
         setFalhou(true);
-      } else {
-        setCategorias(cats.data);
-        setProdutos(prods.data);
-        setCategoriaAtual(cats.data[0]?.id ?? null);
+        setCarregando(false);
+        return;
       }
+      const porGrupo = new Map<string, GrupoDeOpcoes>(
+        grupos.data.map((g) => [
+          g.id,
+          { id: g.id, nome: g.name, minimo: g.min_select, maximo: g.max_select, itens: [] },
+        ]),
+      );
+      for (const i of itens.data) {
+        porGrupo
+          .get(i.group_id)
+          ?.itens.push({ id: i.id, nome: i.name, precoCentavos: i.price_cents });
+      }
+      const mapa = new Map<string, Opcoes>();
+      const doProduto = (id: string) => {
+        if (!mapa.has(id)) mapa.set(id, { tamanhos: [], grupos: [] });
+        return mapa.get(id)!;
+      };
+      for (const t of tamanhos.data) {
+        doProduto(t.product_id).tamanhos.push({
+          id: t.id,
+          nome: t.name,
+          precoCentavos: t.price_cents,
+        });
+      }
+      for (const l of ligacoes.data) {
+        const grupo = porGrupo.get(l.group_id);
+        if (grupo && (grupo.itens.length > 0 || grupo.minimo > 0))
+          doProduto(l.product_id).grupos.push(grupo);
+      }
+      setCategorias(cats.data);
+      setProdutos(prods.data);
+      setOpcoes(mapa);
+      setCategoriaAtual(cats.data[0]?.id ?? null);
       setCarregando(false);
     });
     return () => {
@@ -135,16 +216,29 @@ export function Pdv({
   const taxaCentavos = taxa ? taxaServicoCentavos(subtotal) : 0;
   // Depois que o pedido existe, vale o total calculado pelo banco.
   const total = pedidoCriado?.totalCentavos ?? subtotal + taxaCentavos;
-  const itens = quantidadeTotal(carrinho);
-  const quantidadeNoCarrinho = (id: string) =>
-    carrinho.find((i) => i.productId === id)?.quantidade ?? 0;
-
+  const pago = pagamentos.reduce((s, p) => s + p.valorCentavos, 0);
+  const falta = total - pago;
+  const pessoasRestantes = Math.max(1, dividirPor - pagamentos.length);
+  const parteSugerida = dividirIgual(falta, pessoasRestantes)[0] ?? falta;
+  const parte = parteDigitada === null ? parteSugerida : lerPreco(parteDigitada);
+  const parteValida = parte !== null && parte > 0 && parte <= falta;
   const recebidoCentavos = lerPreco(recebido);
-  const troco = metodo === 'dinheiro' && recebidoCentavos !== null ? recebidoCentavos - total : 0;
+  const troco =
+    metodo === 'dinheiro' && recebidoCentavos !== null && parte !== null
+      ? recebidoCentavos - parte
+      : 0;
   const identificacaoFalta = identificacao !== 'senha' && !identificador.trim();
   const podeConfirmar =
     metodo !== null &&
-    (metodo !== 'dinheiro' || (recebidoCentavos !== null && recebidoCentavos >= total));
+    parteValida &&
+    (metodo !== 'dinheiro' ||
+      (recebidoCentavos !== null && parte !== null && recebidoCentavos >= parte));
+
+  function tocarProduto(p: Produto) {
+    const o = opcoes.get(p.id) ?? SEM_OPCOES;
+    if (o.tamanhos.length > 0 || o.grupos.length > 0) setMontando(p);
+    else setCarrinho((c) => adicionarItem(c, itemSimples(p)));
+  }
 
   function escolherIdentificacao(tipo: Identificacao) {
     setIdentificacao(tipo);
@@ -158,19 +252,21 @@ export function Pdv({
     setIdentificador('');
     setTaxa(false);
     setEtapa('montando');
+    setPedidoCriado(null);
+    setPagamentos([]);
+    setDividirPor(1);
+    setParteDigitada(null);
     setMetodo(null);
     setRecebido('');
-    setPedidoCriado(null);
-    setConcluido(null);
     setErro('');
   }
 
   async function confirmarPagamento() {
-    if (!metodo) return;
+    if (!metodo || parte === null) return;
     setErro('');
     setEnviando(true);
 
-    // 1. Cria o pedido uma vez só; se o pagamento falhar, tenta de novo sem duplicar o pedido.
+    // 1. Cria o pedido uma vez só; as partes seguintes só registram pagamento.
     let pedido: PedidoCriado | null = pedidoCriado;
     if (!pedido) {
       const { data, error } = await supabase.rpc('criar_pedido', {
@@ -178,7 +274,13 @@ export function Pdv({
         p_tipo: identificacao === 'mesa' ? 'mesa' : 'balcao',
         p_identificador_tipo: identificacao,
         p_identificador: identificacao === 'senha' ? null : identificador.trim(),
-        p_itens: carrinho.map((i) => ({ product_id: i.productId, quantidade: i.quantidade })),
+        p_itens: carrinho.map((i) => ({
+          product_id: i.productId,
+          quantidade: i.quantidade,
+          variant_id: i.tamanhoId,
+          adicionais: i.adicionais.map((a) => a.id),
+          observacao: i.observacao || null,
+        })),
         p_taxa_servico: taxa,
       });
       const linha = data?.[0];
@@ -195,8 +297,8 @@ export function Pdv({
       };
       setPedidoCriado(pedido);
       if (linha.total_cents !== total) {
-        // O banco é a fonte da verdade: um preço pode ter mudado agora há pouco.
         setEnviando(false);
+        setParteDigitada(null);
         setErro(
           `O total foi atualizado para ${formatarPreco(linha.total_cents)}. Confira e confirme de novo.`,
         );
@@ -204,13 +306,12 @@ export function Pdv({
       }
     }
 
-    // 2. Registra o pagamento
-    const valor =
-      metodo === 'dinheiro' && recebidoCentavos !== null ? recebidoCentavos : pedido.totalCentavos;
+    // 2. Registra esta parte (no dinheiro, o banco calcula o troco sobre o recebido)
     const { data, error } = await supabase.rpc('registrar_pagamento', {
       p_pedido: pedido.id,
       p_metodo: metodo,
-      p_valor_cents: valor,
+      p_valor_cents: parte,
+      p_recebido_cents: metodo === 'dinheiro' ? recebidoCentavos : null,
     });
     setEnviando(false);
     const resultado = data?.[0];
@@ -218,14 +319,14 @@ export function Pdv({
       setErro(error ? mensagem(error) : 'Não foi possível registrar o pagamento.');
       return;
     }
-    setConcluido({
-      numero: pedido.numero,
-      identificador: pedido.identificador,
-      tipo: identificacao,
-      metodo,
-      trocoCentavos: resultado.troco_cents,
-    });
-    setEtapa('concluido');
+    setPagamentos((ps) => [
+      ...ps,
+      { metodo, valorCentavos: resultado.pago_cents - pago, trocoCentavos: resultado.troco_cents },
+    ]);
+    setMetodo(null);
+    setRecebido('');
+    setParteDigitada(null);
+    if (resultado.falta_cents <= 0) setEtapa('concluido');
   }
 
   if (carregando || falhou) {
@@ -255,12 +356,26 @@ export function Pdv({
     );
   }
 
+  const ultimoTroco = pagamentos.at(-1)?.trocoCentavos ?? 0;
+  const listaDePagamentos = pagamentos.length > 0 && (
+    <ul className="flex flex-col gap-1 text-body text-ink-muted">
+      {pagamentos.map((p, i) => (
+        <li key={i} className="flex justify-between">
+          <span>
+            {rotuloDoMetodo(p.metodo)}
+            {p.trocoCentavos > 0 && ` · troco ${formatarPreco(p.trocoCentavos)}`}
+          </span>
+          <span className="tabular-nums">{formatarPreco(p.valorCentavos)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
     <div className="grid min-h-dvh grid-cols-1 bg-canvas lg:h-dvh lg:grid-cols-[112px_minmax(0,1fr)_400px]">
-      {/* Trilho de categorias */}
       <nav
         aria-label="Categorias"
-        className="flex gap-2 overflow-x-auto bg-brand p-3 lg:flex-col lg:overflow-y-auto lg:p-3"
+        className="flex gap-2 overflow-x-auto bg-brand p-3 lg:flex-col lg:overflow-y-auto"
       >
         <button
           type="button"
@@ -292,7 +407,6 @@ export function Pdv({
         })}
       </nav>
 
-      {/* Produtos */}
       <main className="flex min-w-0 flex-col gap-5 p-5 lg:overflow-y-auto lg:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
@@ -316,45 +430,52 @@ export function Pdv({
           <p className="text-body text-ink-muted">Nenhum produto aqui.</p>
         ) : (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-            {visiveis.map((p) => (
-              <ProductTile
-                key={p.id}
-                name={p.name}
-                priceLabel={formatarPreco(p.price_cents)}
-                quantity={quantidadeNoCarrinho(p.id)}
-                disabled={etapa !== 'montando'}
-                onClick={() => setCarrinho((c) => adicionarItem(c, p))}
-              />
-            ))}
+            {visiveis.map((p) => {
+              const o = opcoes.get(p.id) ?? SEM_OPCOES;
+              const menor = o.tamanhos.length
+                ? Math.min(...o.tamanhos.map((t) => t.precoCentavos))
+                : p.price_cents;
+              return (
+                <ProductTile
+                  key={p.id}
+                  name={p.name}
+                  priceLabel={
+                    o.tamanhos.length > 1
+                      ? `a partir de ${formatarPreco(menor)}`
+                      : formatarPreco(menor)
+                  }
+                  quantity={quantidadeDoProduto(carrinho, p.id)}
+                  disabled={etapa !== 'montando'}
+                  onClick={() => tocarProduto(p)}
+                />
+              );
+            })}
           </div>
         )}
       </main>
 
-      {/* Pedido */}
       <aside
         aria-label="Pedido atual"
         className="flex flex-col border-t border-line bg-surface lg:border-t-0 lg:border-l"
       >
-        {etapa === 'concluido' && concluido ? (
+        {etapa === 'concluido' && pedidoCriado ? (
           <div className="flex flex-1 flex-col justify-center gap-6 p-6">
             <div className="flex flex-col gap-2">
               <span className="text-caption text-ink-muted">
-                Pedido #{String(concluido.numero).padStart(3, '0')} pago
+                Pedido #{String(pedidoCriado.numero).padStart(3, '0')} pago
               </span>
               <span className="font-display text-display text-ink">
-                {concluido.tipo === 'senha' && `Senha ${concluido.identificador}`}
-                {concluido.tipo === 'nome' && concluido.identificador}
-                {concluido.tipo === 'mesa' && `Mesa ${concluido.identificador}`}
-              </span>
-              <span className="text-body text-ink-muted">
-                {METODOS.find((m) => m.value === concluido.metodo)?.label}
+                {identificacao === 'senha' && `Senha ${pedidoCriado.identificador}`}
+                {identificacao === 'nome' && pedidoCriado.identificador}
+                {identificacao === 'mesa' && `Mesa ${pedidoCriado.identificador}`}
               </span>
             </div>
-            {concluido.trocoCentavos > 0 && (
+            {listaDePagamentos}
+            {ultimoTroco > 0 && (
               <div className="rounded-lg bg-sun p-5">
                 <span className="text-label text-sun-ink">Troco</span>
                 <p className="font-display text-display text-sun-ink tabular-nums">
-                  {formatarPreco(concluido.trocoCentavos)}
+                  {formatarPreco(ultimoTroco)}
                 </p>
               </div>
             )}
@@ -363,13 +484,43 @@ export function Pdv({
             </Button>
           </div>
         ) : etapa === 'cobrando' ? (
-          <div className="flex flex-1 flex-col gap-5 p-6">
+          <div className="flex flex-1 flex-col gap-5 p-6 lg:overflow-y-auto">
             <div className="flex flex-col gap-1">
-              <span className="text-caption text-ink-muted">Cobrar</span>
+              <span className="text-caption text-ink-muted">
+                {pagamentos.length ? `Falta pagar · total ${formatarPreco(total)}` : 'Cobrar'}
+              </span>
               <span className="font-display text-display text-ink tabular-nums">
-                {formatarPreco(total)}
+                {formatarPreco(falta)}
               </span>
             </div>
+
+            {listaDePagamentos}
+
+            <div className="flex flex-col gap-2">
+              <span className="text-label text-ink">Dividir a conta</span>
+              <SegmentedControl
+                label="Dividir a conta"
+                options={DIVISOES}
+                value={String(dividirPor) as '1' | '2' | '3' | '4'}
+                onChange={(v) => {
+                  setDividirPor(Number(v));
+                  setParteDigitada(null);
+                }}
+              />
+            </div>
+            {(dividirPor > 1 || pagamentos.length > 0) && (
+              <TextField
+                label="Valor desta parte"
+                inputMode="decimal"
+                value={parteDigitada ?? precoParaCampo(parteSugerida)}
+                onChange={(e) => setParteDigitada(e.target.value)}
+                error={!parteValida ? `Digite um valor de até ${formatarPreco(falta)}.` : undefined}
+                hint={
+                  dividirPor > 1 ? `Parte ${pagamentos.length + 1} de ${dividirPor}` : undefined
+                }
+              />
+            )}
+
             <ChoiceGrid
               label="Forma de pagamento"
               options={METODOS}
@@ -379,7 +530,7 @@ export function Pdv({
                 setErro('');
               }}
             />
-            {metodo === 'dinheiro' && (
+            {metodo === 'dinheiro' && parte !== null && (
               <div className="flex flex-col gap-3">
                 <TextField
                   label="Valor recebido"
@@ -389,23 +540,20 @@ export function Pdv({
                   value={recebido}
                   onChange={(e) => setRecebido(e.target.value)}
                   error={
-                    recebidoCentavos !== null && recebidoCentavos < total
-                      ? 'Valor menor que o total.'
+                    recebidoCentavos !== null && recebidoCentavos < parte
+                      ? 'Valor menor que a parte.'
                       : undefined
                   }
                 />
                 <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setRecebido(String(total / 100).replace('.', ','))}
-                  >
+                  <Button variant="secondary" onClick={() => setRecebido(precoParaCampo(parte))}>
                     Valor exato
                   </Button>
-                  {sugestoesDeNotas(total).map((nota) => (
+                  {sugestoesDeNotas(parte).map((nota) => (
                     <Button
                       key={nota}
                       variant="secondary"
-                      onClick={() => setRecebido(String(nota / 100))}
+                      onClick={() => setRecebido(precoParaCampo(nota))}
                     >
                       {formatarPreco(nota)}
                     </Button>
@@ -426,7 +574,9 @@ export function Pdv({
                 loading={enviando}
                 onClick={() => void confirmarPagamento()}
               >
-                Confirmar pagamento
+                {parte !== null && parte < falta
+                  ? `Receber ${formatarPreco(parte)}`
+                  : 'Confirmar pagamento'}
               </Button>
               {!pedidoCriado && (
                 <Button variant="ghost" onClick={() => setEtapa('montando')}>
@@ -467,30 +617,26 @@ export function Pdv({
                 </p>
               ) : (
                 <ul className="flex flex-col divide-y divide-line">
-                  {carrinho.map((i) => (
-                    <li key={i.productId} className="flex items-center gap-3 py-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-body-strong text-ink">{i.nome}</p>
-                        <p className="text-caption text-ink-muted tabular-nums">
-                          {formatarPreco(i.precoCentavos * i.quantidade)}
-                        </p>
-                      </div>
-                      <QuantityStepper
-                        value={i.quantidade}
-                        itemName={i.nome}
-                        onDecrement={() => setCarrinho((c) => removerUnidade(c, i.productId))}
-                        onIncrement={() =>
-                          setCarrinho((c) =>
-                            adicionarItem(c, {
-                              id: i.productId,
-                              name: i.nome,
-                              price_cents: i.precoCentavos,
-                            }),
-                          )
-                        }
-                      />
-                    </li>
-                  ))}
+                  {carrinho.map((i) => {
+                    const detalhe = detalheDoItem(i);
+                    return (
+                      <li key={i.chave} className="flex items-center gap-3 py-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-body-strong text-ink">{i.nome}</p>
+                          {detalhe && <p className="text-caption text-ink-muted">{detalhe}</p>}
+                          <p className="text-caption text-ink-muted tabular-nums">
+                            {formatarPreco(i.precoCentavos * i.quantidade)}
+                          </p>
+                        </div>
+                        <QuantityStepper
+                          value={i.quantidade}
+                          itemName={i.nome}
+                          onDecrement={() => setCarrinho((c) => removerUnidade(c, i.chave))}
+                          onIncrement={() => setCarrinho((c) => somarUnidade(c, i.chave))}
+                        />
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>
@@ -498,7 +644,12 @@ export function Pdv({
             <div className="flex flex-col gap-3 border-t border-line bg-surface-strong p-5">
               <Switch checked={taxa} onChange={setTaxa} label="Taxa de serviço (10%)" showLabel />
               <div className="flex justify-between text-body text-ink-muted">
-                <span>Subtotal · {itens === 1 ? '1 item' : `${itens} itens`}</span>
+                <span>
+                  Subtotal ·{' '}
+                  {quantidadeTotal(carrinho) === 1
+                    ? '1 item'
+                    : `${quantidadeTotal(carrinho)} itens`}
+                </span>
                 <span className="tabular-nums">{formatarPreco(subtotal)}</span>
               </div>
               {taxa && (
@@ -544,6 +695,19 @@ export function Pdv({
           </>
         )}
       </aside>
+
+      {montando && (
+        <MontarItem
+          produto={montando}
+          tamanhos={opcoes.get(montando.id)?.tamanhos ?? []}
+          grupos={opcoes.get(montando.id)?.grupos ?? []}
+          onFechar={() => setMontando(null)}
+          onAdicionar={(item: NovoItem) => {
+            setCarrinho((c) => adicionarItem(c, item));
+            setMontando(null);
+          }}
+        />
+      )}
     </div>
   );
 }

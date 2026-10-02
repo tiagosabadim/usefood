@@ -290,6 +290,44 @@ export type Database = {
           },
         ]
       }
+      order_item_modifiers: {
+        Row: {
+          group_name: string
+          id: string
+          modifier_id: string | null
+          name: string
+          order_item_id: string
+          price_cents: number
+          restaurant_id: string
+        }
+        Insert: {
+          group_name: string
+          id?: string
+          modifier_id?: string | null
+          name: string
+          order_item_id: string
+          price_cents: number
+          restaurant_id: string
+        }
+        Update: {
+          group_name?: string
+          id?: string
+          modifier_id?: string | null
+          name?: string
+          order_item_id?: string
+          price_cents?: number
+          restaurant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_item_modifiers_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -303,6 +341,8 @@ export type Database = {
           station_id: string | null
           total_cents: number
           unit_price_cents: number
+          variant_id: string | null
+          variant_name: string | null
         }
         Insert: {
           created_at?: string
@@ -316,6 +356,8 @@ export type Database = {
           station_id?: string | null
           total_cents: number
           unit_price_cents: number
+          variant_id?: string | null
+          variant_name?: string | null
         }
         Update: {
           created_at?: string
@@ -329,6 +371,8 @@ export type Database = {
           station_id?: string | null
           total_cents?: number
           unit_price_cents?: number
+          variant_id?: string | null
+          variant_name?: string | null
         }
         Relationships: [
           {
@@ -350,6 +394,13 @@ export type Database = {
             columns: ["station_id"]
             isOneToOne: false
             referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -858,6 +909,7 @@ export type Database = {
         Args: {
           p_metodo: Database["public"]["Enums"]["payment_method"]
           p_pedido: string
+          p_recebido_cents?: number | null
           p_valor_cents: number
         }
         Returns: {

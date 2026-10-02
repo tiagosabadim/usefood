@@ -54,7 +54,7 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - Equipe da loja vê o cardápio; só dono e gerente editam. A vitrine vê só produtos ativos de lojas no ar. Testes em `supabase/tests/cardapio.test.sql`.
 - Fotos ficam no bucket público `cardapio`, numa pasta por loja (`<restaurant_id>/arquivo.webp`). O navegador reduz a foto para no máximo 1200 px e converte para WebP antes de enviar (JPG se o navegador não gerar WebP); a foto antiga é apagada ao trocar.
 - Na tela: tocar no nome do produto abre o painel de edição (foto, dados, tamanhos, adicionais e excluir). A aba **Adicionais** cria grupos reaproveitáveis, com regra de mínimo e máximo, e os itens de cada grupo.
-- O PDV ainda vende pelo preço principal: tamanhos e adicionais entram no PDV na E05 parte 2.
+- No PDV, produto com tamanho ou adicionais abre o painel **Montar item**; o banco confere o tamanho e as regras de cada grupo.
 
 ## PDV e pedidos (E05)
 
@@ -62,8 +62,10 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - Pedidos e pagamentos **só** nascem pelas funções `criar_pedido` e `registrar_pagamento`. Nenhum app grava direto nas tabelas `orders`, `order_items` e `payments`.
 - `criar_pedido` recebe só produto e quantidade. O preço vem do cardápio no banco; a tela nunca define preço.
 - Cada loja numera os pedidos do dia (#001, #002…) no próprio fuso; o número também serve de senha.
-- Pagamento parcial é aceito. Só dinheiro pode passar do valor (gera troco). Garçom lança pedido, mas não cobra; cozinha não lança.
-- Testes em `supabase/tests/pedidos.test.sql`.
+- Cada item pode levar `variant_id` (tamanho, obrigatório se o produto tem tamanhos), `adicionais` (ids) e `observacao`. O banco confere mínimo e máximo de cada grupo ligado ao produto e grava o tamanho e os adicionais como eram na hora (`order_item_modifiers`).
+- Conta dividida: cada parte é um `registrar_pagamento`. No dinheiro, `p_recebido_cents` informa a nota entregue e o troco sai sobre a parte. Só dinheiro tem troco. Garçom lança pedido, mas não cobra; cozinha não lança.
+- Conta aberta de mesa (rodadas) chega com a comanda do garçom, na E08.
+- Testes em `supabase/tests/pedidos.test.sql` e `supabase/tests/pedido_com_opcoes.test.sql`.
 
 ## Design system
 
