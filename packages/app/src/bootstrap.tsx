@@ -1,4 +1,4 @@
-import { resolveSite, type DomainRecord } from '@usefood/core';
+import { brandThemeCss, resolveSite, type DomainRecord } from '@usefood/core';
 import { createSupabaseClient, type AppSupabaseClient } from '@usefood/db';
 import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -22,6 +22,18 @@ async function lookupDomain(
     return null;
   }
   return data[0] ?? null;
+}
+
+/** Aplica as cores da marca guardadas em brands.theme (sem banco, fica o tema padrão). */
+async function applyBrandTheme(supabase: AppSupabaseClient | null, brand: string): Promise<void> {
+  if (!supabase) return;
+  const { data } = await supabase.from('brands').select('theme').eq('slug', brand).maybeSingle();
+  const css = brandThemeCss(data?.theme);
+  if (!css) return;
+  const style = document.createElement('style');
+  style.id = 'uf-brand-theme';
+  style.textContent = css;
+  document.head.append(style);
 }
 
 /** Ponto de entrada comum a todos os apps: monitoramento, domínio, banco e render. */
@@ -49,6 +61,7 @@ export async function bootstrap({
   const host = window.location.hostname;
   const site = resolveSite(host, await lookupDomain(supabase, host));
   document.documentElement.dataset.brand = site.brand;
+  await applyBrandTheme(supabase, site.brand);
 
   const container = document.getElementById(rootId);
   if (!container) throw new Error(`Elemento #${rootId} não encontrado no index.html`);

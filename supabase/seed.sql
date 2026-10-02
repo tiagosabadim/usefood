@@ -4,9 +4,10 @@
 
 insert into public.brands (id, slug, name, status, is_franchise, theme) values
   ('b0000000-0000-4000-8000-000000000001', 'usefood', 'usefood', 'ativa', false,
-   '{"brand": "#1d6b46"}'),
+   '{}'),
   ('b0000000-0000-4000-8000-000000000002', 'guapifood', 'guapifood', 'ativa', true,
-   '{"brand": "#b4441b"}');
+   '{"light": {"brand": "#b4441b", "brand-ink": "#ffffff", "brand-soft": "#fbe9e2", "brand-text": "#a53c15"},
+     "dark": {"brand": "#ff8a5c", "brand-ink": "#1a0a04", "brand-soft": "#3a1d12", "brand-text": "#ff9f7a"}}');
 
 insert into public.domains (brand_id, hostname, is_primary, status) values
   ('b0000000-0000-4000-8000-000000000001', 'usefood.com.br', true, 'ativo'),

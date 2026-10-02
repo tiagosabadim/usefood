@@ -38,6 +38,18 @@ O domínio decide o que abre, igual em produção (dados do seed):
 - `http://guapifood.localhost:5175` → vitrine da guapifood
 - `http://lanchoneteria.localhost:5175` → loja com domínio próprio, direto na loja
 
+## Design system
+
+O visual segue o design system **usefood** (direção Pop). Os tokens dele ficam em `packages/ui/tokens/usefood.tokens.json`, e o `packages/ui/src/theme.css` é **gerado** a partir desse arquivo:
+
+```bash
+pnpm tokens
+```
+
+Nunca edite o `theme.css` à mão. Para mudar uma cor, fonte ou raio, atualize o design system, exporte o `tokens.json` para essa pasta e rode o comando.
+
+As cores de cada marca (`brand`, `brand-ink`, `brand-soft`, `brand-text`) vêm do campo `theme` da tabela `brands`, com valores separados para o modo claro e o escuro. Só cores hexadecimais são aceitas; qualquer outra coisa é ignorada.
+
 ## Comandos
 
 | Comando                                      | Faz                                                                  |
@@ -109,4 +121,4 @@ select id from auth.users where email = 'seu@email.com';
 ## Decisões em aberto que afetam este código
 
 - Framework do `apps/web` com renderização no servidor (hoje é SPA com Vite).
-- Tokens visuais definitivos (E02), que substituem os valores de `packages/ui/src/theme.css`.
+- Componentes do design system (E02, próxima etapa).

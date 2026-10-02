@@ -46,22 +46,22 @@ export function StorePage({ slug }: { slug: string }) {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-3 px-6 py-16">
-      <p className="text-sm text-ink-muted">
+      <p className="text-caption text-ink-muted">
         {brand} / {slug}
       </p>
-      {store.kind === 'carregando' && <p className="text-ink-muted">Procurando a loja…</p>}
+      {store.kind === 'carregando' && (
+        <p className="text-body text-ink-muted">Procurando a loja…</p>
+      )}
       {store.kind === 'encontrada' && (
         <>
-          <h1 className="text-[32px] leading-tight font-semibold tracking-tight">{store.name}</h1>
-          <p className="text-ink-muted">Cardápio e pedidos desta loja chegam na E11.</p>
+          <h1 className="font-display text-display">{store.name}</h1>
+          <p className="text-body text-ink-muted">Cardápio e pedidos desta loja chegam na E11.</p>
         </>
       )}
       {store.kind === 'nao-encontrada' && (
         <>
-          <h1 className="text-[32px] leading-tight font-semibold tracking-tight">
-            Loja não encontrada
-          </h1>
-          <p className="text-ink-muted">
+          <h1 className="font-display text-display">Loja não encontrada</h1>
+          <p className="text-body text-ink-muted">
             Confira o endereço. Lojas ainda em cadastro só aparecem depois de ativadas.
           </p>
         </>

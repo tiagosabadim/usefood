@@ -41,12 +41,12 @@ export function StatusScreen({ title, description }: { title: string; descriptio
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-8 px-6 py-16">
       <header className="flex flex-col gap-2">
-        <p className="text-sm text-ink-muted">{brand}</p>
-        <h1 className="text-[32px] leading-tight font-semibold tracking-tight">{title}</h1>
-        <p className="text-ink-muted">{description}</p>
+        <p className="text-caption text-ink-muted">{brand}</p>
+        <h1 className="font-display text-display">{title}</h1>
+        <p className="text-body text-ink-muted">{description}</p>
       </header>
 
-      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 rounded-panel border border-line bg-surface p-6 text-[15px]">
+      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 rounded-lg border border-line bg-surface p-6 text-body">
         <dt className="text-ink-muted">App</dt>
         <dd>{app}</dd>
         <dt className="text-ink-muted">Ambiente</dt>

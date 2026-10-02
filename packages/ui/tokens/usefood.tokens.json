@@ -1,0 +1,360 @@
+{
+  "name": "usefood",
+  "version": 1,
+  "meta": {
+    "source": "Direção Pop (canvas de direção visual da E02)"
+  },
+  "color": {
+    "themes": [
+      {
+        "id": "light",
+        "name": "Claro"
+      },
+      {
+        "id": "dark",
+        "name": "Escuro"
+      }
+    ],
+    "tokens": [
+      {
+        "name": "canvas",
+        "value": {
+          "light": "#ffffff",
+          "dark": "#0b0d1a"
+        },
+        "usage": "Fundo da tela."
+      },
+      {
+        "name": "surface",
+        "value": {
+          "light": "#f2f3fa",
+          "dark": "#15182b"
+        },
+        "usage": "Cards, campos, painel do pedido no PDV."
+      },
+      {
+        "name": "surface-strong",
+        "value": {
+          "light": "#e8eaf7",
+          "dark": "#1e2238"
+        },
+        "usage": "Área de totais, pill de loja fechada, hover de itens."
+      },
+      {
+        "name": "line",
+        "value": {
+          "light": "#e3e5f0",
+          "dark": "#2a2e48"
+        },
+        "usage": "Divisórias e contorno de cards. Decorativo: não use como única pista de um controle."
+      },
+      {
+        "name": "line-strong",
+        "value": {
+          "light": "#787e98",
+          "dark": "#646a8c"
+        },
+        "usage": "Contorno de campos e controles quando o fundo não os separa (3:1 sobre canvas e surface)."
+      },
+      {
+        "name": "ink",
+        "value": {
+          "light": "#0d0f22",
+          "dark": "#f2f3fa"
+        },
+        "usage": "Texto principal sobre canvas, surface e surface-strong."
+      },
+      {
+        "name": "ink-muted",
+        "value": {
+          "light": "#545a75",
+          "dark": "#a7acc8"
+        },
+        "usage": "Texto secundário: distância, tempo, detalhes do item. 4.5:1 sobre canvas, surface e surface-strong."
+      },
+      {
+        "name": "brand",
+        "value": {
+          "light": "#2f4bff",
+          "dark": "#6b80ff"
+        },
+        "usage": "Ação principal, seleção, chip ativo, trilho do PDV. Muda por marca."
+      },
+      {
+        "name": "brand-ink",
+        "value": {
+          "light": "#ffffff",
+          "dark": "#0b0d1a"
+        },
+        "usage": "Texto e ícone sobre brand."
+      },
+      {
+        "name": "brand-soft",
+        "value": {
+          "light": "#e7eaff",
+          "dark": "#1f2752"
+        },
+        "usage": "Fundo suave de ações de marca, como o botão + no tile do PDV. Muda por marca."
+      },
+      {
+        "name": "brand-text",
+        "value": {
+          "light": "#2f4bff",
+          "dark": "#8c9bff"
+        },
+        "usage": "Links e texto na cor da marca sobre canvas e surface. Muda por marca."
+      },
+      {
+        "name": "sun",
+        "value": {
+          "light": "#ffc83d",
+          "dark": "#ffc83d"
+        },
+        "usage": "Destaques e selos (novidade, promoção). Texto por cima sempre em sun-ink. Nunca para botão."
+      },
+      {
+        "name": "sun-ink",
+        "value": {
+          "light": "#0d0f22",
+          "dark": "#0d0f22"
+        },
+        "usage": "Texto e ícone sobre sun, nos dois temas."
+      },
+      {
+        "name": "star",
+        "value": {
+          "light": "#b38300",
+          "dark": "#ffc83d"
+        },
+        "usage": "Estrela da nota da loja (ícone, 3:1 sobre surface)."
+      },
+      {
+        "name": "success",
+        "value": {
+          "light": "#12663f",
+          "dark": "#5fd39a"
+        },
+        "usage": "Texto de estado positivo: Aberto, Pago, Pronto."
+      },
+      {
+        "name": "success-soft",
+        "value": {
+          "light": "#e2f5ec",
+          "dark": "#12301f"
+        },
+        "usage": "Fundo da pill de estado positivo."
+      },
+      {
+        "name": "danger",
+        "value": {
+          "light": "#b42318",
+          "dark": "#ff8a7a"
+        },
+        "usage": "Erros e ações destrutivas: cancelar pedido, falha de impressão. Sempre com ícone ou texto, nunca só a cor."
+      },
+      {
+        "name": "danger-soft",
+        "value": {
+          "light": "#fdecea",
+          "dark": "#3a1714"
+        },
+        "usage": "Fundo de alertas de erro."
+      }
+    ]
+  },
+  "type": {
+    "fonts": [],
+    "families": {
+      "display": "\"Unbounded\", \"Figtree\", system-ui, sans-serif",
+      "text": "\"Figtree\", system-ui, -apple-system, \"Segoe UI\", sans-serif"
+    },
+    "groups": [
+      {
+        "name": "Display",
+        "family": "display",
+        "styles": [
+          {
+            "name": "wordmark",
+            "fontSize": "24px",
+            "lineHeight": "28px",
+            "fontWeight": 800,
+            "letterSpacing": "-0.03em",
+            "sample": "usefood",
+            "usage": "Marca no topo da vitrine."
+          },
+          {
+            "name": "display",
+            "fontSize": "30px",
+            "lineHeight": "36px",
+            "fontWeight": 800,
+            "letterSpacing": "-0.02em",
+            "sample": "Mesa 12",
+            "usage": "Identificador do pedido e total no PDV."
+          },
+          {
+            "name": "title-screen",
+            "fontSize": "24px",
+            "lineHeight": "30px",
+            "fontWeight": 700,
+            "letterSpacing": "-0.02em",
+            "sample": "Pastéis",
+            "usage": "Título da tela."
+          },
+          {
+            "name": "title-section",
+            "fontSize": "18px",
+            "lineHeight": "24px",
+            "fontWeight": 700,
+            "letterSpacing": "-0.01em",
+            "sample": "Abertos perto de você",
+            "usage": "Título de seção."
+          },
+          {
+            "name": "title-card",
+            "fontSize": "15px",
+            "lineHeight": "20px",
+            "fontWeight": 700,
+            "sample": "Rancho Pastéis",
+            "usage": "Nome da loja no card."
+          }
+        ]
+      },
+      {
+        "name": "Texto",
+        "family": "text",
+        "styles": [
+          {
+            "name": "body-lg",
+            "fontSize": "16px",
+            "lineHeight": "24px",
+            "fontWeight": 500,
+            "sample": "Cobrar R$ 89,10",
+            "usage": "Botões grandes do PDV e textos de destaque."
+          },
+          {
+            "name": "body",
+            "fontSize": "15px",
+            "lineHeight": "22px",
+            "fontWeight": 400,
+            "sample": "20–30 min · Entrega R$ 4,90",
+            "usage": "Texto corrido e informações do card."
+          },
+          {
+            "name": "body-strong",
+            "fontSize": "15px",
+            "lineHeight": "22px",
+            "fontWeight": 600,
+            "sample": "Pastel de queijo com milho",
+            "usage": "Nome de produto e item do pedido."
+          },
+          {
+            "name": "label",
+            "fontSize": "14px",
+            "lineHeight": "20px",
+            "fontWeight": 600,
+            "sample": "Enviar para cozinha",
+            "usage": "Botões, chips e controles."
+          },
+          {
+            "name": "caption",
+            "fontSize": "13px",
+            "lineHeight": "18px",
+            "fontWeight": 400,
+            "sample": "Pedido #0148 · 6 itens",
+            "usage": "Metadados e observações do item."
+          },
+          {
+            "name": "micro",
+            "fontSize": "12px",
+            "lineHeight": "16px",
+            "fontWeight": 600,
+            "sample": "Aberto",
+            "usage": "Pills de estado e rótulos da barra de navegação. Nunca para texto corrido."
+          }
+        ]
+      }
+    ]
+  },
+  "spacing": {
+    "tokens": [
+      {
+        "name": "space-1",
+        "value": "4px",
+        "usage": "Entre ícone e número (nota da loja)."
+      },
+      {
+        "name": "space-2",
+        "value": "8px",
+        "usage": "Entre chips; entre linhas de texto do card."
+      },
+      {
+        "name": "space-3",
+        "value": "12px",
+        "usage": "Entre cards e tiles; padding interno de tiles pequenos."
+      },
+      {
+        "name": "space-4",
+        "value": "16px",
+        "usage": "Padding de cards e campos; gap entre blocos da vitrine."
+      },
+      {
+        "name": "space-5",
+        "value": "20px",
+        "usage": "Margem lateral da vitrine no celular."
+      },
+      {
+        "name": "space-6",
+        "value": "24px",
+        "usage": "Padding das áreas do PDV."
+      },
+      {
+        "name": "space-8",
+        "value": "32px",
+        "usage": "Separação entre seções grandes."
+      }
+    ]
+  },
+  "radius": {
+    "tokens": [
+      {
+        "name": "radius-sm",
+        "value": "8px",
+        "usage": "Itens de controle segmentado e elementos internos."
+      },
+      {
+        "name": "radius-md",
+        "value": "16px",
+        "usage": "Campos, botões e o painel de seleção."
+      },
+      {
+        "name": "radius-lg",
+        "value": "24px",
+        "usage": "Cards de loja e tiles de produto."
+      },
+      {
+        "name": "radius-pill",
+        "value": "999px",
+        "usage": "Chips, pills de estado, badges de quantidade e avatar."
+      }
+    ]
+  },
+  "size": {
+    "tokens": [
+      {
+        "name": "target-min",
+        "value": "44px",
+        "usage": "Menor área de toque de qualquer controle."
+      },
+      {
+        "name": "target-control",
+        "value": "48px",
+        "usage": "Campos de busca e botões do dia a dia."
+      },
+      {
+        "name": "target-pdv",
+        "value": "56px",
+        "usage": "Botões de ação do PDV (Cobrar, Enviar para cozinha)."
+      }
+    ]
+  }
+}

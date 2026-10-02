@@ -1,62 +1,95 @@
 /*
- * Tokens provisórios. A direção visual definitiva sai da E02 (variáveis do Figma
- * exportadas para cá). Os nomes ficam; os valores mudam.
+ * GERADO por scripts/gerar-tema.mjs a partir de packages/ui/tokens/usefood.tokens.json.
+ * Não edite à mão: mude os tokens no design system e rode `pnpm tokens`.
  *
  * Uso no app:  @import "tailwindcss";  @import "@usefood/ui/theme.css";
+ * Classes: bg-canvas, bg-surface, text-ink, text-ink-muted, border-line, bg-brand,
+ * text-brand-ink, text-brand-text, rounded-lg, font-display, text-display, h-target-pdv…
+ * Cores de marca (brand*) podem ser trocadas em tempo de execução pelo tema da marca no banco.
  */
 
 @layer base {
   :root {
     --uf-canvas: #ffffff;
-    --uf-surface: #f4f5f2;
-    --uf-ink: #15171a;
-    --uf-ink-muted: #5d636b;
-    --uf-line: #e2e4df;
-    --uf-brand: #1d6b46;
-    --uf-brand-strong: #155236;
-    --uf-brand-contrast: #ffffff;
-    --uf-radius-control: 12px;
-    --uf-radius-panel: 18px;
-    --uf-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --uf-surface: #f2f3fa;
+    --uf-surface-strong: #e8eaf7;
+    --uf-line: #e3e5f0;
+    --uf-line-strong: #787e98;
+    --uf-ink: #0d0f22;
+    --uf-ink-muted: #545a75;
+    --uf-brand: #2f4bff;
+    --uf-brand-ink: #ffffff;
+    --uf-brand-soft: #e7eaff;
+    --uf-brand-text: #2f4bff;
+    --uf-sun: #ffc83d;
+    --uf-sun-ink: #0d0f22;
+    --uf-star: #b38300;
+    --uf-success: #12663f;
+    --uf-success-soft: #e2f5ec;
+    --uf-danger: #b42318;
+    --uf-danger-soft: #fdecea;
+    --uf-font-display: 'Unbounded', 'Figtree', system-ui, sans-serif;
+    --uf-font-text: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --uf-radius-sm: 8px;
+    --uf-radius-md: 16px;
+    --uf-radius-lg: 24px;
+    --uf-radius-pill: 999px;
+    --uf-target-min: 44px;
+    --uf-target-control: 48px;
+    --uf-target-pdv: 56px;
     color-scheme: light;
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
-      --uf-canvas: #101213;
-      --uf-surface: #191c1d;
-      --uf-ink: #eef0ee;
-      --uf-ink-muted: #a2a8ad;
-      --uf-line: #2a2e30;
-      --uf-brand: #3fae79;
-      --uf-brand-strong: #5cc792;
-      --uf-brand-contrast: #06140d;
+      --uf-canvas: #0b0d1a;
+      --uf-surface: #15182b;
+      --uf-surface-strong: #1e2238;
+      --uf-line: #2a2e48;
+      --uf-line-strong: #646a8c;
+      --uf-ink: #f2f3fa;
+      --uf-ink-muted: #a7acc8;
+      --uf-brand: #6b80ff;
+      --uf-brand-ink: #0b0d1a;
+      --uf-brand-soft: #1f2752;
+      --uf-brand-text: #8c9bff;
+      --uf-sun: #ffc83d;
+      --uf-sun-ink: #0d0f22;
+      --uf-star: #ffc83d;
+      --uf-success: #5fd39a;
+      --uf-success-soft: #12301f;
+      --uf-danger: #ff8a7a;
+      --uf-danger-soft: #3a1714;
       color-scheme: dark;
     }
   }
 
   :root[data-theme='dark'] {
-    --uf-canvas: #101213;
-    --uf-surface: #191c1d;
-    --uf-ink: #eef0ee;
-    --uf-ink-muted: #a2a8ad;
-    --uf-line: #2a2e30;
-    --uf-brand: #3fae79;
-    --uf-brand-strong: #5cc792;
-    --uf-brand-contrast: #06140d;
+    --uf-canvas: #0b0d1a;
+    --uf-surface: #15182b;
+    --uf-surface-strong: #1e2238;
+    --uf-line: #2a2e48;
+    --uf-line-strong: #646a8c;
+    --uf-ink: #f2f3fa;
+    --uf-ink-muted: #a7acc8;
+    --uf-brand: #6b80ff;
+    --uf-brand-ink: #0b0d1a;
+    --uf-brand-soft: #1f2752;
+    --uf-brand-text: #8c9bff;
+    --uf-sun: #ffc83d;
+    --uf-sun-ink: #0d0f22;
+    --uf-star: #ffc83d;
+    --uf-success: #5fd39a;
+    --uf-success-soft: #12301f;
+    --uf-danger: #ff8a7a;
+    --uf-danger-soft: #3a1714;
     color-scheme: dark;
-  }
-
-  /* Cada marca sobrescreve só o que é dela. Na E03 isso passa a vir de brands.theme. */
-  :root[data-brand='guapifood'] {
-    --uf-brand: #b4441b;
-    --uf-brand-strong: #8f3514;
   }
 
   body {
     background: var(--uf-canvas);
     color: var(--uf-ink);
-    font-family: var(--uf-font);
+    font-family: var(--uf-font-text);
     -webkit-font-smoothing: antialiased;
   }
 }
@@ -64,13 +97,66 @@
 @theme inline {
   --color-canvas: var(--uf-canvas);
   --color-surface: var(--uf-surface);
+  --color-surface-strong: var(--uf-surface-strong);
+  --color-line: var(--uf-line);
+  --color-line-strong: var(--uf-line-strong);
   --color-ink: var(--uf-ink);
   --color-ink-muted: var(--uf-ink-muted);
-  --color-line: var(--uf-line);
   --color-brand: var(--uf-brand);
-  --color-brand-strong: var(--uf-brand-strong);
-  --color-brand-contrast: var(--uf-brand-contrast);
-  --radius-control: var(--uf-radius-control);
-  --radius-panel: var(--uf-radius-panel);
-  --font-sans: var(--uf-font);
+  --color-brand-ink: var(--uf-brand-ink);
+  --color-brand-soft: var(--uf-brand-soft);
+  --color-brand-text: var(--uf-brand-text);
+  --color-sun: var(--uf-sun);
+  --color-sun-ink: var(--uf-sun-ink);
+  --color-star: var(--uf-star);
+  --color-success: var(--uf-success);
+  --color-success-soft: var(--uf-success-soft);
+  --color-danger: var(--uf-danger);
+  --color-danger-soft: var(--uf-danger-soft);
+  --font-display: var(--uf-font-display);
+  --font-sans: var(--uf-font-text);
+  --radius-sm: var(--uf-radius-sm);
+  --radius-md: var(--uf-radius-md);
+  --radius-lg: var(--uf-radius-lg);
+  --radius-pill: var(--uf-radius-pill);
+  --spacing-target-min: var(--uf-target-min);
+  --spacing-target-control: var(--uf-target-control);
+  --spacing-target-pdv: var(--uf-target-pdv);
+  --text-wordmark: 24px;
+  --text-wordmark--line-height: 28px;
+  --text-wordmark--font-weight: 800;
+  --text-wordmark--letter-spacing: -0.03em;
+  --text-display: 30px;
+  --text-display--line-height: 36px;
+  --text-display--font-weight: 800;
+  --text-display--letter-spacing: -0.02em;
+  --text-title-screen: 24px;
+  --text-title-screen--line-height: 30px;
+  --text-title-screen--font-weight: 700;
+  --text-title-screen--letter-spacing: -0.02em;
+  --text-title-section: 18px;
+  --text-title-section--line-height: 24px;
+  --text-title-section--font-weight: 700;
+  --text-title-section--letter-spacing: -0.01em;
+  --text-title-card: 15px;
+  --text-title-card--line-height: 20px;
+  --text-title-card--font-weight: 700;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 24px;
+  --text-body-lg--font-weight: 500;
+  --text-body: 15px;
+  --text-body--line-height: 22px;
+  --text-body--font-weight: 400;
+  --text-body-strong: 15px;
+  --text-body-strong--line-height: 22px;
+  --text-body-strong--font-weight: 600;
+  --text-label: 14px;
+  --text-label--line-height: 20px;
+  --text-label--font-weight: 600;
+  --text-caption: 13px;
+  --text-caption--line-height: 18px;
+  --text-caption--font-weight: 400;
+  --text-micro: 12px;
+  --text-micro--line-height: 16px;
+  --text-micro--font-weight: 600;
 }
