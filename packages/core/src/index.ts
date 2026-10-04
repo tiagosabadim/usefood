@@ -3,6 +3,7 @@ export * from './brand';
 export * from './brand-theme';
 export * from './cart';
 export * from './cash';
+export * from './crop';
 export * from './kitchen';
 export * from './menu';
 export * from './money';

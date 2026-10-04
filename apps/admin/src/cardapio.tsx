@@ -271,7 +271,7 @@ export function Cardapio({
                   <ul className="flex flex-col divide-y divide-line">
                     {itens.map((produto) => (
                       <li key={produto.id} className="flex items-center gap-4 py-3">
-                        <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-surface-strong">
+                        <div className="flex aspect-[4/3] w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-surface-strong">
                           {produto.photo_path && (
                             <img
                               src={urlDaFoto(supabase, produto.photo_path) ?? undefined}

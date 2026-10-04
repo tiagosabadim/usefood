@@ -122,7 +122,7 @@ export function MontarItem({
       }
     >
       {fotoUrl && (
-        <img src={fotoUrl} alt="" className="aspect-video w-full rounded-lg object-cover" />
+        <img src={fotoUrl} alt="" className="aspect-[4/3] w-full rounded-lg object-cover" />
       )}
 
       {tamanhos.length > 0 && (

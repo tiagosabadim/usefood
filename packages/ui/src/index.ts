@@ -5,6 +5,7 @@ export { Chip, type ChipProps } from './chip';
 export { cn } from './cn';
 export { EmptyState } from './empty-state';
 export { Icon, type IconName, type IconProps } from './icon';
+export { ImageCropper, type ImageCropperProps } from './image-cropper';
 export {
   OrderCard,
   type OrderCardItem,

@@ -7,13 +7,23 @@ export interface PhotoFieldProps {
   imageUrl?: string | null;
   onSelect: (arquivo: File) => void;
   onRemove?: () => void;
+  /** Reabre o enquadramento da foto atual. */
+  onAdjust?: () => void;
   /** Enviando: o botão mostra "Aguarde…". */
   busy?: boolean;
   error?: string | undefined;
 }
 
 /** Escolher, trocar ou remover a foto de um produto, com prévia quadrada. */
-export function PhotoField({ label, imageUrl, onSelect, onRemove, busy, error }: PhotoFieldProps) {
+export function PhotoField({
+  label,
+  imageUrl,
+  onSelect,
+  onRemove,
+  onAdjust,
+  busy,
+  error,
+}: PhotoFieldProps) {
   const input = useRef<HTMLInputElement>(null);
   const id = useId();
 
@@ -23,7 +33,7 @@ export function PhotoField({ label, imageUrl, onSelect, onRemove, busy, error }:
         {label}
       </span>
       <div className="flex items-center gap-4">
-        <div className="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-strong">
+        <div className="flex aspect-[4/3] w-36 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-strong">
           {imageUrl ? (
             <img src={imageUrl} alt="" className="size-full object-cover" />
           ) : (
@@ -39,6 +49,11 @@ export function PhotoField({ label, imageUrl, onSelect, onRemove, busy, error }:
           >
             {imageUrl ? 'Trocar foto' : 'Escolher foto'}
           </Button>
+          {imageUrl && onAdjust && !busy && (
+            <Button variant="ghost" onClick={onAdjust}>
+              Ajustar enquadramento
+            </Button>
+          )}
           {imageUrl && onRemove && !busy && (
             <Button variant="ghost" onClick={onRemove}>
               Remover foto
@@ -60,7 +75,7 @@ export function PhotoField({ label, imageUrl, onSelect, onRemove, busy, error }:
         }}
       />
       <p className={error ? 'text-caption text-danger' : 'text-caption text-ink-muted'}>
-        {error || 'Foto quadrada fica melhor. JPG, PNG ou WebP.'}
+        {error || 'Depois de escolher, você enquadra a foto no formato padrão. JPG, PNG ou WebP.'}
       </p>
     </div>
   );

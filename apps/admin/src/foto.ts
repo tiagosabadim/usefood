@@ -1,8 +1,7 @@
-import { dimensoesReduzidas } from '@usefood/core';
+import { recorteCentral, TAMANHO_DA_FOTO, type Recorte } from '@usefood/core';
 import type { AppSupabaseClient } from '@usefood/db';
 
 const BUCKET = 'cardapio';
-const LADO_MAXIMO = 1200;
 
 /** Link público da foto (o bucket é público: o cardápio do cliente lê direto). */
 export function urlDaFoto(supabase: AppSupabaseClient, caminho: string | null): string | null {
@@ -13,16 +12,23 @@ function paraBlob(canvas: HTMLCanvasElement, tipo: string): Promise<Blob | null>
   return new Promise((resolve) => canvas.toBlob(resolve, tipo, 0.85));
 }
 
-/** Reduz para no máximo 1200 px e converte para WebP (ou JPG, se o navegador não gerar WebP). */
-async function prepararFoto(arquivo: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(arquivo);
-  const { largura, altura } = dimensoesReduzidas(bitmap.width, bitmap.height, LADO_MAXIMO);
+/**
+ * Recorta no formato padrão (4:3) e salva em até 1200 × 900, em WebP (ou JPG, se o navegador
+ * não gerar WebP). Sem recorte escolhido, usa o centro da foto.
+ */
+async function prepararFoto(fonte: Blob, recorte?: Recorte): Promise<Blob> {
+  const bitmap = await createImageBitmap(fonte);
+  const r = recorte ?? recorteCentral({ largura: bitmap.width, altura: bitmap.height });
+  const largura = Math.min(TAMANHO_DA_FOTO.largura, Math.round(r.largura));
+  const altura = Math.round((largura * TAMANHO_DA_FOTO.altura) / TAMANHO_DA_FOTO.largura);
+
   const canvas = document.createElement('canvas');
   canvas.width = largura;
   canvas.height = altura;
   const contexto = canvas.getContext('2d');
   if (!contexto) throw new Error('Este navegador não consegue preparar a foto.');
-  contexto.drawImage(bitmap, 0, 0, largura, altura);
+  contexto.imageSmoothingQuality = 'high';
+  contexto.drawImage(bitmap, r.x, r.y, r.largura, r.altura, 0, 0, largura, altura);
   bitmap.close();
 
   const webp = await paraBlob(canvas, 'image/webp');
@@ -37,9 +43,10 @@ export async function enviarFoto(
   supabase: AppSupabaseClient,
   restaurantId: string,
   productId: string,
-  arquivo: File,
+  fonte: Blob,
+  recorte?: Recorte,
 ): Promise<string> {
-  const blob = await prepararFoto(arquivo);
+  const blob = await prepararFoto(fonte, recorte);
   const extensao = blob.type === 'image/webp' ? 'webp' : 'jpg';
   const caminho = `${restaurantId}/${productId}-${Date.now()}.${extensao}`;
   const { error } = await supabase.storage
@@ -47,6 +54,13 @@ export async function enviarFoto(
     .upload(caminho, blob, { contentType: blob.type, cacheControl: '31536000', upsert: false });
   if (error) throw error;
   return caminho;
+}
+
+/** Baixa a foto atual para enquadrar de novo. */
+export async function baixarFoto(url: string): Promise<Blob> {
+  const resposta = await fetch(url, { cache: 'no-store' });
+  if (!resposta.ok) throw new Error('Não foi possível abrir a foto atual.');
+  return resposta.blob();
 }
 
 export async function apagarFoto(supabase: AppSupabaseClient, caminho: string): Promise<void> {

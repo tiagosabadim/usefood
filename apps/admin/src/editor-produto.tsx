@@ -1,8 +1,17 @@
-import { formatarPreco, lerPreco, precoParaCampo, regraDoGrupo } from '@usefood/core';
+import { formatarPreco, lerPreco, precoParaCampo, regraDoGrupo, type Recorte } from '@usefood/core';
 import type { AppSupabaseClient, Tables } from '@usefood/db';
-import { Alert, Button, ChoiceGrid, PhotoField, Sheet, Switch, TextField } from '@usefood/ui';
+import {
+  Alert,
+  Button,
+  ChoiceGrid,
+  ImageCropper,
+  PhotoField,
+  Sheet,
+  Switch,
+  TextField,
+} from '@usefood/ui';
 import { useEffect, useState } from 'react';
-import { apagarFoto, enviarFoto, urlDaFoto } from './foto';
+import { apagarFoto, baixarFoto, enviarFoto, urlDaFoto } from './foto';
 
 export type ProdutoEditavel = Pick<
   Tables<'products'>,
@@ -55,6 +64,8 @@ export function EditorProduto({
   const [fotoPath, setFotoPath] = useState(produto.photo_path);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
   const [erroFoto, setErroFoto] = useState<string>();
+  // Foto escolhida (ou a atual, para reajustar) esperando o enquadramento 4:3
+  const [enquadrando, setEnquadrando] = useState<{ src: string; fonte: Blob } | null>(null);
   const [tamanhos, setTamanhos] = useState<Tamanho[]>([]);
   const [idsOriginais, setIdsOriginais] = useState<string[]>([]);
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
@@ -102,11 +113,32 @@ export function EditorProduto({
   const precoCentavos = lerPreco(preco);
   const tamanhosValidos = tamanhos.every((t) => t.nome.trim() && lerPreco(t.preco) !== null);
 
-  async function trocarFoto(arquivo: File) {
+  function enquadrar(fonte: Blob) {
+    setErroFoto(undefined);
+    setEnquadrando({ src: URL.createObjectURL(fonte), fonte });
+  }
+
+  function pararDeEnquadrar() {
+    if (enquadrando) URL.revokeObjectURL(enquadrando.src);
+    setEnquadrando(null);
+  }
+
+  async function reenquadrarAtual() {
+    const url = urlDaFoto(supabase, fotoPath);
+    if (!url) return;
+    try {
+      enquadrar(await baixarFoto(url));
+    } catch {
+      setErroFoto('Não foi possível abrir a foto atual. Escolha a foto de novo.');
+    }
+  }
+
+  async function salvarFoto(recorte: Recorte) {
+    if (!enquadrando) return;
     setErroFoto(undefined);
     setEnviandoFoto(true);
     try {
-      const caminho = await enviarFoto(supabase, lojaId, produto.id, arquivo);
+      const caminho = await enviarFoto(supabase, lojaId, produto.id, enquadrando.fonte, recorte);
       const { error } = await supabase
         .from('products')
         .update({ photo_path: caminho })
@@ -114,6 +146,7 @@ export function EditorProduto({
       if (error) throw error;
       if (fotoPath) await apagarFoto(supabase, fotoPath);
       setFotoPath(caminho);
+      pararDeEnquadrar();
       onAlterado();
     } catch {
       setErroFoto('Não foi possível enviar a foto. Tente outra imagem ou confira a internet.');
@@ -244,14 +277,31 @@ export function EditorProduto({
     >
       <Alert>{erro}</Alert>
 
-      <PhotoField
-        label="Foto"
-        imageUrl={urlDaFoto(supabase, fotoPath)}
-        busy={enviandoFoto}
-        error={erroFoto}
-        onSelect={(arquivo) => void trocarFoto(arquivo)}
-        onRemove={() => void removerFoto()}
-      />
+      {enquadrando ? (
+        <section className="flex flex-col gap-2">
+          <h3 className="text-body-strong text-ink">Enquadre a foto</h3>
+          <p className="text-caption text-ink-muted">
+            Arraste e use o zoom. Todas as fotos do cardápio ficam neste mesmo formato.
+          </p>
+          <ImageCropper
+            src={enquadrando.src}
+            busy={enviandoFoto}
+            onCancel={pararDeEnquadrar}
+            onConfirm={(r) => void salvarFoto(r)}
+          />
+          {erroFoto && <p className="text-caption text-danger">{erroFoto}</p>}
+        </section>
+      ) : (
+        <PhotoField
+          label="Foto"
+          imageUrl={urlDaFoto(supabase, fotoPath)}
+          busy={enviandoFoto}
+          error={erroFoto}
+          onSelect={enquadrar}
+          onAdjust={() => void reenquadrarAtual()}
+          onRemove={() => void removerFoto()}
+        />
+      )}
 
       <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_9rem]">
         <TextField

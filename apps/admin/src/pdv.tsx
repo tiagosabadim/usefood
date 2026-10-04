@@ -584,7 +584,7 @@ export function Pdv({
                             src={fotoDoProduto(i.productId)!}
                             alt=""
                             loading="lazy"
-                            className="size-10 shrink-0 rounded-sm object-cover"
+                            className="aspect-[4/3] w-12 shrink-0 rounded-sm object-cover"
                           />
                         )}
                         <div className="min-w-0 flex-1">

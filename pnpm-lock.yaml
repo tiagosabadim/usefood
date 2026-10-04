@@ -287,6 +287,10 @@ importers:
         version: 6.0.3
 
   packages/ui:
+    dependencies:
+      '@usefood/core':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       '@types/react':
         specifier: ^19.3.0
