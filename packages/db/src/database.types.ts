@@ -734,6 +734,7 @@ export type Database = {
           created_by: string | null
           expires_at: string
           id: string
+          kind: string
           restaurant_id: string
           used_at: string | null
         }
@@ -743,6 +744,7 @@ export type Database = {
           created_by?: string | null
           expires_at: string
           id?: string
+          kind?: string
           restaurant_id: string
           used_at?: string | null
         }
@@ -752,6 +754,7 @@ export type Database = {
           created_by?: string | null
           expires_at?: string
           id?: string
+          kind?: string
           restaurant_id?: string
           used_at?: string | null
         }
@@ -1155,6 +1158,85 @@ export type Database = {
           },
         ]
       }
+      staff_devices: {
+        Row: {
+          created_at: string
+          failed_attempts: number
+          id: string
+          last_used_at: string | null
+          locked_until: string | null
+          name: string
+          restaurant_id: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          failed_attempts?: number
+          id?: string
+          last_used_at?: string | null
+          locked_until?: string | null
+          name: string
+          restaurant_id: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          failed_attempts?: number
+          id?: string
+          last_used_at?: string | null
+          locked_until?: string | null
+          name?: string
+          restaurant_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_devices_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_pins: {
+        Row: {
+          created_at: string
+          display_name: string
+          pin_hash: string
+          restaurant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          pin_hash: string
+          restaurant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          pin_hash?: string
+          restaurant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_pins_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stations: {
         Row: {
           created_at: string
@@ -1337,7 +1419,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["print_job_status"]
       }
       criar_codigo_de_pareamento: {
-        Args: { p_restaurant_id: string }
+        Args: { p_restaurant_id: string; p_tipo?: string }
         Returns: { codigo: string; expira_em: string }[]
       }
       criar_mesas: {
@@ -1367,6 +1449,14 @@ export type Database = {
         Args: { p_marca: string; p_nome: string; p_slug: string }
         Returns: string
       }
+      definir_pin: {
+        Args: { p_nome: string; p_pin: string; p_restaurant_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      desconectar_aparelho: {
+        Args: { p_aparelho: string }
+        Returns: undefined
+      }
       desfazer_pronto: {
         Args: { p_pedido: string; p_praca?: string | null }
         Returns: Database["public"]["Enums"]["order_status"]
@@ -1374,6 +1464,16 @@ export type Database = {
       desligar_agente: {
         Args: { p_agente: string }
         Returns: undefined
+      }
+      entrar_com_pin: {
+        Args: { p_pin: string; p_token_hash: string }
+        Returns: {
+          mensagem: string | null
+          nome: string | null
+          ok: boolean
+          restaurant_id: string | null
+          user_id: string | null
+        }[]
       }
       fechar_caixa: {
         Args: { p_contado_cents: number; p_observacao?: string | null; p_sessao: string }
@@ -1395,6 +1495,16 @@ export type Database = {
         Args: { p_pedido: string; p_praca?: string | null }
         Returns: Database["public"]["Enums"]["order_status"]
       }
+      membros_da_equipe: {
+        Args: { p_restaurant_id: string }
+        Returns: {
+          e_voce: boolean
+          nome: string
+          papel: Database["public"]["Enums"]["restaurant_role"]
+          tem_pin: boolean
+          user_id: string
+        }[]
+      }
       movimentar_caixa: {
         Args: {
           p_motivo?: string | null
@@ -1403,6 +1513,10 @@ export type Database = {
           p_valor_cents: number
         }
         Returns: string
+      }
+      parear_aparelho: {
+        Args: { p_codigo: string; p_nome: string; p_token_hash: string }
+        Returns: { loja: string; restaurant_id: string }[]
       }
       pegar_impressao: {
         Args: { p_job: string }
@@ -1433,6 +1547,10 @@ export type Database = {
       reimprimir_pedido: {
         Args: { p_pedido: string }
         Returns: number
+      }
+      remover_da_equipe: {
+        Args: { p_restaurant_id: string; p_user_id: string }
+        Returns: undefined
       }
       resolver_dominio: {
         Args: { p_hostname: string }

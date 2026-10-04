@@ -74,6 +74,15 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - No PDV: **Balcão, Mesa, Retirada ou Delivery**; **Enviar para a cozinha** (paga depois) ou **Cobrar agora**. A aba **Contas abertas** mostra mesas e pedidos a receber, com as rodadas, **Fechar conta** e **Nova rodada**.
 - Testes em `supabase/tests/contas.test.sql`.
 
+## Equipe com PIN (E08, parte 1)
+
+- **Equipe** (`/pdv` → Equipe, dono e gerente): adicionar pessoa com nome, função (garçom, caixa, cozinha; gerente só o dono adiciona) e PIN de 4 números, sem e-mail. Trocar PIN e remover.
+- Quem entra só com PIN tem um usuário próprio com e-mail interno (`equipe-…@equipe.usefood.app`), criado pela Edge Function `equipe-gestao`. Pedidos lançados ficam com `created_by` dessa pessoa.
+- **Aparelhos da equipe**: o celular ou o tablet é conectado uma vez com código (`criar_codigo_de_pareamento(loja, 'equipe')`). O aparelho guarda um token próprio; só aparelho conectado aceita PIN.
+- **Entrar** (`/garcom`): PIN no `PinPad` → Edge Function `equipe-acesso` → `entrar_com_pin` (no banco, só `service_role`) → acesso de uso único (`verifyOtp`). 5 PINs errados travam o aparelho por 5 minutos.
+- O PIN é guardado com bcrypt (`staff_pins.pin_hash`), PIN único dentro da loja, e a coluna do hash nunca sai pela API.
+- Testes em `supabase/tests/equipe.test.sql`.
+
 ## Salão e jeito de atender
 
 - **Configurações** (`/pdv` → Configurações, dono e gerente):

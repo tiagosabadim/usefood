@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
     .from('print_agent_pairings')
     .update({ used_at: agora })
     .eq('code_hash', await sha256(codigo))
+    .eq('kind', 'impressora')
     .is('used_at', null)
     .gt('expires_at', agora)
     .select('restaurant_id')

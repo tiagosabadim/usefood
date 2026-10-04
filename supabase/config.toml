@@ -436,3 +436,7 @@ content_path = "./supabase/templates/codigo.html"
 # O computador da loja ainda não tem login quando pareia: o código é a prova.
 [functions.parear-impressora]
 verify_jwt = false
+
+# O aparelho da equipe ainda não tem login quando conecta ou digita o PIN.
+[functions.equipe-acesso]
+verify_jwt = false

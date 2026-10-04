@@ -48,3 +48,13 @@ export function identificacaoPara(tipo: TipoPedido, atendimento: Atendimento): I
     ? { tipo: 'nome', campo: NOME }
     : { tipo: 'senha', campo: null };
 }
+
+export type Papel = 'dono' | 'gerente' | 'caixa' | 'garcom' | 'cozinha';
+const PAPEIS: Record<Papel, string> = {
+  dono: 'Dono',
+  gerente: 'Gerente',
+  caixa: 'Caixa',
+  garcom: 'Garçom',
+  cozinha: 'Cozinha',
+};
+export const rotuloDoPapel = (papel: Papel) => PAPEIS[papel];

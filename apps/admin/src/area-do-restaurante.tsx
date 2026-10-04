@@ -7,6 +7,7 @@ import { AlertasDeImpressao } from './alerta-impressao';
 import { PdvComCaixa } from './caixa';
 import { PainelDeChamada } from './chamada';
 import { Configuracoes } from './configuracoes';
+import { Equipe } from './equipe';
 import { TelaDaCozinha } from './cozinha';
 import { Impressao } from './impressao';
 import { Pdv } from './pdv';
@@ -39,7 +40,15 @@ export function AreaDoRestaurante({
   const [versao, setVersao] = useState(0);
   const [selecionada, setSelecionada] = useState(0);
   const [tela, setTela] = useState<
-    'inicio' | 'cardapio' | 'pdv' | 'salao' | 'impressao' | 'cozinha' | 'chamada' | 'configuracoes'
+    | 'inicio'
+    | 'cardapio'
+    | 'pdv'
+    | 'salao'
+    | 'impressao'
+    | 'cozinha'
+    | 'chamada'
+    | 'configuracoes'
+    | 'equipe'
   >('inicio');
 
   useEffect(() => {
@@ -119,6 +128,17 @@ export function AreaDoRestaurante({
     );
   }
 
+  if (tela === 'equipe') {
+    return (
+      <Equipe
+        supabase={supabase}
+        loja={atual.loja}
+        souDono={atual.papel === 'dono'}
+        onVoltar={() => setTela('inicio')}
+      />
+    );
+  }
+
   if (tela === 'configuracoes') {
     return (
       <Configuracoes supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />
@@ -188,6 +208,11 @@ export function AreaDoRestaurante({
               onClick={() => setTela('impressao')}
             >
               Impressão
+            </Button>
+          )}
+          {podeEditar && (
+            <Button variant="secondary" className="h-target-pdv" onClick={() => setTela('equipe')}>
+              Equipe
             </Button>
           )}
           {podeEditar && (
