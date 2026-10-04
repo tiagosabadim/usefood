@@ -10,6 +10,8 @@ export interface OrderCardItem {
   observacao?: string | null;
   /** Já feito nesta praça: aparece riscado. */
   feito?: boolean;
+  /** Marca forte no item, como "Pra viagem". */
+  tag?: string;
 }
 
 export type OrderCardTone = 'normal' | 'atencao' | 'atrasado';
@@ -25,6 +27,8 @@ export interface OrderCardProps {
   items: OrderCardItem[];
   /** Ação principal no rodapé (Pronto). */
   action?: ReactNode;
+  /** Faixa forte para o pedido todo, como "Para viagem". */
+  tag?: string;
 }
 
 const FAIXA: Record<OrderCardTone, string> = {
@@ -39,7 +43,7 @@ const ROTULO_DO_TEMPO: Record<OrderCardTone, string> = {
 };
 
 /** Cartão de pedido da tela da cozinha: legível de longe, com o tempo de espera em cor. */
-export function OrderCard({ title, subtitle, timer, tone, items, action }: OrderCardProps) {
+export function OrderCard({ title, subtitle, timer, tone, items, action, tag }: OrderCardProps) {
   return (
     <article
       aria-label={`${title}, esperando ${timer}`}
@@ -55,6 +59,11 @@ export function OrderCard({ title, subtitle, timer, tone, items, action }: Order
           <span className="sr-only">{ROTULO_DO_TEMPO[tone]}</span>
         </span>
       </header>
+      {tag && (
+        <p className="bg-ink px-4 py-2 text-center font-display text-title-card tracking-wide text-canvas uppercase">
+          {tag}
+        </p>
+      )}
       <ul className="flex flex-1 flex-col gap-3 px-4 py-3">
         {items.map((item) => (
           <li
@@ -69,6 +78,11 @@ export function OrderCard({ title, subtitle, timer, tone, items, action }: Order
                 {d}
               </span>
             ))}
+            {item.tag && (
+              <span className="ml-6 self-start rounded-sm bg-ink px-2 py-0.5 text-micro text-canvas uppercase">
+                {item.tag}
+              </span>
+            )}
             {item.observacao && (
               <span className="ml-6 self-start rounded-sm bg-sun px-2 py-0.5 text-body-strong text-sun-ink">
                 {item.observacao}

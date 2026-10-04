@@ -15,6 +15,7 @@ interface Rodada {
     quantity: number;
     variant_name: string | null;
     total_cents: number;
+    to_go: boolean;
   }[];
 }
 interface ContaDaMesa {
@@ -36,14 +37,11 @@ export function Mesa({
   supabase,
   contaId,
   onNovaRodada,
-  onParaViagem,
   onVoltar,
 }: {
   supabase: AppSupabaseClient;
   contaId: string;
   onNovaRodada: (mesa: string) => void;
-  /** Alguém da mesa quer levar algo para casa: pedido para viagem, em conta própria. */
-  onParaViagem: (mesa: string) => void;
   onVoltar: () => void;
 }) {
   const [conta, setConta] = useState<ContaDaMesa | null>(null);
@@ -61,7 +59,7 @@ export function Mesa({
       supabase
         .from('orders')
         .select(
-          'id, number, status, created_at, order_items(id, product_name, quantity, variant_name, total_cents)',
+          'id, number, status, created_at, order_items(id, product_name, quantity, variant_name, total_cents, to_go)',
         )
         .eq('tab_id', contaId)
         .order('created_at'),
@@ -117,6 +115,7 @@ export function Mesa({
                     <span>
                       {item.quantity}× {item.product_name}
                       {item.variant_name ? ` · ${item.variant_name}` : ''}
+                      {item.to_go ? ' · pra viagem' : ''}
                     </span>
                     <span className="text-ink-muted tabular-nums">
                       {formatarPreco(item.total_cents)}
@@ -142,13 +141,6 @@ export function Mesa({
         </p>
         <Button className="h-target-pdv" onClick={() => onNovaRodada(conta.identifier)}>
           Nova rodada
-        </Button>
-        <Button
-          variant="secondary"
-          className="h-target-pdv"
-          onClick={() => onParaViagem(conta.identifier)}
-        >
-          Pedido para viagem
         </Button>
       </div>
     </div>

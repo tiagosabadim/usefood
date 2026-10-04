@@ -100,3 +100,55 @@ describe('escposDoTicket', () => {
     expect([...bytes.slice(-4)]).toEqual([0x1d, 0x56, 0x42, 0x00]);
   });
 });
+
+describe('para viagem no ticket', () => {
+  const item = {
+    quantidade: 1,
+    nome: 'X-Burguer',
+    tamanho: null,
+    adicionais: [],
+    observacao: null,
+  };
+  const linhas = (itens: TicketPayload['itens'], tipo: TicketPayload['pedido_tipo'] = 'mesa') =>
+    linhasDoTicket({ ...pedido, pedido_tipo: tipo, itens }, 48).flatMap((l) =>
+      l.tipo === 'texto' ? [l] : [],
+    );
+
+  it('pedido todo para viagem ganha a faixa grande invertida', () => {
+    const faixa = linhas([{ ...item, para_viagem: true }]).find((l) =>
+      l.texto.includes('PARA VIAGEM'),
+    );
+    expect(faixa).toMatchObject({ estilo: 'grande', invertido: true, centro: true });
+  });
+
+  it('delivery escreve DELIVERY na faixa', () => {
+    expect(
+      linhas([{ ...item, para_viagem: true }], 'delivery').some(
+        (l) => l.texto.includes('DELIVERY') && l.invertido,
+      ),
+    ).toBe(true);
+  });
+
+  it('misturado: aviso no topo e marca só no item para viagem', () => {
+    const l = linhas([item, { ...item, nome: 'Batata', para_viagem: true }]);
+    expect(l.some((x) => x.texto.includes('TEM ITEM PARA VIAGEM'))).toBe(true);
+    expect(l.filter((x) => x.texto.trim() === 'PARA VIAGEM')).toHaveLength(1);
+  });
+
+  it('sem para viagem, nenhuma faixa', () => {
+    expect(linhas([item]).some((x) => x.texto.includes('VIAGEM'))).toBe(false);
+  });
+
+  it('o comando de inverter vai para a impressora', () => {
+    const bytes = [
+      ...escposDoTicket(
+        linhasDoTicket({ ...pedido, itens: [{ ...item, para_viagem: true }] }, 48),
+        { colunas: 48, pagina: 'cp850' },
+      ),
+    ];
+    const inverte = bytes.findIndex(
+      (b, i) => b === 0x1d && bytes[i + 1] === 0x42 && bytes[i + 2] === 1,
+    );
+    expect(inverte).toBeGreaterThan(0);
+  });
+});

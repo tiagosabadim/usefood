@@ -16,11 +16,20 @@ export interface TicketPayload {
     tamanho: string | null;
     adicionais: string[];
     observacao: string | null;
+    /** Sai embalado para viagem. */
+    para_viagem?: boolean;
   }[];
 }
 
 export type Linha =
-  | { tipo: 'texto'; texto: string; estilo?: 'normal' | 'negrito' | 'grande'; centro?: boolean }
+  | {
+      tipo: 'texto';
+      texto: string;
+      estilo?: 'normal' | 'negrito' | 'grande';
+      centro?: boolean;
+      /** Letra branca sobre fundo preto: o destaque mais forte da impressora térmica. */
+      invertido?: boolean;
+    }
   | { tipo: 'separador' }
   | { tipo: 'espaco' };
 
@@ -67,9 +76,15 @@ function destaque(p: TicketPayload): string {
  */
 export function linhasDoTicket(p: TicketPayload, colunas: 32 | 48): Linha[] {
   const linhas: Linha[] = [];
-  const texto = (t: string, estilo: 'normal' | 'negrito' | 'grande' = 'normal', centro = false) => {
+  const texto = (
+    t: string,
+    estilo: 'normal' | 'negrito' | 'grande' = 'normal',
+    centro = false,
+    invertido = false,
+  ) => {
     const largura = estilo === 'grande' ? Math.floor(colunas / 2) : colunas;
-    for (const l of quebrar(t, largura)) linhas.push({ tipo: 'texto', texto: l, estilo, centro });
+    for (const l of quebrar(t, largura))
+      linhas.push({ tipo: 'texto', texto: l, estilo, centro, invertido });
   };
 
   texto(p.praca.toUpperCase(), 'negrito', true);
@@ -89,11 +104,30 @@ export function linhasDoTicket(p: TicketPayload, colunas: 32 | 48): Linha[] {
   const tipo = p.pedido_tipo ? TIPO_DO_PEDIDO[p.pedido_tipo] : '';
   texto([numero, tipo, p.criado_em].filter(Boolean).join(' · '), 'normal', true);
   if (p.tipo === 'reimpressao') texto('** REIMPRESSÃO **', 'negrito', true);
+
+  // Para viagem: a cozinha precisa ver de longe que é para embalar
+  const paraViagem = p.itens.filter((i) => i.para_viagem).length;
+  const tudoParaViagem = paraViagem > 0 && paraViagem === p.itens.length;
+  if (tudoParaViagem) {
+    linhas.push({ tipo: 'espaco' });
+    texto(p.pedido_tipo === 'delivery' ? ' DELIVERY ' : ' PARA VIAGEM ', 'grande', true, true);
+  } else if (paraViagem > 0) {
+    linhas.push({ tipo: 'espaco' });
+    texto(' TEM ITEM PARA VIAGEM ', 'negrito', true, true);
+  }
   linhas.push({ tipo: 'separador' });
 
   for (const item of p.itens) {
     texto(`${item.quantidade}x ${item.nome}`, 'negrito');
     const recuo = '   ';
+    if (item.para_viagem && !tudoParaViagem) {
+      linhas.push({
+        tipo: 'texto',
+        texto: `${recuo} PARA VIAGEM `,
+        estilo: 'negrito',
+        invertido: true,
+      });
+    }
     if (item.tamanho)
       for (const l of quebrar(item.tamanho, colunas - recuo.length))
         linhas.push({ tipo: 'texto', texto: recuo + l });
@@ -214,10 +248,11 @@ export function escposDoTicket(
       b.push(ESC, 0x61, l.centro ? 1 : 0);
       b.push(ESC, 0x45, l.estilo === 'negrito' || l.estilo === 'grande' ? 1 : 0);
       b.push(GS, 0x21, l.estilo === 'grande' ? 0x11 : 0x00);
+      b.push(GS, 0x42, l.invertido ? 1 : 0); // branco sobre preto
       b.push(...codificar(l.texto, opcoes.pagina), 0x0a);
     }
   }
-  b.push(GS, 0x21, 0, ESC, 0x45, 0, ESC, 0x61, 0); // volta ao normal
+  b.push(GS, 0x21, 0, GS, 0x42, 0, ESC, 0x45, 0, ESC, 0x61, 0); // volta ao normal
   b.push(0x0a, 0x0a, 0x0a, GS, 0x56, 0x42, 0x00); // avança e corta
   return Uint8Array.from(b);
 }

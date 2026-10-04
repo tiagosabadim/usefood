@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   adicionarItem,
+  marcarParaViagem,
+  marcarTudoParaViagem,
+  situacaoDeViagem,
   chaveDoItem,
   detalheDoItem,
   dividirIgual,
@@ -26,6 +29,7 @@ const pizzaGrande: NovoItem = {
   tamanhoNome: 'Grande',
   adicionais: [],
   observacao: '',
+  paraViagem: false,
 };
 
 describe('carrinho do PDV', () => {
@@ -109,5 +113,31 @@ describe('problemaNaEscolha', () => {
   });
   it('escolha dentro das regras', () => {
     expect(problemaNaEscolha(grupos, { ponto: 1, extras: 2 })).toBeNull();
+  });
+});
+
+describe('para viagem', () => {
+  it('o mesmo lanche para comer e para viagem são linhas diferentes', () => {
+    let c = adicionarItem([], pastel);
+    c = adicionarItem(c, { ...pastel, paraViagem: true });
+    expect(c).toHaveLength(2);
+    expect(situacaoDeViagem(c)).toBe('misto');
+  });
+
+  it('marcar uma linha que fica igual a outra junta as duas', () => {
+    let c = adicionarItem([], pastel);
+    c = adicionarItem(c, { ...pastel, paraViagem: true });
+    c = marcarParaViagem(c, c[0]!.chave, true);
+    expect(c).toHaveLength(1);
+    expect(c[0]?.quantidade).toBe(2);
+    expect(situacaoDeViagem(c)).toBe('viagem');
+  });
+
+  it('tudo para viagem e de volta para comer aqui', () => {
+    let c = adicionarItem(adicionarItem([], pastel), caldo);
+    c = marcarTudoParaViagem(c, true);
+    expect(c.every((i) => i.paraViagem)).toBe(true);
+    expect(situacaoDeViagem(marcarTudoParaViagem(c, false))).toBe('comer');
+    expect(situacaoDeViagem([])).toBeNull();
   });
 });

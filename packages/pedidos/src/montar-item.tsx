@@ -79,6 +79,7 @@ export function MontarItem({
         precoCentavos: a.precoCentavos,
       })),
       observacao,
+      paraViagem: false,
     });
   }
 

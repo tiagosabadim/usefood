@@ -2,16 +2,13 @@ import {
   adicionarItem,
   DADOS_INICIAIS,
   type DadosDoPedido,
-  detalheDoItem,
   formatarPreco,
   type ItemCarrinho,
   itemSimples,
   parametrosDoPedido,
   quantidadeDoProduto,
   quantidadeTotal,
-  removerUnidade,
   rotuloDaConta,
-  somarUnidade,
   subtotalCentavos,
   type TipoPedido,
 } from '@usefood/core';
@@ -26,7 +23,7 @@ import {
   urlDaFoto,
   useAtendimento,
 } from '@usefood/pedidos';
-import { Alert, Button, Chip, Icon, ProductTile, QuantityStepper, Sheet } from '@usefood/ui';
+import { Alert, Button, CartList, Chip, Icon, ProductTile, Sheet } from '@usefood/ui';
 import { useEffect, useMemo, useState } from 'react';
 
 const ERROS_CONHECIDOS = new Set(['P0001', 'P0002', '22023', '42501']);
@@ -118,6 +115,7 @@ export function Lancar({
         variant_id: i.tamanhoId,
         adicionais: i.adicionais.map((a) => a.id),
         observacao: i.observacao || null,
+        para_viagem: i.paraViagem,
       })),
     });
     setEnviando(false);
@@ -229,32 +227,15 @@ export function Lancar({
               <p className="text-caption text-ink-muted">Quem recebe o pagamento é o caixa.</p>
             </section>
           )}
-          {carrinho.length === 0 ? (
-            <p className="text-body text-ink-muted">O pedido está vazio.</p>
-          ) : (
-            <ul className="flex flex-col divide-y divide-line">
-              {carrinho.map((i) => {
-                const detalhe = detalheDoItem(i);
-                return (
-                  <li key={i.chave} className="flex items-center gap-3 py-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-body-strong text-ink">{i.nome}</p>
-                      {detalhe && <p className="text-caption text-ink-muted">{detalhe}</p>}
-                      <p className="text-caption text-ink-muted tabular-nums">
-                        {formatarPreco(i.precoCentavos * i.quantidade)}
-                      </p>
-                    </div>
-                    <QuantityStepper
-                      value={i.quantidade}
-                      itemName={i.nome}
-                      onDecrement={() => setCarrinho((c) => removerUnidade(c, i.chave))}
-                      onIncrement={() => setCarrinho((c) => somarUnidade(c, i.chave))}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <CartList
+            items={carrinho}
+            onChange={setCarrinho}
+            viagem={dados.tipo === 'retirada' || dados.tipo === 'delivery' ? 'sempre' : 'escolher'}
+            imageFor={(id) =>
+              urlDaFoto(supabase, cardapio.produtos.find((p) => p.id === id)?.photo_path ?? null)
+            }
+            emptyText="O pedido está vazio."
+          />
         </Sheet>
       )}
 

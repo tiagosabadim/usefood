@@ -20,12 +20,14 @@ export interface ItemCarrinho {
   tamanhoNome: string | null;
   adicionais: AdicionalEscolhido[];
   observacao: string;
+  /** Sai embalado para viagem (na mesa ou no balcão, por item). */
+  paraViagem: boolean;
 }
 
 export type NovoItem = Omit<ItemCarrinho, 'chave' | 'quantidade'> & { quantidade?: number };
 
 export function chaveDoItem(
-  item: Pick<ItemCarrinho, 'productId' | 'tamanhoId' | 'adicionais' | 'observacao'>,
+  item: Pick<ItemCarrinho, 'productId' | 'tamanhoId' | 'adicionais' | 'observacao' | 'paraViagem'>,
 ): string {
   const adicionais = item.adicionais
     .map((a) => a.id)
@@ -36,6 +38,7 @@ export function chaveDoItem(
     item.tamanhoId ?? '',
     adicionais,
     item.observacao.trim().toLowerCase(),
+    item.paraViagem ? 'viagem' : '',
   ].join('|');
 }
 
@@ -49,6 +52,7 @@ export function itemSimples(produto: { id: string; name: string; price_cents: nu
     tamanhoNome: null,
     adicionais: [],
     observacao: '',
+    paraViagem: false,
   };
 }
 
@@ -143,4 +147,43 @@ export function problemaNaEscolha(
     if (g.maximo !== null && n > g.maximo) return `Em ${g.nome}, escolha no máximo ${g.maximo}.`;
   }
   return null;
+}
+
+/** Junta linhas que ficaram iguais (mesma chave) depois de mudar alguma marca. */
+function fundir(linhas: readonly ItemCarrinho[]): ItemCarrinho[] {
+  const resultado: ItemCarrinho[] = [];
+  for (const l of linhas) {
+    const chave = chaveDoItem(l);
+    const igual = resultado.find((r) => r.chave === chave);
+    if (igual) igual.quantidade = Math.min(igual.quantidade + l.quantidade, 999);
+    else resultado.push({ ...l, chave });
+  }
+  return resultado;
+}
+
+/** Marca ou desmarca uma linha como para viagem. */
+export function marcarParaViagem(
+  carrinho: readonly ItemCarrinho[],
+  chave: string,
+  paraViagem: boolean,
+): ItemCarrinho[] {
+  return fundir(carrinho.map((i) => (i.chave === chave ? { ...i, paraViagem } : i)));
+}
+
+/** "Comer aqui" ou "Para viagem" para o pedido todo. */
+export function marcarTudoParaViagem(
+  carrinho: readonly ItemCarrinho[],
+  paraViagem: boolean,
+): ItemCarrinho[] {
+  return fundir(carrinho.map((i) => ({ ...i, paraViagem })));
+}
+
+/** Situação do pedido: tudo para comer, tudo para viagem ou misturado. */
+export function situacaoDeViagem(
+  carrinho: readonly ItemCarrinho[],
+): 'comer' | 'viagem' | 'misto' | null {
+  if (carrinho.length === 0) return null;
+  const viagem = carrinho.filter((i) => i.paraViagem).length;
+  if (viagem === 0) return 'comer';
+  return viagem === carrinho.length ? 'viagem' : 'misto';
 }

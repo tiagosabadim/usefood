@@ -18,6 +18,7 @@ interface ItemDoPedido {
   notes: string | null;
   station_id: string | null;
   prepared_at: string | null;
+  to_go: boolean;
   order_item_modifiers: { name: string }[];
 }
 interface PedidoNaCozinha {
@@ -75,7 +76,7 @@ export function TelaDaCozinha({
     const { data, error } = await supabase
       .from('orders')
       .select(
-        'id, number, type, identifier_type, identifier, status, created_at, ready_at, notes, order_items(id, product_name, quantity, variant_name, notes, station_id, prepared_at, order_item_modifiers(name))',
+        'id, number, type, identifier_type, identifier, status, created_at, ready_at, notes, order_items(id, product_name, quantity, variant_name, notes, station_id, prepared_at, to_go, order_item_modifiers(name))',
       )
       .eq('restaurant_id', loja.id)
       .in('status', ['em_preparo', 'pronto'])
@@ -224,6 +225,7 @@ export function TelaDaCozinha({
                 const itens = p.order_items.filter(
                   (i) => pracaId === null || i.station_id === pracaId,
                 );
+                const tudoParaViagem = itens.length > 0 && itens.every((i) => i.to_go);
                 return (
                   <OrderCard
                     key={p.id}
@@ -231,6 +233,13 @@ export function TelaDaCozinha({
                     subtitle={`Pedido #${String(p.number).padStart(3, '0')} · ${rotuloDoTipo(p.type)}`}
                     timer={cronometro(p.created_at, agora)}
                     tone={nivelDeAtraso(p.created_at, agora)}
+                    tag={
+                      tudoParaViagem
+                        ? p.type === 'delivery'
+                          ? 'Delivery'
+                          : 'Para viagem'
+                        : undefined
+                    }
                     items={itens.map((i) => ({
                       id: i.id,
                       quantidade: i.quantity,
@@ -241,6 +250,7 @@ export function TelaDaCozinha({
                       ],
                       observacao: i.notes,
                       feito: i.prepared_at !== null,
+                      tag: i.to_go && !tudoParaViagem ? 'Pra viagem' : undefined,
                     }))}
                     action={
                       <Button

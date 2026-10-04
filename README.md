@@ -74,13 +74,19 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - No PDV: **Balcão, Mesa, Retirada ou Delivery**; **Enviar para a cozinha** (paga depois) ou **Cobrar agora**. A aba **Contas abertas** mostra mesas e pedidos a receber, com as rodadas, **Fechar conta** e **Nova rodada**.
 - Testes em `supabase/tests/contas.test.sql`.
 
+## Para viagem por item
+
+- Antes de enviar para a cozinha (PDV e comanda), a lista do pedido (`CartList`) tem **Comer aqui | Para viagem** para o pedido todo e a etiqueta **Pra viagem** em cada item, para misturar (comer um lanche e levar outro). Na mesa, tudo fica na mesma conta, até um pedido só para viagem.
+- Cada item manda `para_viagem` em `p_itens`; o banco grava `order_items.to_go`. Pedidos Para viagem e Delivery saem sempre embalados.
+- Cozinha: pedido todo para viagem ganha a faixa **PARA VIAGEM** (ou **DELIVERY**) no cartão e, no ticket, a mesma faixa grande em branco sobre preto; misturado, só os itens marcados. O ticket novo depende do programa de impressão atualizado (baixar de novo em `/downloads`).
+- Testes em `supabase/tests/para_viagem.test.sql`.
+
 ## Comanda do garçom (E08, parte 2)
 
 - Em `/garcom`, depois do PIN: **Salão** (as mesmas mesas do PDV) e **Prontos**.
 - Mesa livre: abre o cardápio para a primeira rodada. Mesa ocupada: mostra as rodadas (Em preparo, Pronto, Entregue), o consumo e **Nova rodada**.
 - Cardápio no celular: categorias em chips, produtos com foto em 2 colunas, o mesmo **Montar item** do PDV e a barra **Ver pedido** → **Enviar para a cozinha** (`criar_pedido` de mesa, que soma na conta aberta da mesa).
 - **Novo pedido**: o garçom lança com os mesmos tipos do PDV (Comer aqui, Mesa, Para viagem, Delivery), com a mesma identificação e a forma de pagamento prevista. A conta fica aberta para o caixa receber.
-- Na mesa, **Pedido para viagem**: para quem está sentado e vai levar algo para casa. Abre o cardápio já em Para viagem, com a anotação "Cliente da mesa X" no ticket; o pedido tem conta própria.
 - A escolha do tipo e da identificação é o componente `TipoEIdentificacao` (`@usefood/pedidos`) e a regra `parametrosDoPedido` (`@usefood/core`), iguais no PDV e na comanda.
 - **Prontos**: pedidos de mesa marcados como prontos na cozinha, em tempo real, com vibração do celular; **Entregue** (`marcar_entregue`) tira da lista. Garçom não fecha conta: quem recebe é o caixa.
 - O Salão, o Montar item e o carregamento do cardápio ficam em `packages/pedidos` (`@usefood/pedidos`), usados pelo PDV e pela comanda.

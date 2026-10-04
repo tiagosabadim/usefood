@@ -1,15 +1,12 @@
 import {
   adicionarItem,
-  detalheDoItem,
   formatarPreco,
   itemSimples,
   quantidadeDoProduto,
   quantidadeTotal,
-  removerUnidade,
   DADOS_INICIAIS,
   parametrosDoPedido,
   rotuloDaConta,
-  somarUnidade,
   subtotalCentavos,
   type DadosDoPedido,
   type ItemCarrinho,
@@ -19,10 +16,10 @@ import type { AppSupabaseClient, Enums, Tables } from '@usefood/db';
 import {
   Alert,
   Button,
+  CartList,
   cn,
   Icon,
   ProductTile,
-  QuantityStepper,
   SegmentedControl,
   TextField,
 } from '@usefood/ui';
@@ -179,6 +176,7 @@ export function Pdv({
         variant_id: i.tamanhoId,
         adicionais: i.adicionais.map((a) => a.id),
         observacao: i.observacao || null,
+        para_viagem: i.paraViagem,
       })),
       p_pagamento_previsto: parametros.p_pagamento_previsto,
       p_troco_para_cents: parametros.p_troco_para_cents,
@@ -428,42 +426,12 @@ export function Pdv({
               <Alert tone="sucesso" className="mt-4">
                 {enviado}
               </Alert>
-              {carrinho.length === 0 ? (
-                <p className="py-8 text-body text-ink-muted">
-                  Toque nos produtos para montar o pedido.
-                </p>
-              ) : (
-                <ul className="flex flex-col divide-y divide-line">
-                  {carrinho.map((i) => {
-                    const detalhe = detalheDoItem(i);
-                    return (
-                      <li key={i.chave} className="flex items-center gap-3 py-3">
-                        {fotoDoProduto(i.productId) && (
-                          <img
-                            src={fotoDoProduto(i.productId)!}
-                            alt=""
-                            loading="lazy"
-                            className="aspect-[4/3] w-12 shrink-0 rounded-sm object-cover"
-                          />
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="text-body-strong text-ink">{i.nome}</p>
-                          {detalhe && <p className="text-caption text-ink-muted">{detalhe}</p>}
-                          <p className="text-caption text-ink-muted tabular-nums">
-                            {formatarPreco(i.precoCentavos * i.quantidade)}
-                          </p>
-                        </div>
-                        <QuantityStepper
-                          value={i.quantidade}
-                          itemName={i.nome}
-                          onDecrement={() => setCarrinho((c) => removerUnidade(c, i.chave))}
-                          onIncrement={() => setCarrinho((c) => somarUnidade(c, i.chave))}
-                        />
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
+              <CartList
+                items={carrinho}
+                onChange={setCarrinho}
+                viagem={tipo === 'retirada' || tipo === 'delivery' ? 'sempre' : 'escolher'}
+                imageFor={fotoDoProduto}
+              />
             </div>
 
             <div className="flex flex-col gap-3 border-t border-line bg-surface-strong p-5">

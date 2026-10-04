@@ -11,8 +11,7 @@ import { useProntos } from './prontos';
 type Tela =
   | { tipo: 'salao' }
   | { tipo: 'mesa'; contaId: string }
-  | { tipo: 'lancar'; mesa: string; contaId: string | null }
-  | { tipo: 'viagem'; mesa: string; contaId: string };
+  | { tipo: 'lancar'; mesa: string; contaId: string | null };
 
 function avisoDeEnvio(p: PedidoEnviado): string {
   const numero = String(p.numero).padStart(3, '0');
@@ -153,7 +152,6 @@ export function Comanda({
           contaId={tela.contaId}
           onVoltar={() => setTela({ tipo: 'salao' })}
           onNovaRodada={(mesa) => setTela({ tipo: 'lancar', mesa, contaId: tela.contaId })}
-          onParaViagem={(mesa) => setTela({ tipo: 'viagem', mesa, contaId: tela.contaId })}
         />
       )}
 
@@ -168,24 +166,6 @@ export function Comanda({
           onEnviado={(p) => {
             setAviso(avisoDeEnvio(p));
             setTela({ tipo: 'mesa', contaId: p.contaId });
-          }}
-        />
-      )}
-
-      {tela.tipo === 'viagem' && (
-        <Lancar
-          supabase={supabase}
-          lojaId={lojaId}
-          modo={{
-            tipo: 'livre',
-            titulo: `Para viagem · mesa ${tela.mesa}`,
-            inicial: { tipo: 'retirada' },
-            observacao: `Cliente da mesa ${tela.mesa}`,
-          }}
-          onVoltar={() => setTela({ tipo: 'mesa', contaId: tela.contaId })}
-          onEnviado={(p) => {
-            setAviso(avisoDeEnvio(p));
-            setTela({ tipo: 'mesa', contaId: tela.contaId });
           }}
         />
       )}

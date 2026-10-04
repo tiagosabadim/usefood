@@ -1,6 +1,7 @@
 export { Alert } from './alert';
 export { BottomNav, type BottomNavItem } from './bottom-nav';
 export { Button, type ButtonProps } from './button';
+export { CartList, type CartListProps } from './cart-list';
 export { Chip, type ChipProps } from './chip';
 export { cn } from './cn';
 export { EmptyState } from './empty-state';

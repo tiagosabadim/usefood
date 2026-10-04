@@ -478,6 +478,7 @@ export type Database = {
           quantity: number
           restaurant_id: string
           station_id: string | null
+          to_go: boolean
           total_cents: number
           unit_price_cents: number
           variant_id: string | null
@@ -494,6 +495,7 @@ export type Database = {
           quantity: number
           restaurant_id: string
           station_id?: string | null
+          to_go?: boolean
           total_cents: number
           unit_price_cents: number
           variant_id?: string | null
@@ -510,6 +512,7 @@ export type Database = {
           quantity?: number
           restaurant_id?: string
           station_id?: string | null
+          to_go?: boolean
           total_cents?: number
           unit_price_cents?: number
           variant_id?: string | null

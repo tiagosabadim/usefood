@@ -17,6 +17,7 @@ interface Rodada {
     variant_name: string | null;
     notes: string | null;
     total_cents: number;
+    to_go: boolean;
   }[];
 }
 
@@ -80,7 +81,7 @@ export function ContasAbertas({
     void supabase
       .from('orders')
       .select(
-        'id, number, created_at, status, order_items(id, product_name, quantity, variant_name, notes, total_cents)',
+        'id, number, created_at, status, order_items(id, product_name, quantity, variant_name, notes, total_cents, to_go)',
       )
       .eq('tab_id', aberta.id)
       .order('created_at')
@@ -135,6 +136,7 @@ export function ContasAbertas({
                       <span>
                         {item.quantity}× {item.product_name}
                         {item.variant_name ? ` · ${item.variant_name}` : ''}
+                        {item.to_go ? ' · pra viagem' : ''}
                       </span>
                       <span className="tabular-nums text-ink-muted">
                         {formatarPreco(item.total_cents)}
