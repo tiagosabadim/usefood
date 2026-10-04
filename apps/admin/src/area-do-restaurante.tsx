@@ -3,7 +3,9 @@ import { Alert, Button, Panel } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { Cardapio } from './cardapio';
 import { CriarRestaurante } from './criar-restaurante';
+import { AlertasDeImpressao } from './alerta-impressao';
 import { PdvComCaixa } from './caixa';
+import { Impressao } from './impressao';
 import { Pdv } from './pdv';
 import { Tela, Titulo } from './tela';
 
@@ -33,7 +35,7 @@ export function AreaDoRestaurante({
   const [estado, setEstado] = useState<Estado>({ tipo: 'carregando' });
   const [versao, setVersao] = useState(0);
   const [selecionada, setSelecionada] = useState(0);
-  const [tela, setTela] = useState<'inicio' | 'cardapio' | 'pdv'>('inicio');
+  const [tela, setTela] = useState<'inicio' | 'cardapio' | 'pdv' | 'impressao'>('inicio');
 
   useEffect(() => {
     let ativo = true;
@@ -92,10 +94,15 @@ export function AreaDoRestaurante({
             loja={atual.loja}
             onVoltar={() => setTela('inicio')}
             cabecalhoDoCaixa={cabecalho}
+            avisos={<AlertasDeImpressao supabase={supabase} lojaId={atual.loja.id} />}
           />
         )}
       </PdvComCaixa>
     );
+  }
+
+  if (tela === 'impressao') {
+    return <Impressao supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />;
   }
 
   if (tela === 'cardapio') {
@@ -126,10 +133,18 @@ export function AreaDoRestaurante({
           <Button variant="secondary" className="h-target-pdv" onClick={() => setTela('cardapio')}>
             {podeEditar ? 'Montar o cardápio' : 'Ver o cardápio'}
           </Button>
+          {podeEditar && (
+            <Button
+              variant="secondary"
+              className="h-target-pdv"
+              onClick={() => setTela('impressao')}
+            >
+              Impressão
+            </Button>
+          )}
         </div>
         <ul className="flex flex-col gap-2 text-body text-ink-muted">
           <li>Convidar a equipe: caixa, garçons e cozinha (em breve).</li>
-          <li>Configurar as impressoras da cozinha (em breve).</li>
         </ul>
         <p className="text-caption text-ink-muted">
           {noAr

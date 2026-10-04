@@ -12,7 +12,7 @@ import {
 } from '@usefood/ui';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Adicionais, type Grupo, type ItemAdicional } from './adicionais';
-import { EditorProduto } from './editor-produto';
+import { EditorProduto, type PracaResumo } from './editor-produto';
 import { urlDaFoto } from './foto';
 import { Tela, Titulo } from './tela';
 
@@ -27,6 +27,7 @@ type Produto = Pick<
   | 'is_active'
   | 'position'
   | 'photo_path'
+  | 'station_id'
 >;
 interface NovoProduto {
   nome: string;
@@ -57,6 +58,7 @@ export function Cardapio({
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [itensAdicionais, setItensAdicionais] = useState<ItemAdicional[]>([]);
   const [editando, setEditando] = useState<Produto | null>(null);
+  const [pracas, setPracas] = useState<PracaResumo[]>([]);
 
   useEffect(() => {
     let ativo = true;
@@ -69,7 +71,15 @@ export function Cardapio({
         .order('created_at'),
       supabase
         .from('products')
-        .select('id, category_id, name, description, price_cents, is_active, position, photo_path')
+        .select(
+          'id, category_id, name, description, price_cents, is_active, position, photo_path, station_id',
+        )
+        .eq('restaurant_id', loja.id)
+        .order('position')
+        .order('created_at'),
+      supabase
+        .from('stations')
+        .select('id, name')
         .eq('restaurant_id', loja.id)
         .order('position')
         .order('created_at'),
@@ -85,14 +95,15 @@ export function Cardapio({
         .eq('restaurant_id', loja.id)
         .order('position')
         .order('created_at'),
-    ]).then(([cats, prods, grps, mods]) => {
+    ]).then(([cats, prods, prcs, grps, mods]) => {
       if (!ativo) return;
-      if (cats.error || prods.error || grps.error || mods.error) {
+      if (cats.error || prods.error || prcs.error || grps.error || mods.error) {
         setEstado('erro');
         return;
       }
       setCategorias(cats.data);
       setProdutos(prods.data);
+      setPracas(prcs.data);
       setGrupos(grps.data);
       setItensAdicionais(mods.data);
       setEstado('pronto');
@@ -331,6 +342,7 @@ export function Cardapio({
           lojaId={loja.id}
           produto={editando}
           grupos={grupos}
+          pracas={pracas}
           onAlterado={recarregar}
           onFechar={() => setEditando(null)}
         />

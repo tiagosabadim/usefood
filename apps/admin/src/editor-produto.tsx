@@ -1,13 +1,14 @@
 import { formatarPreco, lerPreco, precoParaCampo, regraDoGrupo } from '@usefood/core';
 import type { AppSupabaseClient, Tables } from '@usefood/db';
-import { Alert, Button, PhotoField, Sheet, Switch, TextField } from '@usefood/ui';
+import { Alert, Button, ChoiceGrid, PhotoField, Sheet, Switch, TextField } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { apagarFoto, enviarFoto, urlDaFoto } from './foto';
 
 export type ProdutoEditavel = Pick<
   Tables<'products'>,
-  'id' | 'name' | 'description' | 'price_cents' | 'photo_path'
+  'id' | 'name' | 'description' | 'price_cents' | 'photo_path' | 'station_id'
 >;
+export type PracaResumo = Pick<Tables<'stations'>, 'id' | 'name'>;
 export type GrupoResumo = Pick<
   Tables<'modifier_groups'>,
   'id' | 'name' | 'min_select' | 'max_select'
@@ -29,6 +30,7 @@ export function EditorProduto({
   lojaId,
   produto,
   grupos,
+  pracas,
   onAlterado,
   onFechar,
 }: {
@@ -36,6 +38,8 @@ export function EditorProduto({
   lojaId: string;
   produto: ProdutoEditavel;
   grupos: GrupoResumo[];
+  /** Praças da loja; a primeira é a padrão. */
+  pracas: PracaResumo[];
   /** Algo mudou no banco: a lista do cardápio deve recarregar. */
   onAlterado: () => void;
   onFechar: () => void;
@@ -44,6 +48,10 @@ export function EditorProduto({
   const [nome, setNome] = useState(produto.name);
   const [preco, setPreco] = useState(precoParaCampo(produto.price_cents));
   const [descricao, setDescricao] = useState(produto.description ?? '');
+  // Sem praça definida, o produto sai na praça padrão (a primeira)
+  const [pracaId, setPracaId] = useState<string | null>(
+    produto.station_id ?? pracas[0]?.id ?? null,
+  );
   const [fotoPath, setFotoPath] = useState(produto.photo_path);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
   const [erroFoto, setErroFoto] = useState<string>();
@@ -142,6 +150,7 @@ export function EditorProduto({
           name: nome.trim(),
           price_cents: precoCentavos,
           description: descricao.trim() || null,
+          station_id: pracaId,
         })
         .eq('id', produto.id);
       if (produtoAtualizado.error) throw produtoAtualizado.error;
@@ -268,6 +277,19 @@ export function EditorProduto({
         value={descricao}
         onChange={(e) => setDescricao(e.target.value)}
       />
+
+      {pracas.length > 1 && (
+        <section className="flex flex-col gap-2">
+          <h3 className="text-body-strong text-ink">Sai na impressora de</h3>
+          <ChoiceGrid
+            label="Praça do produto"
+            columns={pracas.length >= 3 ? 3 : 2}
+            options={pracas.map((p) => ({ value: p.id, label: p.name }))}
+            value={pracaId}
+            onChange={setPracaId}
+          />
+        </section>
+      )}
 
       <section aria-labelledby="tamanhos-titulo" className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">

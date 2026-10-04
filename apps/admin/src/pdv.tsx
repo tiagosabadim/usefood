@@ -86,12 +86,15 @@ export function Pdv({
   loja,
   onVoltar,
   cabecalhoDoCaixa,
+  avisos,
 }: {
   supabase: AppSupabaseClient;
   loja: { id: string; name: string };
   onVoltar: () => void;
   /** Situação do caixa e o botão que abre o painel do caixa. */
   cabecalhoDoCaixa?: ReactNode;
+  /** Avisos de impressão, no topo da área de produtos. */
+  avisos?: ReactNode;
 }) {
   const [carregando, setCarregando] = useState(true);
   const [falhou, setFalhou] = useState(false);
@@ -116,6 +119,7 @@ export function Pdv({
   const [recebido, setRecebido] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState('');
+  const [reimpresso, setReimpresso] = useState<'nao' | 'enviando' | 'sim'>('nao');
 
   useEffect(() => {
     let ativo = true;
@@ -262,6 +266,14 @@ export function Pdv({
     setMetodo(null);
     setRecebido('');
     setErro('');
+    setReimpresso('nao');
+  }
+
+  async function imprimirDeNovo() {
+    if (!pedidoCriado) return;
+    setReimpresso('enviando');
+    const { error } = await supabase.rpc('reimprimir_pedido', { p_pedido: pedidoCriado.id });
+    setReimpresso(error ? 'nao' : 'sim');
   }
 
   async function confirmarPagamento() {
@@ -411,6 +423,7 @@ export function Pdv({
       </nav>
 
       <main className="flex min-w-0 flex-col gap-5 p-5 lg:overflow-y-auto lg:p-6">
+        {avisos}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
             <span className="text-caption text-ink-muted">{loja.name}</span>
@@ -485,6 +498,14 @@ export function Pdv({
             )}
             <Button className="h-target-pdv" onClick={novoPedido}>
               Novo pedido
+            </Button>
+            <Button
+              variant="ghost"
+              loading={reimpresso === 'enviando'}
+              disabled={reimpresso === 'sim'}
+              onClick={() => void imprimirDeNovo()}
+            >
+              {reimpresso === 'sim' ? 'Enviado para a cozinha de novo' : 'Imprimir de novo'}
             </Button>
           </div>
         ) : etapa === 'cobrando' ? (

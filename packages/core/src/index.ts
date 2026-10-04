@@ -5,6 +5,7 @@ export * from './cart';
 export * from './cash';
 export * from './menu';
 export * from './money';
+export * from './print-status';
 export * from './site';
 export * from './slug';
 export * from './ticket';

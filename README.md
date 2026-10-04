@@ -83,6 +83,10 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Pareamento:** o dono gera um código (`criar_codigo_de_pareamento`, 8 caracteres, 10 minutos) e roda no computador da loja `usefood-impressao parear <CÓDIGO> --servidor <URL do Supabase>`. A Edge Function `parear-impressora` cria um acesso próprio para aquele computador.
 - Para gerar o programa: `pnpm --filter @usefood/print-agent build` → `apps/print-agent/dist/usefood-impressao.mjs`, que roda com `node` (22 ou mais novo). Teste sem o sistema: `node usefood-impressao.mjs testar-impressora 192.168.0.50`.
 - Esta versão imprime em impressoras **de rede**. Impressoras USB e uma janela visual ficam para a versão em Tauri.
+- **Na tela** (`/pdv` → **Impressão**, dono e gerente): computadores conectados (Ligado ou Desligado, pelo último sinal), **Conectar um computador** (gera o código e mostra o passo a passo com o comando pronto), praças, impressoras por praça (IP, porta, papel de 80 ou 58 mm) e **Imprimir teste**, que espera a confirmação da impressora.
+- No editor de produto, **Sai na impressora de** escolhe a praça. Sem escolha, o produto sai na primeira praça (Cozinha).
+- No PDV, avisos a cada 10 s: computador desligado, nenhum computador conectado, ticket que falhou (com **Reimprimir**) ou fila parada há mais de 20 s. Na tela do pedido pago, **Imprimir de novo**.
+- O site publica o programa em `/downloads/usefood-impressao.mjs` (`scripts/montar-site.mjs`).
 - Testes em `supabase/tests/impressao.test.sql` e em `apps/print-agent`.
 
 ## Design system
