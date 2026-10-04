@@ -9,6 +9,10 @@ export interface PhotoFieldProps {
   onRemove?: () => void;
   /** Reabre o enquadramento da foto atual. */
   onAdjust?: () => void;
+  /** Formato da prévia: 4:3 (produto, padrão), 1 (logo) ou 3 (capa). */
+  aspect?: number;
+  /** Texto do espaço vazio. */
+  placeholder?: string;
   /** Enviando: o botão mostra "Aguarde…". */
   busy?: boolean;
   error?: string | undefined;
@@ -23,6 +27,8 @@ export function PhotoField({
   onAdjust,
   busy,
   error,
+  aspect = 4 / 3,
+  placeholder = 'foto do produto',
 }: PhotoFieldProps) {
   const input = useRef<HTMLInputElement>(null);
   const id = useId();
@@ -33,11 +39,17 @@ export function PhotoField({
         {label}
       </span>
       <div className="flex items-center gap-4">
-        <div className="flex aspect-[4/3] w-36 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-strong">
+        <div
+          className="flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-strong"
+          style={{
+            aspectRatio: String(aspect),
+            width: aspect > 2 ? '15rem' : aspect === 1 ? '7rem' : '9rem',
+          }}
+        >
           {imageUrl ? (
             <img src={imageUrl} alt="" className="size-full object-cover" />
           ) : (
-            <span className="px-2 text-center text-caption text-ink-muted">foto do produto</span>
+            <span className="px-2 text-center text-caption text-ink-muted">{placeholder}</span>
           )}
         </div>
         <div className="flex flex-col items-start gap-1">

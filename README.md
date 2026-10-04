@@ -82,6 +82,16 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Pedido online (loja online, parte 2a)
+
+- O cliente pede sem login, com nome e celular: `fazer_pedido_online` (anon). Confere loja no ar, aberta no horário, entrega ou retirada aceita, celular com DDD e no máximo 3 pedidos aguardando por celular a cada 30 minutos.
+- Preço e taxa de entrega saem do banco: `calcular_entrega` (grátis com raio ou cidade, por bairro sem acento ou por distância em faixas; pedido mínimo; grátis acima de um valor). O checkout mostra a taxa antes; o pedido confere de novo.
+- O pedido nasce **aguardando** (situação nova do pedido) e só imprime depois que a loja aceitar (parte 3). A conta guarda nome, celular, endereço, ponto no mapa, distância e taxa de entrega (que entra no total).
+- `acompanhar_pedido(token)` alimenta a página do cliente pelo link secreto (`orders.tracking_token`), com o código de entrega: os 4 últimos números do celular.
+- Logo (quadrado, 512 px) e capa (3:1, 1500 × 500) em **Loja online**, com o mesmo enquadramento das fotos.
+- A montagem do pedido ficou em `private.montar_pedido`; `criar_pedido_sem_impressao` confere a equipe e chama ela.
+- Testes em `supabase/tests/pedido_online.test.sql`.
+
 ## Para viagem por item
 
 - Antes de enviar para a cozinha (PDV e comanda), a lista do pedido (`CartList`) tem **Comer aqui | Para viagem** para o pedido todo e a etiqueta **Pra viagem** em cada item, para misturar (comer um lanche e levar outro). Na mesa, tudo fica na mesma conta, até um pedido só para viagem.

@@ -12,13 +12,16 @@ import {
   Alert,
   Button,
   ChoiceGrid,
+  ImageCropper,
   Panel,
+  PhotoField,
   SegmentedControl,
   StatusPill,
   Switch,
   TextField,
 } from '@usefood/ui';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { apagarFoto, baixarFoto, enviarImagem, urlDaFoto } from './foto';
 import { Tela, Titulo } from './tela';
 
 type Loja = Pick<
@@ -42,13 +45,15 @@ type Loja = Pick<
   | 'free_delivery_above_cents'
   | 'prep_minutes_min'
   | 'prep_minutes_max'
+  | 'logo_path'
+  | 'cover_path'
 > & { location: unknown };
 type Bairro = Pick<Tables<'delivery_districts'>, 'id' | 'name' | 'fee_cents'>;
 type Faixa = Pick<Tables<'delivery_bands'>, 'id' | 'up_to_km' | 'fee_cents'>;
 type Horario = Pick<Tables<'opening_hours'>, 'id' | 'weekday' | 'opens' | 'closes'>;
 
 const CAMPOS =
-  'slug, status, description, phone, postal_code, street, street_number, complement, district, city, state, accepts_delivery, accepts_pickup, delivery_fee_mode, delivery_radius_km, min_order_cents, free_delivery_above_cents, prep_minutes_min, prep_minutes_max, location';
+  'slug, status, logo_path, cover_path, description, phone, postal_code, street, street_number, complement, district, city, state, accepts_delivery, accepts_pickup, delivery_fee_mode, delivery_radius_km, min_order_cents, free_delivery_above_cents, prep_minutes_min, prep_minutes_max, location';
 const DIAS_CURTOS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const hora = (t: string) => t.slice(0, 5);
 
@@ -193,6 +198,14 @@ export function LojaOnline({
           )}
         </div>
       </Panel>
+
+      <LogoECapa
+        supabase={supabase}
+        lojaId={loja.id}
+        dados={dados}
+        onSalvo={avisar}
+        onErro={falhar}
+      />
 
       <DadosDaLoja
         supabase={supabase}
@@ -763,6 +776,131 @@ function Entrega({
       <Button className="self-start" loading={salvando} onClick={() => void salvar()}>
         Salvar entrega
       </Button>
+    </Panel>
+  );
+}
+
+const FORMATOS = {
+  logo: {
+    coluna: 'logo_path',
+    proporcao: 1,
+    tamanho: { largura: 512, altura: 512 },
+    rotulo: 'Logo',
+    vazio: 'logo',
+  },
+  capa: {
+    coluna: 'cover_path',
+    proporcao: 3,
+    tamanho: { largura: 1500, altura: 500 },
+    rotulo: 'Capa',
+    vazio: 'capa da loja',
+  },
+} as const;
+
+function mudancaDeImagem(coluna: 'logo_path' | 'cover_path', valor: string | null) {
+  return coluna === 'logo_path' ? { logo_path: valor } : { cover_path: valor };
+}
+
+function LogoECapa({ supabase, lojaId, dados, onSalvo, onErro }: Acoes & { dados: Loja }) {
+  const [enquadrando, setEnquadrando] = useState<{
+    alvo: keyof typeof FORMATOS;
+    src: string;
+    fonte: Blob;
+  } | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const atual = (alvo: keyof typeof FORMATOS) =>
+    alvo === 'logo' ? dados.logo_path : dados.cover_path;
+
+  function parar() {
+    if (enquadrando) URL.revokeObjectURL(enquadrando.src);
+    setEnquadrando(null);
+  }
+
+  async function salvar(recorte: Parameters<typeof enviarImagem>[4]) {
+    if (!enquadrando) return;
+    const f = FORMATOS[enquadrando.alvo];
+    setEnviando(true);
+    try {
+      const caminho = await enviarImagem(
+        supabase,
+        lojaId,
+        enquadrando.alvo,
+        enquadrando.fonte,
+        recorte,
+        f.tamanho,
+      );
+      const { error } = await supabase
+        .from('restaurants')
+        .update(mudancaDeImagem(f.coluna, caminho))
+        .eq('id', lojaId);
+      if (error) throw error;
+      const antigo = atual(enquadrando.alvo);
+      if (antigo) await apagarFoto(supabase, antigo);
+      parar();
+      onSalvo(`${f.rotulo} salvo.`);
+    } catch {
+      onErro('Não foi possível enviar a imagem. Tente outra ou confira a internet.');
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  if (enquadrando) {
+    const f = FORMATOS[enquadrando.alvo];
+    return (
+      <Panel title={`Enquadre ${enquadrando.alvo === 'logo' ? 'o logo' : 'a capa'}`}>
+        <div className={enquadrando.alvo === 'logo' ? 'max-w-xs' : ''}>
+          <ImageCropper
+            src={enquadrando.src}
+            aspect={f.proporcao}
+            busy={enviando}
+            onCancel={parar}
+            onConfirm={(r) => void salvar(r)}
+          />
+        </div>
+      </Panel>
+    );
+  }
+
+  return (
+    <Panel title="Logo e capa">
+      <p className="text-caption text-ink-muted">Aparecem no topo da loja online e na vitrine.</p>
+      {(Object.keys(FORMATOS) as (keyof typeof FORMATOS)[]).map((alvo) => {
+        const f = FORMATOS[alvo];
+        const caminho = atual(alvo);
+        return (
+          <PhotoField
+            key={alvo}
+            label={f.rotulo}
+            aspect={f.proporcao}
+            placeholder={f.vazio}
+            imageUrl={urlDaFoto(supabase, caminho)}
+            onSelect={(arquivo) =>
+              setEnquadrando({ alvo, src: URL.createObjectURL(arquivo), fonte: arquivo })
+            }
+            onAdjust={async () => {
+              const url = urlDaFoto(supabase, caminho);
+              if (!url) return;
+              try {
+                const fonte = await baixarFoto(url);
+                setEnquadrando({ alvo, src: URL.createObjectURL(fonte), fonte });
+              } catch {
+                onErro('Não foi possível abrir a imagem atual. Escolha de novo.');
+              }
+            }}
+            onRemove={async () => {
+              if (!caminho) return;
+              const { error } = await supabase
+                .from('restaurants')
+                .update(mudancaDeImagem(f.coluna, null))
+                .eq('id', lojaId);
+              if (error) return onErro('Não foi possível remover.');
+              await apagarFoto(supabase, caminho);
+              onSalvo(`${f.rotulo} removido.`);
+            }}
+          />
+        );
+      })}
     </Panel>
   );
 }

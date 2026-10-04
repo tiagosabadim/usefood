@@ -26,8 +26,10 @@ interface ContaDaMesa {
 }
 
 const SITUACAO: Record<string, { texto: string; tom: StatusTone }> = {
+  aguardando: { texto: 'Aguardando a loja', tom: 'neutro' },
   em_preparo: { texto: 'Em preparo', tom: 'neutro' },
   pronto: { texto: 'Pronto', tom: 'destaque' },
+  em_entrega: { texto: 'Saiu para entrega', tom: 'destaque' },
   concluido: { texto: 'Entregue', tom: 'sucesso' },
   cancelado: { texto: 'Cancelado', tom: 'erro' },
 };

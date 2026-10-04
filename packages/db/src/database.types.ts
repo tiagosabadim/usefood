@@ -650,6 +650,9 @@ export type Database = {
       }
       orders: {
         Row: {
+          accepted_at: string | null
+          cancel_reason: string | null
+          channel: string
           created_at: string
           created_by: string | null
           day: string
@@ -668,10 +671,14 @@ export type Database = {
           subtotal_cents: number
           tab_id: string | null
           total_cents: number
+          tracking_token: string
           type: Database["public"]["Enums"]["order_type"]
           updated_at: string
         }
         Insert: {
+          accepted_at?: string | null
+          cancel_reason?: string | null
+          channel?: string
           created_at?: string
           created_by?: string | null
           day: string
@@ -690,10 +697,14 @@ export type Database = {
           subtotal_cents?: number
           tab_id?: string | null
           total_cents?: number
+          tracking_token?: string
           type: Database["public"]["Enums"]["order_type"]
           updated_at?: string
         }
         Update: {
+          accepted_at?: string | null
+          cancel_reason?: string | null
+          channel?: string
           created_at?: string
           created_by?: string | null
           day?: string
@@ -712,6 +723,7 @@ export type Database = {
           subtotal_cents?: number
           tab_id?: string | null
           total_cents?: number
+          tracking_token?: string
           type?: Database["public"]["Enums"]["order_type"]
           updated_at?: string
         }
@@ -1432,6 +1444,12 @@ export type Database = {
         Row: {
           change_for_cents: number | null
           closed_at: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          delivery_address: Json | null
+          delivery_distance_km: number | null
+          delivery_fee_cents: number
+          delivery_point: unknown
           discount_cents: number
           expected_method: Database["public"]["Enums"]["payment_method"] | null
           id: string
@@ -1450,6 +1468,12 @@ export type Database = {
         Insert: {
           change_for_cents?: number | null
           closed_at?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivery_address?: Json | null
+          delivery_distance_km?: number | null
+          delivery_fee_cents?: number
+          delivery_point?: unknown
           discount_cents?: number
           expected_method?: Database["public"]["Enums"]["payment_method"] | null
           id?: string
@@ -1468,6 +1492,12 @@ export type Database = {
         Update: {
           change_for_cents?: number | null
           closed_at?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivery_address?: Json | null
+          delivery_distance_km?: number | null
+          delivery_fee_cents?: number
+          delivery_point?: unknown
           discount_cents?: number
           expected_method?: Database["public"]["Enums"]["payment_method"] | null
           id?: string
@@ -1569,9 +1599,24 @@ export type Database = {
         Args: { p_caixa?: string; p_fundo_cents: number; p_restaurant_id: string }
         Returns: string
       }
+      acompanhar_pedido: {
+        Args: { p_token: string }
+        Returns: Json
+      }
       agente_presente: {
         Args: { p_versao?: string | null }
         Returns: string
+      }
+      calcular_entrega: {
+        Args: {
+          p_bairro: string | null
+          p_cidade: string | null
+          p_latitude: number | null
+          p_longitude: number | null
+          p_restaurant_id: string
+          p_subtotal_cents: number
+        }
+        Returns: { atende: boolean; distancia_km: number | null; motivo: string | null; taxa_cents: number }[]
       }
       concluir_impressao: {
         Args: { p_erro?: string | null; p_job: string; p_ok: boolean }
@@ -1637,6 +1682,22 @@ export type Database = {
           restaurant_id: string | null
           user_id: string | null
         }[]
+      }
+      fazer_pedido_online: {
+        Args: {
+          p_celular: string
+          p_endereco?: Json | null
+          p_itens: Json
+          p_latitude?: number | null
+          p_longitude?: number | null
+          p_nome: string
+          p_observacao?: string | null
+          p_pagamento: Database["public"]["Enums"]["payment_method"]
+          p_restaurant_id: string
+          p_tipo: Database["public"]["Enums"]["order_type"]
+          p_troco_para_cents?: number | null
+        }
+        Returns: { numero: number; token: string; total_cents: number }[]
       }
       fechar_caixa: {
         Args: { p_contado_cents: number; p_observacao?: string | null; p_sessao: string }
@@ -1767,7 +1828,7 @@ export type Database = {
       domain_kind: "marca" | "loja"
       domain_status: "pendente" | "verificando" | "ativo" | "erro"
       identifier_type: "senha" | "nome" | "mesa" | "comanda"
-      order_status: "aberto" | "em_preparo" | "pronto" | "concluido" | "cancelado"
+      order_status: "aberto" | "aguardando" | "em_preparo" | "pronto" | "em_entrega" | "concluido" | "cancelado"
       order_type: "balcao" | "mesa" | "retirada" | "delivery"
       payment_method: "dinheiro" | "pix" | "credito" | "debito" | "vale_refeicao" | "outro"
       print_job_status: "pendente" | "imprimindo" | "impresso" | "falhou"
