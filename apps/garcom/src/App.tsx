@@ -1,5 +1,5 @@
 import { StatusScreen, useAppContext } from '@usefood/app';
-import { rotuloDoPapel, type Papel } from '@usefood/core';
+import type { Papel } from '@usefood/core';
 import type { AppSupabaseClient, Session } from '@usefood/db';
 import { Alert, Button, PinPad, TextField } from '@usefood/ui';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
@@ -10,6 +10,7 @@ import {
   salvarAparelho,
   type Aparelho,
 } from './aparelho';
+import { Comanda } from './comanda/comanda';
 
 function Moldura({ children }: { children: ReactNode }) {
   return (
@@ -212,7 +213,7 @@ function Entrar({
   );
 }
 
-/** Depois do PIN. A comanda (Salão, mesa, rodadas) entra na próxima etapa. */
+/** Depois do PIN: descobre a loja e quem entrou, e abre a comanda. */
 function Inicio({
   supabase,
   sessao,
@@ -222,42 +223,63 @@ function Inicio({
   sessao: Session;
   aparelho: Aparelho | null;
 }) {
-  const [quem, setQuem] = useState<{ nome: string; papel: Papel } | null>(null);
+  const [quem, setQuem] = useState<
+    { nome: string; papel: Papel; lojaId: string; loja: string } | null | undefined
+  >(undefined);
 
   useEffect(() => {
-    const lojaId = aparelho?.restaurante;
+    const lojaDoAparelho = aparelho?.restaurante;
     void Promise.all([
-      supabase.from('memberships').select('role, restaurant_id').eq('user_id', sessao.user.id),
+      supabase
+        .from('memberships')
+        .select('role, restaurant_id, restaurants(name)')
+        .eq('user_id', sessao.user.id),
       supabase
         .from('staff_pins')
         .select('display_name, restaurant_id')
         .eq('user_id', sessao.user.id),
     ]).then(([vinculos, pins]) => {
       const vinculo =
-        vinculos.data?.find((v) => !lojaId || v.restaurant_id === lojaId) ?? vinculos.data?.[0];
-      const pin = pins.data?.find((p) => p.restaurant_id === vinculo?.restaurant_id);
-      if (vinculo)
-        setQuem({ nome: pin?.display_name ?? sessao.user.email ?? '', papel: vinculo.role });
+        vinculos.data?.find((v) => !lojaDoAparelho || v.restaurant_id === lojaDoAparelho) ??
+        vinculos.data?.[0];
+      if (!vinculo) {
+        setQuem(null);
+        return;
+      }
+      const pin = pins.data?.find((p) => p.restaurant_id === vinculo.restaurant_id);
+      setQuem({
+        nome: pin?.display_name ?? sessao.user.email ?? '',
+        papel: vinculo.role,
+        lojaId: vinculo.restaurant_id,
+        loja: vinculo.restaurants?.name ?? aparelho?.loja ?? '',
+      });
     });
   }, [supabase, sessao, aparelho]);
 
+  if (quem === undefined) {
+    return (
+      <Moldura>
+        <p className="text-body text-ink-muted">Abrindo a comanda…</p>
+      </Moldura>
+    );
+  }
+  if (quem === null) {
+    return (
+      <Moldura>
+        <Alert>Você não faz mais parte da equipe desta loja. Fale com o gerente.</Alert>
+        <Button variant="secondary" onClick={() => void supabase.auth.signOut()}>
+          Sair
+        </Button>
+      </Moldura>
+    );
+  }
   return (
-    <Moldura>
-      <header className="flex flex-col gap-1">
-        <span className="text-caption text-ink-muted">{aparelho?.loja}</span>
-        <h1 className="font-display text-title-screen text-ink">Olá, {quem?.nome ?? '…'}</h1>
-        {quem && <span className="text-body text-ink-muted">{rotuloDoPapel(quem.papel)}</span>}
-      </header>
-      <Alert tone="info">
-        A comanda chega na próxima atualização: Salão, mesas, rodadas e o aviso de pronto.
-      </Alert>
-      <Button
-        variant="secondary"
-        className="mt-auto h-target-pdv"
-        onClick={() => void supabase.auth.signOut()}
-      >
-        Bloquear (trocar de pessoa)
-      </Button>
-    </Moldura>
+    <Comanda
+      supabase={supabase}
+      lojaId={quem.lojaId}
+      loja={quem.loja}
+      pessoa={{ nome: quem.nome, papel: quem.papel }}
+      onBloquear={() => void supabase.auth.signOut()}
+    />
   );
 }

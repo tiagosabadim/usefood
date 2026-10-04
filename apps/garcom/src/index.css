@@ -4,3 +4,4 @@
 /* Tailwind precisa enxergar as classes usadas nos pacotes compartilhados. */
 @source '../../../packages/ui/src';
 @source '../../../packages/app/src';
+@source '../../../packages/pedidos/src';

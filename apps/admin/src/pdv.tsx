@@ -32,9 +32,14 @@ import {
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Cobranca, ContaPaga, METODOS, type Conta, type PagamentoFeito } from './cobranca';
 import { ContasAbertas } from './contas-abertas';
-import { urlDaFoto } from './foto';
-import { MontarItem, type GrupoDeOpcoes, type OpcaoTamanho } from './montar-item';
-import { Salao } from './salao';
+import {
+  carregarCardapio,
+  MontarItem,
+  Salao,
+  SEM_OPCOES,
+  urlDaFoto,
+  type OpcoesDoProduto,
+} from '@usefood/pedidos';
 
 type Categoria = Pick<Tables<'categories'>, 'id' | 'name'>;
 type Produto = Pick<
@@ -43,10 +48,7 @@ type Produto = Pick<
 >;
 type TipoPedido = Enums<'order_type'>;
 type Metodo = Enums<'payment_method'>;
-interface Opcoes {
-  tamanhos: OpcaoTamanho[];
-  grupos: GrupoDeOpcoes[];
-}
+type Opcoes = OpcoesDoProduto;
 type Painel =
   | { tela: 'pedido' }
   | { tela: 'contas'; abrir?: string }
@@ -61,7 +63,6 @@ const TIPOS: Option<TipoPedido>[] = (['balcao', 'mesa', 'retirada', 'delivery'] 
 );
 const ATENDIMENTO_PADRAO: Atendimento = { chamarPor: 'senha', balcao: 'cliente_busca' };
 const ERROS_CONHECIDOS = new Set(['P0001', 'P0002', '22023', '42501']);
-const SEM_OPCOES: Opcoes = { tamanhos: [], grupos: [] };
 const CAMPOS_DA_CONTA =
   'id, type, identifier_type, identifier, subtotal_cents, service_fee_cents, total_cents, paid_cents, expected_method, change_for_cents';
 
@@ -131,91 +132,20 @@ export function Pdv({
 
   useEffect(() => {
     let ativo = true;
-    const loja_ = loja.id;
-    void Promise.all([
-      supabase
-        .from('categories')
-        .select('id, name')
-        .eq('restaurant_id', loja_)
-        .eq('is_active', true)
-        .order('position')
-        .order('created_at'),
-      supabase
-        .from('products')
-        .select('id, category_id, name, price_cents, photo_path')
-        .eq('restaurant_id', loja_)
-        .eq('is_active', true)
-        .order('position')
-        .order('created_at'),
-      supabase
-        .from('product_variants')
-        .select('id, product_id, name, price_cents')
-        .eq('restaurant_id', loja_)
-        .eq('is_active', true)
-        .order('position'),
-      supabase
-        .from('product_modifier_groups')
-        .select('product_id, group_id, position')
-        .eq('restaurant_id', loja_)
-        .order('position'),
-      supabase
-        .from('modifier_groups')
-        .select('id, name, min_select, max_select')
-        .eq('restaurant_id', loja_),
-      supabase
-        .from('modifiers')
-        .select('id, group_id, name, price_cents')
-        .eq('restaurant_id', loja_)
-        .eq('is_active', true)
-        .order('position'),
-    ]).then(([cats, prods, tamanhos, ligacoes, grupos, itens]) => {
-      if (!ativo) return;
-      if (
-        cats.error ||
-        prods.error ||
-        tamanhos.error ||
-        ligacoes.error ||
-        grupos.error ||
-        itens.error
-      ) {
+    carregarCardapio(supabase, loja.id)
+      .then((c) => {
+        if (!ativo) return;
+        setCategorias(c.categorias);
+        setProdutos(c.produtos);
+        setOpcoes(c.opcoes);
+        setCategoriaAtual(c.categorias[0]?.id ?? null);
+        setCarregando(false);
+      })
+      .catch(() => {
+        if (!ativo) return;
         setFalhou(true);
         setCarregando(false);
-        return;
-      }
-      const porGrupo = new Map<string, GrupoDeOpcoes>(
-        grupos.data.map((g) => [
-          g.id,
-          { id: g.id, nome: g.name, minimo: g.min_select, maximo: g.max_select, itens: [] },
-        ]),
-      );
-      for (const i of itens.data) {
-        porGrupo
-          .get(i.group_id)
-          ?.itens.push({ id: i.id, nome: i.name, precoCentavos: i.price_cents });
-      }
-      const mapa = new Map<string, Opcoes>();
-      const doProduto = (id: string) => {
-        if (!mapa.has(id)) mapa.set(id, { tamanhos: [], grupos: [] });
-        return mapa.get(id)!;
-      };
-      for (const t of tamanhos.data) {
-        doProduto(t.product_id).tamanhos.push({
-          id: t.id,
-          nome: t.name,
-          precoCentavos: t.price_cents,
-        });
-      }
-      for (const l of ligacoes.data) {
-        const grupo = porGrupo.get(l.group_id);
-        if (grupo && (grupo.itens.length > 0 || grupo.minimo > 0))
-          doProduto(l.product_id).grupos.push(grupo);
-      }
-      setCategorias(cats.data);
-      setProdutos(prods.data);
-      setOpcoes(mapa);
-      setCategoriaAtual(cats.data[0]?.id ?? null);
-      setCarregando(false);
-    });
+      });
     return () => {
       ativo = false;
     };

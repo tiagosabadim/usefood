@@ -74,6 +74,14 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - No PDV: **Balcão, Mesa, Retirada ou Delivery**; **Enviar para a cozinha** (paga depois) ou **Cobrar agora**. A aba **Contas abertas** mostra mesas e pedidos a receber, com as rodadas, **Fechar conta** e **Nova rodada**.
 - Testes em `supabase/tests/contas.test.sql`.
 
+## Comanda do garçom (E08, parte 2)
+
+- Em `/garcom`, depois do PIN: **Salão** (as mesmas mesas do PDV) e **Prontos**.
+- Mesa livre: abre o cardápio para a primeira rodada. Mesa ocupada: mostra as rodadas (Em preparo, Pronto, Entregue), o consumo e **Nova rodada**.
+- Cardápio no celular: categorias em chips, produtos com foto em 2 colunas, o mesmo **Montar item** do PDV e a barra **Ver pedido** → **Enviar para a cozinha** (`criar_pedido` de mesa, que soma na conta aberta da mesa).
+- **Prontos**: pedidos de mesa marcados como prontos na cozinha, em tempo real, com vibração do celular; **Entregue** (`marcar_entregue`) tira da lista. Garçom não fecha conta: quem recebe é o caixa.
+- O Salão, o Montar item e o carregamento do cardápio ficam em `packages/pedidos` (`@usefood/pedidos`), usados pelo PDV e pela comanda.
+
 ## Equipe com PIN (E08, parte 1)
 
 - **Equipe** (`/pdv` → Equipe, dono e gerente): adicionar pessoa com nome, função (garçom, caixa, cozinha; gerente só o dono adiciona) e PIN de 4 números, sem e-mail. Trocar PIN e remover.

@@ -3,10 +3,7 @@ import type { AppSupabaseClient } from '@usefood/db';
 
 const BUCKET = 'cardapio';
 
-/** Link público da foto (o bucket é público: o cardápio do cliente lê direto). */
-export function urlDaFoto(supabase: AppSupabaseClient, caminho: string | null): string | null {
-  return caminho ? supabase.storage.from(BUCKET).getPublicUrl(caminho).data.publicUrl : null;
-}
+export { urlDaFoto } from '@usefood/pedidos';
 
 function paraBlob(canvas: HTMLCanvasElement, tipo: string): Promise<Blob | null> {
   return new Promise((resolve) => canvas.toBlob(resolve, tipo, 0.85));

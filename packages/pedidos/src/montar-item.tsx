@@ -1,24 +1,7 @@
 import { formatarPreco, problemaNaEscolha, type NovoItem } from '@usefood/core';
 import { Button, ChoiceGrid, Chip, QuantityStepper, Sheet, TextField } from '@usefood/ui';
 import { useState } from 'react';
-
-export interface OpcaoTamanho {
-  id: string;
-  nome: string;
-  precoCentavos: number;
-}
-export interface OpcaoAdicional {
-  id: string;
-  nome: string;
-  precoCentavos: number;
-}
-export interface GrupoDeOpcoes {
-  id: string;
-  nome: string;
-  minimo: number;
-  maximo: number | null;
-  itens: OpcaoAdicional[];
-}
+import type { GrupoDeOpcoes, OpcaoTamanho } from './cardapio';
 
 const comPreco = (nome: string, centavos: number) =>
   centavos > 0 ? `${nome} +${formatarPreco(centavos)}` : nome;

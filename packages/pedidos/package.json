@@ -1,0 +1,25 @@
+{
+  "name": "@usefood/pedidos",
+  "private": true,
+  "type": "module",
+  "description": "Telas e dados de pedido compartilhados entre o PDV e a comanda do garçom.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@usefood/core": "workspace:*",
+    "@usefood/db": "workspace:*",
+    "@usefood/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0",
+    "typescript": "~6.0.3"
+  }
+}
