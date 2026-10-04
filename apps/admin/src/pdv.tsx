@@ -426,7 +426,7 @@ export function Pdv({
         {modo === 'salao' ? null : visiveis.length === 0 ? (
           <p className="text-body text-ink-muted">Nenhum produto aqui.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
             {visiveis.map((p) => {
               const o = opcoes.get(p.id) ?? SEM_OPCOES;
               const menor = o.tamanhos.length

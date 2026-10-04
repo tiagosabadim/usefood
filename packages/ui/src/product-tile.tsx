@@ -53,19 +53,20 @@ export function ProductTile({
       )}
     >
       {comFoto && (
-        <span className="block aspect-[4/3] w-full shrink-0 bg-surface-strong">
+        // overflow-hidden impede a foto de esticar a moldura: o 4:3 vale para qualquer foto
+        <span className="relative block aspect-[4/3] w-full shrink-0 overflow-hidden bg-surface-strong">
           {imageUrl ? (
             <img
               src={imageUrl}
               alt=""
               loading="lazy"
               decoding="async"
-              className="size-full object-cover"
+              className="absolute inset-0 size-full object-cover"
             />
           ) : (
             <span
               aria-hidden="true"
-              className="flex size-full items-center justify-center font-display text-title-screen text-ink-muted"
+              className="absolute inset-0 flex items-center justify-center font-display text-title-screen text-ink-muted"
             >
               {iniciais(name)}
             </span>
