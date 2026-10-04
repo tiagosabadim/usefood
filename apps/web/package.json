@@ -11,6 +11,8 @@
   "dependencies": {
     "@usefood/app": "workspace:*",
     "@usefood/core": "workspace:*",
+    "@usefood/db": "workspace:*",
+    "@usefood/pedidos": "workspace:*",
     "@usefood/ui": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

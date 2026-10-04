@@ -18,8 +18,9 @@ export interface CartListProps {
   /**
    * "escolher": mesa e comer aqui, com Comer aqui | Para viagem e a etiqueta em cada item.
    * "sempre": para viagem e delivery, tudo sai embalado.
+   * "nenhum": sem aviso (loja online, onde tudo já é entrega ou retirada).
    */
-  viagem?: 'escolher' | 'sempre';
+  viagem?: 'escolher' | 'sempre' | 'nenhum';
   /** Miniatura 4:3 do produto, quando houver foto. */
   imageFor?: (productId: string) => string | null;
   emptyText?: string;
@@ -56,9 +57,9 @@ export function CartList({
             </p>
           )}
         </div>
-      ) : (
+      ) : viagem === 'sempre' ? (
         <p className="text-caption text-ink-muted">Tudo sai embalado para viagem.</p>
-      )}
+      ) : null}
       <ul className="flex flex-col divide-y divide-line">
         {items.map((i) => {
           const detalhe = detalheDoItem(i);

@@ -1,22 +1,37 @@
 import { StatusScreen, useAppContext } from '@usefood/app';
-import { StorePage } from './store-page';
+import { Acompanhar } from './loja/acompanhar';
+import { Loja } from './loja/loja';
+import { useCaminho } from './rotas';
+
+const TOKEN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Domínio de loja (ranchopasteis.com.br) → a loja na raiz.
- * Domínio de marca (usefood.com.br, guapifood.com.br) → vitrine na raiz e /[loja].
- * O roteador completo entra na E10/E11.
+ * Domínio de loja (ranchopasteis.com.br): a loja na raiz e /pedido/<token>.
+ * Domínio de marca (usefood.com.br): vitrine na raiz, /<loja> e /<loja>/pedido/<token>.
  */
 export function App() {
   const { site } = useAppContext();
-  if (site.kind === 'loja') return <StorePage slug={site.store} />;
+  const partes = useCaminho().split('/').filter(Boolean);
 
-  const slug = window.location.pathname.split('/').filter(Boolean)[0];
-  if (slug) return <StorePage slug={slug.toLowerCase()} />;
+  if (site.kind === 'loja') {
+    const [a, token] = partes;
+    if (a === 'pedido' && token && TOKEN.test(token))
+      return <Acompanhar token={token} voltar="/" />;
+    return <Loja slug={site.store} base="" />;
+  }
+
+  const [slug, a, token] = partes;
+  if (slug) {
+    const loja = slug.toLowerCase();
+    if (a === 'pedido' && token && TOKEN.test(token))
+      return <Acompanhar token={token} voltar={`/${loja}`} />;
+    return <Loja slug={loja} base={`/${loja}`} />;
+  }
 
   return (
     <StatusScreen
-      title="Vitrine e lojas"
-      description="App usefood, páginas das lojas e cardápio QR. As telas reais chegam a partir da E10."
+      title="Vitrine usefood"
+      description="As lojas da sua cidade em um só lugar. A vitrine chega no bloco 3; cada loja já tem o seu endereço."
     />
   );
 }

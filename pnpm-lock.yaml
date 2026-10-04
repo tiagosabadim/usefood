@@ -207,6 +207,12 @@ importers:
       '@usefood/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@usefood/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@usefood/pedidos':
+        specifier: workspace:*
+        version: link:../../packages/pedidos
       '@usefood/ui':
         specifier: workspace:*
         version: link:../../packages/ui

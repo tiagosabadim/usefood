@@ -82,6 +82,13 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Loja online do cliente (parte 2b)
+
+- `apps/web`: `usefood.com.br/<loja>` (ou a raiz do domínio próprio da loja). Capa (3:1) e logo, aberto ou fechado com o horário de hoje, resumo da entrega, WhatsApp, cardápio por categoria (fotos 4:3, Montar item) e **sacola** guardada no aparelho.
+- **Checkout**: entregar ou retirar, nome e celular, endereço com CEP (ViaCEP) e localização do aparelho, taxa perguntada ao banco enquanto a pessoa digita (`calcular_entrega`), pagamento na entrega ou retirada com troco, observação. Nome, celular e endereço ficam guardados para o próximo pedido.
+- **Acompanhamento**: `/<loja>/pedido/<token>` (`acompanhar_pedido`), atualiza a cada 10 s: linha do tempo (enviado, em preparo, saiu para entrega ou pronto para retirar, entregue), código de entrega, itens, total e WhatsApp da loja.
+- Rotas sem biblioteca: `useCaminho` e `navegar` (`apps/web/src/rotas.ts`).
+
 ## Pedido online (loja online, parte 2a)
 
 - O cliente pede sem login, com nome e celular: `fazer_pedido_online` (anon). Confere loja no ar, aberta no horário, entrega ou retirada aceita, celular com DDD e no máximo 3 pedidos aguardando por celular a cada 30 minutos.

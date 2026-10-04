@@ -1,3 +1,4 @@
+export * from './acompanhamento';
 export * from './auth-errors';
 export * from './brand';
 export * from './brand-theme';
