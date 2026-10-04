@@ -216,6 +216,73 @@ export type Database = {
           },
         ]
       }
+      delivery_bands: {
+        Row: {
+          fee_cents: number
+          id: string
+          restaurant_id: string
+          up_to_km: number
+        }
+        Insert: {
+          fee_cents: number
+          id?: string
+          restaurant_id: string
+          up_to_km: number
+        }
+        Update: {
+          fee_cents?: number
+          id?: string
+          restaurant_id?: string
+          up_to_km?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_bands_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_districts: {
+        Row: {
+          created_at: string
+          fee_cents: number
+          id: string
+          is_active: boolean
+          name: string
+          name_key: string
+          restaurant_id: string
+        }
+        Insert: {
+          created_at?: string
+          fee_cents?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          name_key?: string
+          restaurant_id: string
+        }
+        Update: {
+          created_at?: string
+          fee_cents?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          name_key?: string
+          restaurant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_districts_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dining_tables: {
         Row: {
           area: string
@@ -425,6 +492,38 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "modifier_groups"
             referencedColumns: ["id", "restaurant_id"]
+          },
+        ]
+      }
+      opening_hours: {
+        Row: {
+          closes: string
+          id: string
+          opens: string
+          restaurant_id: string
+          weekday: number
+        }
+        Insert: {
+          closes: string
+          id?: string
+          opens: string
+          restaurant_id: string
+          weekday: number
+        }
+        Update: {
+          closes?: string
+          id?: string
+          opens?: string
+          restaurant_id?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opening_hours_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1103,44 +1202,101 @@ export type Database = {
       }
       restaurants: {
         Row: {
+          accepts_delivery: boolean
+          accepts_pickup: boolean
           brand_id: string
           call_by: Database["public"]["Enums"]["call_mode"]
+          city: string | null
+          complement: string | null
           counter_dine_in: Database["public"]["Enums"]["counter_service"]
+          cover_path: string | null
           created_at: string
+          delivery_fee_mode: Database["public"]["Enums"]["delivery_fee_mode"]
+          delivery_radius_km: number | null
+          description: string | null
+          district: string | null
+          free_delivery_above_cents: number | null
           id: string
           location: unknown
+          logo_path: string | null
+          min_order_cents: number
           name: string
           organization_id: string
+          phone: string | null
+          postal_code: string | null
+          prep_minutes_max: number
+          prep_minutes_min: number
           slug: string
+          state: string | null
           status: Database["public"]["Enums"]["restaurant_status"]
+          street: string | null
+          street_number: string | null
           timezone: string
           updated_at: string
         }
         Insert: {
+          accepts_delivery?: boolean
+          accepts_pickup?: boolean
           brand_id: string
           call_by?: Database["public"]["Enums"]["call_mode"]
+          city?: string | null
+          complement?: string | null
           counter_dine_in?: Database["public"]["Enums"]["counter_service"]
+          cover_path?: string | null
           created_at?: string
+          delivery_fee_mode?: Database["public"]["Enums"]["delivery_fee_mode"]
+          delivery_radius_km?: number | null
+          description?: string | null
+          district?: string | null
+          free_delivery_above_cents?: number | null
           id?: string
           location?: unknown
+          logo_path?: string | null
+          min_order_cents?: number
           name: string
           organization_id: string
+          phone?: string | null
+          postal_code?: string | null
+          prep_minutes_max?: number
+          prep_minutes_min?: number
           slug: string
+          state?: string | null
           status?: Database["public"]["Enums"]["restaurant_status"]
+          street?: string | null
+          street_number?: string | null
           timezone?: string
           updated_at?: string
         }
         Update: {
+          accepts_delivery?: boolean
+          accepts_pickup?: boolean
           brand_id?: string
           call_by?: Database["public"]["Enums"]["call_mode"]
+          city?: string | null
+          complement?: string | null
           counter_dine_in?: Database["public"]["Enums"]["counter_service"]
+          cover_path?: string | null
           created_at?: string
+          delivery_fee_mode?: Database["public"]["Enums"]["delivery_fee_mode"]
+          delivery_radius_km?: number | null
+          description?: string | null
+          district?: string | null
+          free_delivery_above_cents?: number | null
           id?: string
           location?: unknown
+          logo_path?: string | null
+          min_order_cents?: number
           name?: string
           organization_id?: string
+          phone?: string | null
+          postal_code?: string | null
+          prep_minutes_max?: number
+          prep_minutes_min?: number
           slug?: string
+          state?: string | null
           status?: Database["public"]["Enums"]["restaurant_status"]
+          street?: string | null
+          street_number?: string | null
           timezone?: string
           updated_at?: string
         }
@@ -1452,6 +1608,10 @@ export type Database = {
         Args: { p_marca: string; p_nome: string; p_slug: string }
         Returns: string
       }
+      definir_localizacao: {
+        Args: { p_latitude: number; p_longitude: number; p_restaurant_id: string }
+        Returns: undefined
+      }
       definir_pin: {
         Args: { p_nome: string; p_pin: string; p_restaurant_id: string; p_user_id: string }
         Returns: undefined
@@ -1490,6 +1650,10 @@ export type Database = {
         Args: { p_impressora: string }
         Returns: string
       }
+      loja_aberta_agora: {
+        Args: { p_quando?: string; p_restaurant_id: string }
+        Returns: boolean
+      }
       marcar_entregue: {
         Args: { p_pedido: string }
         Returns: Database["public"]["Enums"]["order_status"]
@@ -1521,6 +1685,10 @@ export type Database = {
         Args: { p_codigo: string; p_nome: string; p_token_hash: string }
         Returns: { loja: string; restaurant_id: string }[]
       }
+      pausar_loja: {
+        Args: { p_restaurant_id: string }
+        Returns: undefined
+      }
       pegar_impressao: {
         Args: { p_job: string }
         Returns: {
@@ -1531,6 +1699,14 @@ export type Database = {
           payload: Json
           port: number
         }[]
+      }
+      pendencias_para_publicar: {
+        Args: { p_restaurant_id: string }
+        Returns: string[]
+      }
+      publicar_loja: {
+        Args: { p_restaurant_id: string }
+        Returns: undefined
       }
       receber_conta: {
         Args: {
@@ -1587,6 +1763,7 @@ export type Database = {
       cash_movement_type: "sangria" | "suprimento"
       cash_session_status: "aberto" | "fechado"
       counter_service: "cliente_busca" | "garcom_leva"
+      delivery_fee_mode: "gratis" | "bairro" | "distancia"
       domain_kind: "marca" | "loja"
       domain_status: "pendente" | "verificando" | "ativo" | "erro"
       identifier_type: "senha" | "nome" | "mesa" | "comanda"

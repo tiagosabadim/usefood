@@ -10,6 +10,7 @@ import { Configuracoes } from './configuracoes';
 import { Equipe } from './equipe';
 import { TelaDaCozinha } from './cozinha';
 import { Impressao } from './impressao';
+import { LojaOnline } from './loja-online';
 import { Pdv } from './pdv';
 import { Tela, Titulo } from './tela';
 
@@ -49,6 +50,7 @@ export function AreaDoRestaurante({
     | 'chamada'
     | 'configuracoes'
     | 'equipe'
+    | 'loja-online'
   >('inicio');
 
   useEffect(() => {
@@ -126,6 +128,10 @@ export function AreaDoRestaurante({
     return (
       <PainelDeChamada supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />
     );
+  }
+
+  if (tela === 'loja-online') {
+    return <LojaOnline supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />;
   }
 
   if (tela === 'equipe') {
@@ -208,6 +214,15 @@ export function AreaDoRestaurante({
               onClick={() => setTela('impressao')}
             >
               Impressão
+            </Button>
+          )}
+          {podeEditar && (
+            <Button
+              variant="secondary"
+              className="h-target-pdv"
+              onClick={() => setTela('loja-online')}
+            >
+              Loja online
             </Button>
           )}
           {podeEditar && (

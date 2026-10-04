@@ -74,6 +74,14 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - No PDV: **Balcão, Mesa, Retirada ou Delivery**; **Enviar para a cozinha** (paga depois) ou **Cobrar agora**. A aba **Contas abertas** mostra mesas e pedidos a receber, com as rodadas, **Fechar conta** e **Nova rodada**.
 - Testes em `supabase/tests/contas.test.sql`.
 
+## Loja online, parte 1: dados, horários, entrega e publicação
+
+- `/pdv` → **Loja online** (dono e gerente): situação (No ar, Em cadastro, Pausada) com a lista do que falta para publicar (`pendencias_para_publicar`), **Publicar a loja** (`publicar_loja`) e **Tirar do ar** (`pausar_loja`).
+- **Dados**: descrição, WhatsApp, endereço com busca por CEP (ViaCEP) e **Usar a localização deste aparelho** (`definir_localizacao`, feito de dentro da loja).
+- **Horários** (`opening_hours`): vários por dia; fechar depois da meia-noite vale (`loja_aberta_agora` entende a madrugada, no fuso da loja).
+- **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
+- Testes em `supabase/tests/loja_online.test.sql`.
+
 ## Para viagem por item
 
 - Antes de enviar para a cozinha (PDV e comanda), a lista do pedido (`CartList`) tem **Comer aqui | Para viagem** para o pedido todo e a etiqueta **Pra viagem** em cada item, para misturar (comer um lanche e levar outro). Na mesa, tudo fica na mesma conta, até um pedido só para viagem.
