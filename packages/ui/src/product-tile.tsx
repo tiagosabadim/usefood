@@ -9,6 +9,22 @@ export interface ProductTileProps {
   quantity?: number;
   disabled?: boolean;
   onClick: () => void;
+  /** Foto do produto. */
+  imageUrl?: string | null;
+  /**
+   * Reserva o espaço da foto. Ligue quando algum produto da grade tiver foto,
+   * para os blocos sem foto ficarem do mesmo tamanho (com as iniciais no lugar).
+   */
+  showImage?: boolean;
+}
+
+function iniciais(nome: string): string {
+  return nome
+    .split(/\s+/)
+    .filter((p) => p.length > 2)
+    .slice(0, 2)
+    .map((p) => p[0]!.toUpperCase())
+    .join('');
 }
 
 /** Bloco de produto do PDV: um toque adiciona uma unidade. */
@@ -18,7 +34,10 @@ export function ProductTile({
   quantity = 0,
   disabled,
   onClick,
+  imageUrl,
+  showImage = false,
 }: ProductTileProps) {
+  const comFoto = showImage || Boolean(imageUrl);
   return (
     <button
       type="button"
@@ -26,17 +45,40 @@ export function ProductTile({
       onClick={onClick}
       aria-label={`Adicionar ${name}, ${priceLabel}${quantity ? `, ${quantity} no pedido` : ''}`}
       className={cn(
-        'relative flex h-32 flex-col justify-between rounded-lg border bg-surface p-4 text-left transition',
+        'relative flex flex-col overflow-hidden rounded-lg border bg-surface text-left transition',
         'hover:bg-surface-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
         'disabled:cursor-not-allowed disabled:opacity-50',
         quantity ? 'border-brand' : 'border-line',
+        !comFoto && 'h-32',
       )}
     >
-      <span className="pr-8 text-body-strong text-ink">{name}</span>
-      <span className="flex items-center justify-between">
-        <span className="text-body-strong text-ink tabular-nums">{priceLabel}</span>
-        <span className="flex size-8 items-center justify-center rounded-pill bg-brand-soft text-brand-text">
-          <Icon name="mais" size={18} />
+      {comFoto && (
+        <span className="block aspect-[4/3] w-full shrink-0 bg-surface-strong">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="size-full object-cover"
+            />
+          ) : (
+            <span
+              aria-hidden="true"
+              className="flex size-full items-center justify-center font-display text-title-screen text-ink-muted"
+            >
+              {iniciais(name)}
+            </span>
+          )}
+        </span>
+      )}
+      <span className={cn('flex flex-1 flex-col justify-between gap-2', comFoto ? 'p-3' : 'p-4')}>
+        <span className={cn('text-body-strong text-ink', !comFoto && 'pr-8')}>{name}</span>
+        <span className="flex items-center justify-between">
+          <span className="text-body-strong text-ink tabular-nums">{priceLabel}</span>
+          <span className="flex size-8 items-center justify-center rounded-pill bg-brand-soft text-brand-text">
+            <Icon name="mais" size={18} />
+          </span>
         </span>
       </span>
       {quantity > 0 && (

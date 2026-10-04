@@ -28,10 +28,12 @@ export function MontarItem({
   produto,
   tamanhos,
   grupos,
+  fotoUrl,
   onAdicionar,
   onFechar,
 }: {
   produto: { id: string; name: string; price_cents: number };
+  fotoUrl?: string | null;
   tamanhos: OpcaoTamanho[];
   grupos: GrupoDeOpcoes[];
   onAdicionar: (item: NovoItem) => void;
@@ -119,6 +121,10 @@ export function MontarItem({
         </div>
       }
     >
+      {fotoUrl && (
+        <img src={fotoUrl} alt="" className="aspect-video w-full rounded-lg object-cover" />
+      )}
+
       {tamanhos.length > 0 && (
         <section className="flex flex-col gap-2">
           <h3 className="text-body-strong text-ink">Tamanho</h3>

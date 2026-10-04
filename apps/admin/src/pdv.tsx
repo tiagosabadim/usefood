@@ -32,11 +32,15 @@ import {
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Cobranca, ContaPaga, METODOS, type Conta, type PagamentoFeito } from './cobranca';
 import { ContasAbertas } from './contas-abertas';
+import { urlDaFoto } from './foto';
 import { MontarItem, type GrupoDeOpcoes, type OpcaoTamanho } from './montar-item';
 import { Salao } from './salao';
 
 type Categoria = Pick<Tables<'categories'>, 'id' | 'name'>;
-type Produto = Pick<Tables<'products'>, 'id' | 'category_id' | 'name' | 'price_cents'>;
+type Produto = Pick<
+  Tables<'products'>,
+  'id' | 'category_id' | 'name' | 'price_cents' | 'photo_path'
+>;
 type TipoPedido = Enums<'order_type'>;
 type Metodo = Enums<'payment_method'>;
 interface Opcoes {
@@ -138,7 +142,7 @@ export function Pdv({
         .order('created_at'),
       supabase
         .from('products')
-        .select('id, category_id, name, price_cents')
+        .select('id, category_id, name, price_cents, photo_path')
         .eq('restaurant_id', loja_)
         .eq('is_active', true)
         .order('position')
@@ -224,6 +228,10 @@ export function Pdv({
   }, [produtos, categoriaAtual, busca]);
 
   const subtotal = subtotalCentavos(carrinho);
+  // Algum produto da grade tem foto: todos os blocos reservam o espaço, para a grade ficar alinhada
+  const gradeComFotos = visiveis.some((p) => p.photo_path);
+  const fotoDoProduto = (id: string) =>
+    urlDaFoto(supabase, produtos.find((p) => p.id === id)?.photo_path ?? null);
   const ident = identificacaoPara(tipo, atendimento);
   const identificacaoFalta = ident.campo !== null && !identificador.trim();
   const trocoParaCentavos = trocoPara.trim() === '' ? null : lerPreco(trocoPara);
@@ -433,6 +441,8 @@ export function Pdv({
                       ? `a partir de ${formatarPreco(menor)}`
                       : formatarPreco(menor)
                   }
+                  imageUrl={urlDaFoto(supabase, p.photo_path)}
+                  showImage={gradeComFotos}
                   quantity={quantidadeDoProduto(carrinho, p.id)}
                   disabled={!montandoPedido}
                   onClick={() => tocarProduto(p)}
@@ -569,6 +579,14 @@ export function Pdv({
                     const detalhe = detalheDoItem(i);
                     return (
                       <li key={i.chave} className="flex items-center gap-3 py-3">
+                        {fotoDoProduto(i.productId) && (
+                          <img
+                            src={fotoDoProduto(i.productId)!}
+                            alt=""
+                            loading="lazy"
+                            className="size-10 shrink-0 rounded-sm object-cover"
+                          />
+                        )}
                         <div className="min-w-0 flex-1">
                           <p className="text-body-strong text-ink">{i.nome}</p>
                           {detalhe && <p className="text-caption text-ink-muted">{detalhe}</p>}
@@ -653,6 +671,7 @@ export function Pdv({
       {montando && (
         <MontarItem
           produto={montando}
+          fotoUrl={urlDaFoto(supabase, montando.photo_path)}
           tamanhos={opcoes.get(montando.id)?.tamanhos ?? []}
           grupos={opcoes.get(montando.id)?.grupos ?? []}
           onFechar={() => setMontando(null)}
