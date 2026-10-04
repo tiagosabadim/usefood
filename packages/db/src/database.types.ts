@@ -653,11 +653,13 @@ export type Database = {
           accepted_at: string | null
           cancel_reason: string | null
           channel: string
+          courier_id: string | null
           created_at: string
           created_by: string | null
           day: string
           delivered_at: string | null
           discount_cents: number
+          dispatched_at: string | null
           id: string
           identifier: string
           identifier_type: Database["public"]["Enums"]["identifier_type"]
@@ -679,11 +681,13 @@ export type Database = {
           accepted_at?: string | null
           cancel_reason?: string | null
           channel?: string
+          courier_id?: string | null
           created_at?: string
           created_by?: string | null
           day: string
           delivered_at?: string | null
           discount_cents?: number
+          dispatched_at?: string | null
           id?: string
           identifier: string
           identifier_type?: Database["public"]["Enums"]["identifier_type"]
@@ -705,11 +709,13 @@ export type Database = {
           accepted_at?: string | null
           cancel_reason?: string | null
           channel?: string
+          courier_id?: string | null
           created_at?: string
           created_by?: string | null
           day?: string
           delivered_at?: string | null
           discount_cents?: number
+          dispatched_at?: string | null
           id?: string
           identifier?: string
           identifier_type?: Database["public"]["Enums"]["identifier_type"]
@@ -1599,6 +1605,10 @@ export type Database = {
         Args: { p_caixa?: string; p_fundo_cents: number; p_restaurant_id: string }
         Returns: string
       }
+      aceitar_pedido: {
+        Args: { p_pedido: string }
+        Returns: Database["public"]["Enums"]["order_status"]
+      }
       acompanhar_pedido: {
         Args: { p_token: string }
         Returns: Json
@@ -1621,6 +1631,10 @@ export type Database = {
       concluir_impressao: {
         Args: { p_erro?: string | null; p_job: string; p_ok: boolean }
         Returns: Database["public"]["Enums"]["print_job_status"]
+      }
+      confirmar_entrega: {
+        Args: { p_codigo?: string | null; p_pedido: string }
+        Returns: Database["public"]["Enums"]["order_status"]
       }
       criar_codigo_de_pareamento: {
         Args: { p_restaurant_id: string; p_tipo?: string }
@@ -1784,6 +1798,10 @@ export type Database = {
           troco_cents: number
         }[]
       }
+      recusar_pedido: {
+        Args: { p_motivo: string; p_pedido: string }
+        Returns: undefined
+      }
       reimprimir_pedido: {
         Args: { p_pedido: string }
         Returns: number
@@ -1816,6 +1834,10 @@ export type Database = {
           vendido_cents: number
         }[]
       }
+      sair_para_entrega: {
+        Args: { p_pedido: string }
+        Returns: Database["public"]["Enums"]["order_status"]
+      }
     }
     Enums: {
       brand_role: "franqueado" | "suporte"
@@ -1832,7 +1854,7 @@ export type Database = {
       order_type: "balcao" | "mesa" | "retirada" | "delivery"
       payment_method: "dinheiro" | "pix" | "credito" | "debito" | "vale_refeicao" | "outro"
       print_job_status: "pendente" | "imprimindo" | "impresso" | "falhou"
-      restaurant_role: "dono" | "gerente" | "caixa" | "garcom" | "cozinha"
+      restaurant_role: "dono" | "gerente" | "caixa" | "garcom" | "cozinha" | "entregador"
       restaurant_status: "rascunho" | "ativo" | "pausado" | "encerrado"
       sales_channel: "salao" | "balcao" | "delivery" | "marketplace"
       tab_status: "aberta" | "fechada" | "cancelada"

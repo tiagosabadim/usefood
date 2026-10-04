@@ -82,6 +82,14 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Aceite e entrega (loja online, parte 3)
+
+- PDV: faixa amarela **pedidos online esperando a loja**, com bipe (`PedidosOnline`). **Aceitar** (`aceitar_pedido`, caixa, gerente ou dono) manda para a cozinha e para a impressora; **Recusar** (`recusar_pedido`) exige o motivo, que o cliente vê, e cancela a conta.
+- Função nova na equipe: **Entregador** (`restaurant_role` `entregador`). Em `/garcom`, com o PIN dele, aparece **Entregas**: Prontos (com quanto cobrar e o troco) → **Saí para entrega** (`sair_para_entrega`) → Comigo (mapa, ligar, código) → **Confirmar entrega** (`confirmar_entrega`, só com os 4 últimos números do celular do cliente; pedido de PDV sem celular conclui sem código).
+- Tela da cozinha: pedido de entrega pronto mostra "Esperando o entregador" no lugar de Entregue.
+- O dinheiro recebido na porta entra no caixa quando o entregador volta (Contas abertas no PDV).
+- Testes em `supabase/tests/aceite_e_entrega.test.sql`.
+
 ## Loja online do cliente (parte 2b)
 
 - `apps/web`: `usefood.com.br/<loja>` (ou a raiz do domínio próprio da loja). Capa (3:1) e logo, aberto ou fechado com o horário de hoje, resumo da entrega, WhatsApp, cardápio por categoria (fotos 4:3, Montar item) e **sacola** guardada no aparelho.

@@ -291,9 +291,18 @@ export function TelaDaCozinha({
                     </span>
                   </div>
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-                    <Button loading={ocupado === p.id} onClick={() => void agir('entregue', p.id)}>
-                      Entregue
-                    </Button>
+                    {p.type === 'delivery' ? (
+                      <span className="flex items-center text-body text-ink-muted">
+                        Esperando o entregador
+                      </span>
+                    ) : (
+                      <Button
+                        loading={ocupado === p.id}
+                        onClick={() => void agir('entregue', p.id)}
+                      >
+                        Entregue
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       disabled={ocupado === p.id}

@@ -51,13 +51,14 @@ export function identificacaoPara(tipo: TipoPedido, atendimento: Atendimento): I
     : { tipo: 'senha', campo: null };
 }
 
-export type Papel = 'dono' | 'gerente' | 'caixa' | 'garcom' | 'cozinha';
+export type Papel = 'dono' | 'gerente' | 'caixa' | 'garcom' | 'cozinha' | 'entregador';
 const PAPEIS: Record<Papel, string> = {
   dono: 'Dono',
   gerente: 'Gerente',
   caixa: 'Caixa',
   garcom: 'Garçom',
   cozinha: 'Cozinha',
+  entregador: 'Entregador',
 };
 export const rotuloDoPapel = (papel: Papel) => PAPEIS[papel];
 

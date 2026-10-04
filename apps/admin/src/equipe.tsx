@@ -314,6 +314,7 @@ function NovaPessoa({
     { value: 'garcom', label: 'Garçom' },
     { value: 'caixa', label: 'Caixa' },
     { value: 'cozinha', label: 'Cozinha' },
+    { value: 'entregador', label: 'Entregador' },
     ...(souDono ? [{ value: 'gerente' as Papel, label: 'Gerente' }] : []),
   ];
 
@@ -341,13 +342,7 @@ function NovaPessoa({
           onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
         />
       </div>
-      <ChoiceGrid
-        label="Função"
-        columns={funcoes.length as 3 | 4}
-        options={funcoes}
-        value={papel}
-        onChange={setPapel}
-      />
+      <ChoiceGrid label="Função" columns={3} options={funcoes} value={papel} onChange={setPapel} />
       <Alert>{erro}</Alert>
       <Button
         type="submit"

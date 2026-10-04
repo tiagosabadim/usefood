@@ -11,6 +11,7 @@ import {
   type Aparelho,
 } from './aparelho';
 import { Comanda } from './comanda/comanda';
+import { Entregas } from './entregas';
 
 function Moldura({ children }: { children: ReactNode }) {
   return (
@@ -271,6 +272,18 @@ function Inicio({
           Sair
         </Button>
       </Moldura>
+    );
+  }
+  if (quem.papel === 'entregador') {
+    return (
+      <Entregas
+        supabase={supabase}
+        lojaId={quem.lojaId}
+        loja={quem.loja}
+        pessoa={{ nome: quem.nome, papel: quem.papel }}
+        euId={sessao.user.id}
+        onSair={() => void supabase.auth.signOut()}
+      />
     );
   }
   return (

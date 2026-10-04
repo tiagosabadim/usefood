@@ -14,7 +14,7 @@ const resposta = (status: number, corpo: unknown) =>
     headers: { ...CORS, 'Content-Type': 'application/json' },
   });
 const DOMINIO_DA_EQUIPE = '@equipe.usefood.app';
-const PAPEIS = ['garcom', 'caixa', 'cozinha', 'gerente'] as const;
+const PAPEIS = ['garcom', 'caixa', 'cozinha', 'entregador', 'gerente'] as const;
 
 function senhaAleatoria(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32));

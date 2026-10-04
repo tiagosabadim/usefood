@@ -5,6 +5,7 @@ import { Cardapio } from './cardapio';
 import { CriarRestaurante } from './criar-restaurante';
 import { AlertasDeImpressao } from './alerta-impressao';
 import { PdvComCaixa } from './caixa';
+import { PedidosOnline } from './pedidos-online';
 import { PainelDeChamada } from './chamada';
 import { Configuracoes } from './configuracoes';
 import { Equipe } from './equipe';
@@ -27,6 +28,7 @@ const PAPEL: Record<Papel, string> = {
   caixa: 'Caixa',
   garcom: 'Garçom',
   cozinha: 'Cozinha',
+  entregador: 'Entregador',
 };
 
 /** Depois do login: cria a primeira loja ou mostra o painel das lojas da pessoa. */
@@ -110,7 +112,12 @@ export function AreaDoRestaurante({
             loja={atual.loja}
             onVoltar={() => setTela('inicio')}
             cabecalhoDoCaixa={cabecalho}
-            avisos={<AlertasDeImpressao supabase={supabase} lojaId={atual.loja.id} />}
+            avisos={
+              <>
+                <PedidosOnline supabase={supabase} lojaId={atual.loja.id} />
+                <AlertasDeImpressao supabase={supabase} lojaId={atual.loja.id} />
+              </>
+            }
             modoInicial={tela === 'salao' ? 'salao' : 'cardapio'}
           />
         )}
