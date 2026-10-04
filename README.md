@@ -76,6 +76,15 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - Um caixa aberto por vez em cada ponto de venda (`register_name`, hoje sempre "Caixa 1"). Vários caixas na mesma loja ficam para quando houver mais de um ponto de venda.
 - Testes em `supabase/tests/caixa.test.sql`.
 
+## Impressão na cozinha (E07)
+
+- Cada pedido gera uma ordem de impressão (`print_jobs`) para cada impressora da praça de cada item: um ticket da Cozinha só com os itens da Cozinha, outro do Bar, e assim por diante. Praça sem impressora gera uma ordem já com falha, para o PDV avisar.
+- **Agente** (`apps/print-agent`): programa do computador da loja. Recebe as ordens em tempo real (com varredura a cada 10 s como rede de segurança), reserva cada ordem (`pegar_impressao`, ninguém imprime duas vezes), formata em ESC/POS com acentos (página 850), manda para a impressora de rede na porta 9100 e confirma (`concluir_impressao`; com falha, tenta até 3 vezes). Avisa que está vivo a cada 15 s (`agente_presente`).
+- **Pareamento:** o dono gera um código (`criar_codigo_de_pareamento`, 8 caracteres, 10 minutos) e roda no computador da loja `usefood-impressao parear <CÓDIGO> --servidor <URL do Supabase>`. A Edge Function `parear-impressora` cria um acesso próprio para aquele computador.
+- Para gerar o programa: `pnpm --filter @usefood/print-agent build` → `apps/print-agent/dist/usefood-impressao.mjs`, que roda com `node` (22 ou mais novo). Teste sem o sistema: `node usefood-impressao.mjs testar-impressora 192.168.0.50`.
+- Esta versão imprime em impressoras **de rede**. Impressoras USB e uma janela visual ficam para a versão em Tauri.
+- Testes em `supabase/tests/impressao.test.sql` e em `apps/print-agent`.
+
 ## Design system
 
 O visual segue o design system **usefood** (direção Pop). Os tokens dele ficam em `packages/ui/tokens/usefood.tokens.json`, e o `packages/ui/src/theme.css` é **gerado** a partir desse arquivo:

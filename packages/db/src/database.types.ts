@@ -664,6 +664,212 @@ export type Database = {
         }
         Relationships: []
       }
+      print_agent_pairings: {
+        Row: {
+          code_hash: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          restaurant_id: string
+          used_at: string | null
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          restaurant_id: string
+          used_at?: string | null
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          restaurant_id?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_agent_pairings_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_agents: {
+        Row: {
+          created_at: string
+          id: string
+          last_seen_at: string | null
+          name: string
+          restaurant_id: string
+          revoked_at: string | null
+          user_id: string
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_seen_at?: string | null
+          name: string
+          restaurant_id: string
+          revoked_at?: string | null
+          user_id: string
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_seen_at?: string | null
+          name?: string
+          restaurant_id?: string
+          revoked_at?: string | null
+          user_id?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_agents_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_jobs: {
+        Row: {
+          agent_id: string | null
+          attempts: number
+          claimed_at: string | null
+          created_at: string
+          error: string | null
+          id: string
+          kind: string
+          order_id: string | null
+          payload: Json
+          printed_at: string | null
+          printer_id: string | null
+          restaurant_id: string
+          station_id: string | null
+          status: Database["public"]["Enums"]["print_job_status"]
+        }
+        Insert: {
+          agent_id?: string | null
+          attempts?: number
+          claimed_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          order_id?: string | null
+          payload: Json
+          printed_at?: string | null
+          printer_id?: string | null
+          restaurant_id: string
+          station_id?: string | null
+          status?: Database["public"]["Enums"]["print_job_status"]
+        }
+        Update: {
+          agent_id?: string | null
+          attempts?: number
+          claimed_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          order_id?: string | null
+          payload?: Json
+          printed_at?: string | null
+          printer_id?: string | null
+          restaurant_id?: string
+          station_id?: string | null
+          status?: Database["public"]["Enums"]["print_job_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_jobs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "print_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_jobs_order_id_restaurant_id_fkey"
+            columns: ["order_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+          {
+            foreignKeyName: "print_jobs_printer_id_fkey"
+            columns: ["printer_id"]
+            isOneToOne: false
+            referencedRelation: "printers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_jobs_station_id_restaurant_id_fkey"
+            columns: ["station_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+        ]
+      }
+      printers: {
+        Row: {
+          codepage: string
+          created_at: string
+          host: string
+          id: string
+          is_active: boolean
+          name: string
+          paper_width: number
+          port: number
+          restaurant_id: string
+          station_id: string
+        }
+        Insert: {
+          codepage?: string
+          created_at?: string
+          host: string
+          id?: string
+          is_active?: boolean
+          name: string
+          paper_width?: number
+          port?: number
+          restaurant_id: string
+          station_id: string
+        }
+        Update: {
+          codepage?: string
+          created_at?: string
+          host?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          paper_width?: number
+          port?: number
+          restaurant_id?: string
+          station_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "printers_station_id_restaurant_id_fkey"
+            columns: ["station_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id", "restaurant_id"]
+          },
+        ]
+      }
       product_modifier_groups: {
         Row: {
           group_id: string
@@ -988,6 +1194,18 @@ export type Database = {
         Args: { p_caixa?: string; p_fundo_cents: number; p_restaurant_id: string }
         Returns: string
       }
+      agente_presente: {
+        Args: { p_versao?: string | null }
+        Returns: string
+      }
+      concluir_impressao: {
+        Args: { p_erro?: string | null; p_job: string; p_ok: boolean }
+        Returns: Database["public"]["Enums"]["print_job_status"]
+      }
+      criar_codigo_de_pareamento: {
+        Args: { p_restaurant_id: string }
+        Returns: { codigo: string; expira_em: string }[]
+      }
       criar_pedido: {
         Args: {
           p_identificador: string | null
@@ -1005,6 +1223,14 @@ export type Database = {
           total_cents: number
         }[]
       }
+      criar_restaurante: {
+        Args: { p_marca: string; p_nome: string; p_slug: string }
+        Returns: string
+      }
+      desligar_agente: {
+        Args: { p_agente: string }
+        Returns: undefined
+      }
       fechar_caixa: {
         Args: { p_contado_cents: number; p_observacao?: string | null; p_sessao: string }
         Returns: {
@@ -1012,6 +1238,10 @@ export type Database = {
           diferenca_cents: number
           esperado_cents: number
         }[]
+      }
+      imprimir_teste: {
+        Args: { p_impressora: string }
+        Returns: string
       }
       movimentar_caixa: {
         Args: {
@@ -1022,9 +1252,16 @@ export type Database = {
         }
         Returns: string
       }
-      criar_restaurante: {
-        Args: { p_marca: string; p_nome: string; p_slug: string }
-        Returns: string
+      pegar_impressao: {
+        Args: { p_job: string }
+        Returns: {
+          codepage: string
+          host: string
+          kind: string
+          paper_width: number
+          payload: Json
+          port: number
+        }[]
       }
       registrar_pagamento: {
         Args: {
@@ -1037,6 +1274,18 @@ export type Database = {
           falta_cents: number
           pago_cents: number
           troco_cents: number
+        }[]
+      }
+      reimprimir_pedido: {
+        Args: { p_pedido: string }
+        Returns: number
+      }
+      resolver_dominio: {
+        Args: { p_hostname: string }
+        Returns: {
+          brand_slug: string
+          kind: Database["public"]["Enums"]["domain_kind"]
+          restaurant_slug: string
         }[]
       }
       resumo_do_caixa: {
@@ -1055,14 +1304,6 @@ export type Database = {
           vendido_cents: number
         }[]
       }
-      resolver_dominio: {
-        Args: { p_hostname: string }
-        Returns: {
-          brand_slug: string
-          kind: Database["public"]["Enums"]["domain_kind"]
-          restaurant_slug: string
-        }[]
-      }
     }
     Enums: {
       brand_role: "franqueado" | "suporte"
@@ -1075,6 +1316,7 @@ export type Database = {
       order_status: "aberto" | "em_preparo" | "pronto" | "concluido" | "cancelado"
       order_type: "balcao" | "mesa" | "retirada" | "delivery"
       payment_method: "dinheiro" | "pix" | "credito" | "debito" | "vale_refeicao" | "outro"
+      print_job_status: "pendente" | "imprimindo" | "impresso" | "falhou"
       restaurant_role: "dono" | "gerente" | "caixa" | "garcom" | "cozinha"
       restaurant_status: "rascunho" | "ativo" | "pausado" | "encerrado"
       sales_channel: "salao" | "balcao" | "delivery" | "marketplace"

@@ -1,0 +1,23 @@
+{
+  "name": "@usefood/print-agent",
+  "private": true,
+  "type": "module",
+  "description": "Programa do computador da loja que imprime os pedidos nas impressoras térmicas de rede.",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start": "node dist/usefood-impressao.mjs iniciar"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
+    "@usefood/core": "workspace:*",
+    "@usefood/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.3"
+  }
+}

@@ -7,3 +7,4 @@ export * from './menu';
 export * from './money';
 export * from './site';
 export * from './slug';
+export * from './ticket';
