@@ -216,6 +216,47 @@ export type Database = {
           },
         ]
       }
+      dining_tables: {
+        Row: {
+          area: string
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          position: number
+          restaurant_id: string
+          seats: number | null
+        }
+        Insert: {
+          area?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          position?: number
+          restaurant_id: string
+          seats?: number | null
+        }
+        Update: {
+          area?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          position?: number
+          restaurant_id?: string
+          seats?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dining_tables_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       domains: {
         Row: {
           brand_id: string
@@ -1057,6 +1098,8 @@ export type Database = {
       restaurants: {
         Row: {
           brand_id: string
+          call_by: Database["public"]["Enums"]["call_mode"]
+          counter_dine_in: Database["public"]["Enums"]["counter_service"]
           created_at: string
           id: string
           location: unknown
@@ -1069,6 +1112,8 @@ export type Database = {
         }
         Insert: {
           brand_id: string
+          call_by?: Database["public"]["Enums"]["call_mode"]
+          counter_dine_in?: Database["public"]["Enums"]["counter_service"]
           created_at?: string
           id?: string
           location?: unknown
@@ -1081,6 +1126,8 @@ export type Database = {
         }
         Update: {
           brand_id?: string
+          call_by?: Database["public"]["Enums"]["call_mode"]
+          counter_dine_in?: Database["public"]["Enums"]["counter_service"]
           created_at?: string
           id?: string
           location?: unknown
@@ -1293,6 +1340,10 @@ export type Database = {
         Args: { p_restaurant_id: string }
         Returns: { codigo: string; expira_em: string }[]
       }
+      criar_mesas: {
+        Args: { p_area?: string; p_ate: number; p_de: number; p_restaurant_id: string }
+        Returns: number
+      }
       criar_pedido: {
         Args: {
           p_identificador: string | null
@@ -1411,8 +1462,10 @@ export type Database = {
     Enums: {
       brand_role: "franqueado" | "suporte"
       brand_status: "rascunho" | "ativa" | "suspensa"
+      call_mode: "senha" | "nome"
       cash_movement_type: "sangria" | "suprimento"
       cash_session_status: "aberto" | "fechado"
+      counter_service: "cliente_busca" | "garcom_leva"
       domain_kind: "marca" | "loja"
       domain_status: "pendente" | "verificando" | "ativo" | "erro"
       identifier_type: "senha" | "nome" | "mesa" | "comanda"

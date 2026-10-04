@@ -74,6 +74,17 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - No PDV: **Balcão, Mesa, Retirada ou Delivery**; **Enviar para a cozinha** (paga depois) ou **Cobrar agora**. A aba **Contas abertas** mostra mesas e pedidos a receber, com as rodadas, **Fechar conta** e **Nova rodada**.
 - Testes em `supabase/tests/contas.test.sql`.
 
+## Salão e jeito de atender
+
+- **Configurações** (`/pdv` → Configurações, dono e gerente):
+  - Comer no local pedindo no balcão: o **cliente busca** (é chamado pela senha ou pelo nome) ou o **garçom leva até a mesa** (o PDV pede a mesa e não chama ninguém). Coluna `restaurants.counter_dine_in`.
+  - Chamar o cliente por **senha** ou **nome** (para viagem e balcão com retirada). Coluna `restaurants.call_by`.
+  - **Mesas** (`dining_tables`), com área (Salão, Varanda). `criar_mesas` cria um intervalo de uma vez e mantém as que já existem.
+- **PDV**: tipos **Comer aqui**, **Mesa**, **Para viagem** e **Delivery**; o que o PDV pede em cada um vem de `identificacaoPara` (`@usefood/core`). O botão **Cardápio | Salão** troca a área principal pelo mapa das mesas: livre ou ocupada, valor, tempo e pedidos prontos para levar. Mesa ocupada abre a conta ao lado; mesa livre começa um pedido para ela.
+- **Painel de chamada** (para a TV do balcão): **Preparando** e **Pronto! Pode retirar**, com bipe. Mostra pedidos para viagem e de balcão chamados por senha ou nome; o pronto sai do painel quando é marcado como entregue ou depois de 30 minutos.
+- Segurança: pela API, a equipe só altera `name`, `timezone`, `call_by` e `counter_dine_in` da loja. Status, endereço e marca mudam só por funções do sistema.
+- Testes em `supabase/tests/salao.test.sql`.
+
 ## Tela da cozinha (KDS)
 
 - Em `/pdv` → **Tela da cozinha** (qualquer pessoa da equipe; é o botão principal para quem tem o papel Cozinha). Abre em tema escuro, em tela cheia.

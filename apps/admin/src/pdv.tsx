@@ -7,9 +7,12 @@ import {
   quantidadeDoProduto,
   quantidadeTotal,
   removerUnidade,
+  identificacaoPara,
   rotuloDaConta,
+  rotuloDoTipo,
   somarUnidade,
   subtotalCentavos,
+  type Atendimento,
   type ItemCarrinho,
   type NovoItem,
 } from '@usefood/core';
@@ -30,6 +33,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { Cobranca, ContaPaga, METODOS, type Conta, type PagamentoFeito } from './cobranca';
 import { ContasAbertas } from './contas-abertas';
 import { MontarItem, type GrupoDeOpcoes, type OpcaoTamanho } from './montar-item';
+import { Salao } from './salao';
 
 type Categoria = Pick<Tables<'categories'>, 'id' | 'name'>;
 type Produto = Pick<Tables<'products'>, 'id' | 'category_id' | 'name' | 'price_cents'>;
@@ -41,16 +45,17 @@ interface Opcoes {
 }
 type Painel =
   | { tela: 'pedido' }
-  | { tela: 'contas' }
+  | { tela: 'contas'; abrir?: string }
   | { tela: 'cobrando'; conta: Conta; pedidoId: string | null }
   | { tela: 'paga'; conta: Conta; pagamentos: PagamentoFeito[]; pedidoId: string | null };
 
-const TIPOS: Option<TipoPedido>[] = [
-  { value: 'balcao', label: 'Balcão' },
-  { value: 'mesa', label: 'Mesa' },
-  { value: 'retirada', label: 'Retirada' },
-  { value: 'delivery', label: 'Delivery' },
-];
+const TIPOS: Option<TipoPedido>[] = (['balcao', 'mesa', 'retirada', 'delivery'] as const).map(
+  (t) => ({
+    value: t,
+    label: rotuloDoTipo(t),
+  }),
+);
+const ATENDIMENTO_PADRAO: Atendimento = { chamarPor: 'senha', balcao: 'cliente_busca' };
 const ERROS_CONHECIDOS = new Set(['P0001', 'P0002', '22023', '42501']);
 const SEM_OPCOES: Opcoes = { tamanhos: [], grupos: [] };
 const CAMPOS_DA_CONTA =
@@ -74,6 +79,7 @@ export function Pdv({
   onVoltar,
   cabecalhoDoCaixa,
   avisos,
+  modoInicial = 'cardapio',
 }: {
   supabase: AppSupabaseClient;
   loja: { id: string; name: string };
@@ -82,6 +88,8 @@ export function Pdv({
   cabecalhoDoCaixa?: ReactNode;
   /** Avisos de impressão, no topo da área de produtos. */
   avisos?: ReactNode;
+  /** Abrir mostrando o cardápio ou o mapa do salão. */
+  modoInicial?: 'cardapio' | 'salao';
 }) {
   const [carregando, setCarregando] = useState(true);
   const [falhou, setFalhou] = useState(false);
@@ -94,7 +102,8 @@ export function Pdv({
 
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
   const [tipo, setTipo] = useState<TipoPedido>('balcao');
-  const [usarNome, setUsarNome] = useState(false);
+  const [atendimento, setAtendimento] = useState<Atendimento>(ATENDIMENTO_PADRAO);
+  const [modo, setModo] = useState<'cardapio' | 'salao'>(modoInicial);
   const [identificador, setIdentificador] = useState('');
   const [previsto, setPrevisto] = useState<Metodo | null>(null);
   const [trocoPara, setTrocoPara] = useState('');
@@ -104,6 +113,17 @@ export function Pdv({
   const [enviando, setEnviando] = useState<'cozinha' | 'cobrar' | null>(null);
   const [erro, setErro] = useState('');
   const [enviado, setEnviado] = useState('');
+
+  useEffect(() => {
+    void supabase
+      .from('restaurants')
+      .select('call_by, counter_dine_in')
+      .eq('id', loja.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setAtendimento({ chamarPor: data.call_by, balcao: data.counter_dine_in });
+      });
+  }, [supabase, loja.id]);
 
   useEffect(() => {
     let ativo = true;
@@ -204,8 +224,8 @@ export function Pdv({
   }, [produtos, categoriaAtual, busca]);
 
   const subtotal = subtotalCentavos(carrinho);
-  const precisaNome = tipo === 'retirada' || tipo === 'delivery' || (tipo === 'balcao' && usarNome);
-  const identificacaoFalta = (tipo === 'mesa' || precisaNome) && !identificador.trim();
+  const ident = identificacaoPara(tipo, atendimento);
+  const identificacaoFalta = ident.campo !== null && !identificador.trim();
   const trocoParaCentavos = trocoPara.trim() === '' ? null : lerPreco(trocoPara);
   const montandoPedido = painel.tela === 'pedido';
 
@@ -218,7 +238,6 @@ export function Pdv({
   function escolherTipo(novo: TipoPedido) {
     setTipo(novo);
     setIdentificador('');
-    setUsarNome(false);
     setPrevisto(null);
     setTrocoPara('');
   }
@@ -235,12 +254,12 @@ export function Pdv({
     setErro('');
     setEnviado('');
     setEnviando(destino);
-    const identificacao = tipo === 'mesa' ? 'mesa' : precisaNome ? 'nome' : 'senha';
+    const identificacao = ident.tipo;
     const { data, error } = await supabase.rpc('criar_pedido', {
       p_restaurant_id: loja.id,
       p_tipo: tipo,
       p_identificador_tipo: identificacao,
-      p_identificador: identificacao === 'senha' ? null : identificador.trim(),
+      p_identificador: ident.campo ? identificador.trim() : null,
       p_itens: carrinho.map((i) => ({
         product_id: i.productId,
         quantidade: i.quantidade,
@@ -349,7 +368,35 @@ export function Pdv({
 
       <main className="flex min-w-0 flex-col gap-5 p-5 lg:overflow-y-auto lg:p-6">
         {avisos}
-        <div className="flex flex-wrap items-end justify-between gap-4">
+        <SegmentedControl
+          label="Área principal"
+          className="self-start"
+          options={[
+            { value: 'cardapio', label: 'Cardápio' },
+            { value: 'salao', label: 'Salão' },
+          ]}
+          value={modo}
+          onChange={setModo}
+        />
+        {modo === 'salao' && (
+          <Salao
+            supabase={supabase}
+            lojaId={loja.id}
+            onMesaLivre={(label) => {
+              escolherTipo('mesa');
+              setIdentificador(label);
+              setModo('cardapio');
+              setPainel({ tela: 'pedido' });
+            }}
+            onMesaOcupada={(contaId) => setPainel({ tela: 'contas', abrir: contaId })}
+          />
+        )}
+        <div
+          className={cn(
+            'flex flex-wrap items-end justify-between gap-4',
+            modo === 'salao' && 'hidden',
+          )}
+        >
           <div className="flex flex-col gap-1">
             <span className="text-caption text-ink-muted">{loja.name}</span>
             <h1 className="font-display text-title-screen text-ink">
@@ -368,7 +415,7 @@ export function Pdv({
           />
         </div>
 
-        {visiveis.length === 0 ? (
+        {modo === 'salao' ? null : visiveis.length === 0 ? (
           <p className="text-body text-ink-muted">Nenhum produto aqui.</p>
         ) : (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
@@ -422,10 +469,12 @@ export function Pdv({
             supabase={supabase}
             lojaId={loja.id}
             onQuantidade={contarContas}
+            abrirContaId={painel.abrir ?? null}
             onCobrar={(conta) => setPainel({ tela: 'cobrando', conta, pedidoId: null })}
             onNovaRodada={(mesa) => {
               escolherTipo('mesa');
               setIdentificador(mesa);
+              setModo('cardapio');
               setPainel({ tela: 'pedido' });
             }}
           />
@@ -465,34 +514,18 @@ export function Pdv({
                 value={tipo}
                 onChange={escolherTipo}
               />
-              {tipo === 'balcao' && (
-                <SegmentedControl
-                  label="Identificação no balcão"
-                  className="self-start"
-                  options={[
-                    { value: 'senha', label: 'Senha' },
-                    { value: 'nome', label: 'Nome' },
-                  ]}
-                  value={usarNome ? 'nome' : 'senha'}
-                  onChange={(v) => {
-                    setUsarNome(v === 'nome');
-                    setIdentificador('');
-                  }}
-                />
-              )}
-              {tipo === 'balcao' && !usarNome && (
-                <p className="text-caption text-ink-muted">
-                  A senha sai sozinha quando o pedido for lançado.
-                </p>
-              )}
-              {(tipo === 'mesa' || precisaNome) && (
+              {ident.campo ? (
                 <TextField
-                  label={tipo === 'mesa' ? 'Número da mesa' : 'Nome do cliente'}
-                  inputMode={tipo === 'mesa' ? 'numeric' : 'text'}
+                  label={ident.campo.rotulo}
+                  inputMode={ident.campo.numerico ? 'numeric' : 'text'}
                   maxLength={40}
                   value={identificador}
                   onChange={(e) => setIdentificador(e.target.value)}
                 />
+              ) : (
+                <p className="text-caption text-ink-muted">
+                  A senha sai sozinha e é chamada quando o pedido ficar pronto.
+                </p>
               )}
               {(tipo === 'delivery' || tipo === 'retirada') && (
                 <div className="flex flex-col gap-2">
@@ -597,7 +630,9 @@ export function Pdv({
               <div className="flex items-center justify-between">
                 {identificacaoFalta && carrinho.length > 0 ? (
                   <p className="text-caption text-ink-muted">
-                    {tipo === 'mesa' ? 'Digite o número da mesa.' : 'Digite o nome do cliente.'}
+                    {ident.tipo === 'mesa'
+                      ? 'Digite o número da mesa.'
+                      : 'Digite o nome do cliente.'}
                   </p>
                 ) : (
                   <span />

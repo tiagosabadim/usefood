@@ -5,6 +5,8 @@ import { Cardapio } from './cardapio';
 import { CriarRestaurante } from './criar-restaurante';
 import { AlertasDeImpressao } from './alerta-impressao';
 import { PdvComCaixa } from './caixa';
+import { PainelDeChamada } from './chamada';
+import { Configuracoes } from './configuracoes';
 import { TelaDaCozinha } from './cozinha';
 import { Impressao } from './impressao';
 import { Pdv } from './pdv';
@@ -36,9 +38,9 @@ export function AreaDoRestaurante({
   const [estado, setEstado] = useState<Estado>({ tipo: 'carregando' });
   const [versao, setVersao] = useState(0);
   const [selecionada, setSelecionada] = useState(0);
-  const [tela, setTela] = useState<'inicio' | 'cardapio' | 'pdv' | 'impressao' | 'cozinha'>(
-    'inicio',
-  );
+  const [tela, setTela] = useState<
+    'inicio' | 'cardapio' | 'pdv' | 'salao' | 'impressao' | 'cozinha' | 'chamada' | 'configuracoes'
+  >('inicio');
 
   useEffect(() => {
     let ativo = true;
@@ -88,7 +90,7 @@ export function AreaDoRestaurante({
   const podeEditar = atual.papel === 'dono' || atual.papel === 'gerente';
   const podeVender = podeEditar || atual.papel === 'caixa';
 
-  if (tela === 'pdv') {
+  if (tela === 'pdv' || tela === 'salao') {
     return (
       <PdvComCaixa supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')}>
         {(cabecalho) => (
@@ -98,6 +100,7 @@ export function AreaDoRestaurante({
             onVoltar={() => setTela('inicio')}
             cabecalhoDoCaixa={cabecalho}
             avisos={<AlertasDeImpressao supabase={supabase} lojaId={atual.loja.id} />}
+            modoInicial={tela === 'salao' ? 'salao' : 'cardapio'}
           />
         )}
       </PdvComCaixa>
@@ -107,6 +110,18 @@ export function AreaDoRestaurante({
   if (tela === 'cozinha') {
     return (
       <TelaDaCozinha supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />
+    );
+  }
+
+  if (tela === 'chamada') {
+    return (
+      <PainelDeChamada supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />
+    );
+  }
+
+  if (tela === 'configuracoes') {
+    return (
+      <Configuracoes supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />
     );
   }
 
@@ -132,22 +147,39 @@ export function AreaDoRestaurante({
         texto={`${PAPEL[atual.papel]} · ${noAr ? 'Loja no ar' : 'Loja em cadastro'}`}
       />
 
-      <Panel title="O que fazer agora">
+      <Panel title="Operação">
         <div className="flex flex-wrap gap-2">
           {podeVender && (
             <Button className="h-target-pdv" onClick={() => setTela('pdv')}>
               Abrir o PDV
             </Button>
           )}
-          <Button variant="secondary" className="h-target-pdv" onClick={() => setTela('cardapio')}>
-            {podeEditar ? 'Montar o cardápio' : 'Ver o cardápio'}
-          </Button>
+          {podeVender && (
+            <Button variant="secondary" className="h-target-pdv" onClick={() => setTela('salao')}>
+              Salão
+            </Button>
+          )}
           <Button
             variant={atual.papel === 'cozinha' ? 'primary' : 'secondary'}
             className="h-target-pdv"
             onClick={() => setTela('cozinha')}
           >
             Tela da cozinha
+          </Button>
+          <Button variant="secondary" className="h-target-pdv" onClick={() => setTela('chamada')}>
+            Painel de chamada
+          </Button>
+        </div>
+        <p className="text-caption text-ink-muted">
+          O painel de chamada é para a TV do balcão: mostra quem está sendo preparado e quem pode
+          retirar.
+        </p>
+      </Panel>
+
+      <Panel title="Gestão">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" className="h-target-pdv" onClick={() => setTela('cardapio')}>
+            {podeEditar ? 'Cardápio' : 'Ver o cardápio'}
           </Button>
           {podeEditar && (
             <Button
@@ -158,10 +190,16 @@ export function AreaDoRestaurante({
               Impressão
             </Button>
           )}
+          {podeEditar && (
+            <Button
+              variant="secondary"
+              className="h-target-pdv"
+              onClick={() => setTela('configuracoes')}
+            >
+              Configurações
+            </Button>
+          )}
         </div>
-        <ul className="flex flex-col gap-2 text-body text-ink-muted">
-          <li>Convidar a equipe: caixa, garçons e cozinha (em breve).</li>
-        </ul>
         <p className="text-caption text-ink-muted">
           {noAr
             ? `Sua loja está em ${window.location.host}/${atual.loja.slug}`

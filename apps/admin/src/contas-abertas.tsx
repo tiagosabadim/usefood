@@ -30,12 +30,15 @@ export function ContasAbertas({
   onCobrar,
   onNovaRodada,
   onQuantidade,
+  abrirContaId = null,
 }: {
   supabase: AppSupabaseClient;
   lojaId: string;
   onCobrar: (conta: Conta) => void;
   onNovaRodada: (mesa: string) => void;
   onQuantidade?: (n: number) => void;
+  /** Abre direto o detalhe desta conta (vindo do Salão). */
+  abrirContaId?: string | null;
 }) {
   const [contas, setContas] = useState<ContaNaLista[] | null>(null);
   const [aberta, setAberta] = useState<ContaNaLista | null>(null);
@@ -63,6 +66,13 @@ export function ContasAbertas({
       clearInterval(t);
     };
   }, [supabase, lojaId, onQuantidade]);
+
+  useEffect(() => {
+    if (!abrirContaId || !contas) return;
+    const alvo = contas.find((c) => c.id === abrirContaId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (alvo) setAberta(alvo);
+  }, [abrirContaId, contas]);
 
   useEffect(() => {
     if (!aberta) return;

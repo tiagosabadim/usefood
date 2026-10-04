@@ -8,6 +8,7 @@ import {
 import type { AppSupabaseClient, Enums } from '@usefood/db';
 import { Alert, Button, EmptyState, Icon, OrderCard, SegmentedControl } from '@usefood/ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { tocarAviso, useTelaEscura } from './tela-escura';
 
 interface ItemDoPedido {
   id: string;
@@ -34,20 +35,6 @@ interface PedidoNaCozinha {
 
 const TODAS = 'todas';
 const JANELA_MS = 12 * 3_600_000;
-
-/** Bipe curto de dois tons quando chega pedido novo. */
-function tocarAviso(contexto: AudioContext) {
-  [880, 1175].forEach((frequencia, i) => {
-    const oscilador = contexto.createOscillator();
-    const volume = contexto.createGain();
-    oscilador.frequency.value = frequencia;
-    volume.gain.value = 0.15;
-    oscilador.connect(volume).connect(contexto.destination);
-    const inicio = contexto.currentTime + i * 0.18;
-    oscilador.start(inicio);
-    oscilador.stop(inicio + 0.14);
-  });
-}
 
 /** Tela da cozinha (KDS): pedidos em preparo por praça, com tempo de espera, e os prontos para entregar. */
 export function TelaDaCozinha({
@@ -76,16 +63,7 @@ export function TelaDaCozinha({
   const audio = useRef<AudioContext | null>(null);
   const conhecidos = useRef<Set<string> | null>(null);
 
-  // Tela escura enquanto a cozinha estiver aberta
-  useEffect(() => {
-    const raiz = document.documentElement;
-    const anterior = raiz.dataset.theme;
-    raiz.dataset.theme = 'dark';
-    return () => {
-      if (anterior) raiz.dataset.theme = anterior;
-      else delete raiz.dataset.theme;
-    };
-  }, []);
+  useTelaEscura();
 
   useEffect(() => {
     const t = setInterval(() => setAgora(Date.now()), 1000);
