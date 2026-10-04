@@ -48,9 +48,11 @@ select is((select identificador from p1), '001', 'primeiro pedido do dia ganha a
 
 create temp table p2 on commit drop as
 select * from public.criar_pedido('32000000-0000-4000-8000-00000000000a', 'balcao', 'nome', 'João',
-  '[{"product_id": "52000000-0000-4000-8000-0000000000a1", "quantidade": 1}]', true);
+  '[{"product_id": "52000000-0000-4000-8000-0000000000a1", "quantidade": 1}]');
 select is((select numero from p2), 2, 'segundo pedido do dia é o número 2');
-select is((select total_cents from p2), 1540, 'taxa de serviço de 10% entra no total');
+select is(
+  (select total_cents from public.tabs where id = (select conta_id from p2)), 1400,
+  'pedido entra na própria conta, sem taxa até o fechamento');
 
 select throws_ok(
   $$ select * from public.criar_pedido('32000000-0000-4000-8000-00000000000a', 'balcao', 'senha', null,
@@ -71,14 +73,14 @@ select throws_ok(
 
 -- Pagamento em dinheiro com troco: total 37,00, recebe 50,00
 create temp table pg1 on commit drop as
-select * from public.registrar_pagamento((select id from p1), 'dinheiro', 5000);
+select * from public.receber_conta((select conta_id from p1), 'dinheiro', 5000);
 select is((select troco_cents from pg1), 1300, 'troco de R$ 13,00');
 select is((select falta_cents from pg1), 0, 'pedido quitado');
 select throws_ok(
-  format($$ select * from public.registrar_pagamento(%L, 'pix', 100) $$, (select id from p1)),
+  format($$ select * from public.receber_conta(%L, 'pix', 100) $$, (select conta_id from p1)),
   'P0001', null, 'pedido pago não aceita outro pagamento');
 select throws_ok(
-  format($$ select * from public.registrar_pagamento(%L, 'pix', 999999) $$, (select id from p2)),
+  format($$ select * from public.receber_conta(%L, 'pix', 999999) $$, (select conta_id from p2)),
   '22023', null, 'Pix não pode passar do valor (não existe troco de Pix)');
 
 -- Garçom lança, mas não cobra
@@ -88,7 +90,7 @@ select lives_ok(
        '[{"product_id": "52000000-0000-4000-8000-0000000000a2", "quantidade": 2}]') $$,
   'garçom lança pedido de mesa');
 select throws_ok(
-  format($$ select * from public.registrar_pagamento(%L, 'pix', 100) $$, (select id from p2)),
+  format($$ select * from public.receber_conta(%L, 'pix', 100) $$, (select conta_id from p2)),
   '42501', null, 'garçom não registra pagamento');
 
 -- Cozinha não lança pedido

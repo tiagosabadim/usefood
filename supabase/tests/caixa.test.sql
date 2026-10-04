@@ -34,7 +34,7 @@ create temp table pedido_b on commit drop as
 select * from public.criar_pedido('34000000-0000-4000-8000-00000000000b', 'balcao', 'senha', null,
   '[{"product_id": "54000000-0000-4000-8000-00000000000b", "quantidade": 1}]');
 select throws_ok(
-  format($$ select * from public.registrar_pagamento(%L, 'pix', 1000) $$, (select id from pedido_b)),
+  format($$ select * from public.receber_conta(%L, 'pix', 1000) $$, (select conta_id from pedido_b)),
   'P0001', null, 'sem caixa aberto não se recebe pagamento');
 
 -- Loja A: abre com R$ 100,00 de fundo
@@ -50,13 +50,13 @@ create temp table v1 on commit drop as
 select * from public.criar_pedido('34000000-0000-4000-8000-00000000000a', 'balcao', 'senha', null,
   '[{"product_id": "54000000-0000-4000-8000-00000000000a", "quantidade": 1}]');
 select lives_ok(
-  format($$ select * from public.registrar_pagamento(%L, 'dinheiro', 3700, 5000) $$, (select id from v1)),
+  format($$ select * from public.receber_conta(%L, 'dinheiro', 3700, 5000) $$, (select conta_id from v1)),
   'venda em dinheiro com troco');
 create temp table v2 on commit drop as
 select * from public.criar_pedido('34000000-0000-4000-8000-00000000000a', 'balcao', 'senha', null,
   '[{"product_id": "54000000-0000-4000-8000-00000000000c", "quantidade": 1}]');
 select lives_ok(
-  format($$ select * from public.registrar_pagamento(%L, 'pix', 2000) $$, (select id from v2)),
+  format($$ select * from public.receber_conta(%L, 'pix', 2000) $$, (select conta_id from v2)),
   'venda no Pix');
 select is(
   (select count(*)::int from public.payments where cash_session_id = (select id from sessao)),

@@ -8,4 +8,5 @@ export * from './money';
 export * from './print-status';
 export * from './site';
 export * from './slug';
+export * from './tab';
 export * from './ticket';

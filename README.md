@@ -59,17 +59,24 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 ## PDV e pedidos (E05)
 
 - O PDV fica em `/pdv` → **Abrir o PDV** (dono, gerente e caixa).
-- Pedidos e pagamentos **só** nascem pelas funções `criar_pedido` e `registrar_pagamento`. Nenhum app grava direto nas tabelas `orders`, `order_items` e `payments`.
+- Pedidos e pagamentos **só** nascem pelas funções `criar_pedido` e `receber_conta`. Nenhum app grava direto nas tabelas `orders`, `order_items`, `tabs` e `payments`.
 - `criar_pedido` recebe só produto e quantidade. O preço vem do cardápio no banco; a tela nunca define preço.
 - Cada loja numera os pedidos do dia (#001, #002…) no próprio fuso; o número também serve de senha.
 - Cada item pode levar `variant_id` (tamanho, obrigatório se o produto tem tamanhos), `adicionais` (ids) e `observacao`. O banco confere mínimo e máximo de cada grupo ligado ao produto e grava o tamanho e os adicionais como eram na hora (`order_item_modifiers`).
-- Conta dividida: cada parte é um `registrar_pagamento`. No dinheiro, `p_recebido_cents` informa a nota entregue e o troco sai sobre a parte. Só dinheiro tem troco. Garçom lança pedido, mas não cobra; cozinha não lança.
-- Conta aberta de mesa (rodadas) chega com a comanda do garçom, na E08.
+- Conta dividida: cada parte é um `receber_conta`. No dinheiro, `p_recebido_cents` informa a nota entregue e o troco sai sobre a parte. Só dinheiro tem troco. Garçom lança pedido, mas não cobra; cozinha não lança.
 - Testes em `supabase/tests/pedidos.test.sql` e `supabase/tests/pedido_com_opcoes.test.sql`.
+
+## Contas: pagar depois (antes da E08)
+
+- Todo pedido pertence a uma **conta** (`tabs`). Balcão, retirada e delivery: cada pedido tem a sua. **Mesa**: as rodadas somam na conta aberta da mesa até ela ser paga (uma conta aberta por mesa).
+- `criar_pedido` só lança: põe o pedido na conta e manda para a cozinha. Não cobra e não exige caixa aberto. No delivery e na retirada, guarda como o cliente vai pagar (`p_pagamento_previsto`) e o troco (`p_troco_para_cents`).
+- `receber_conta` cobra a conta: inteira, em partes ou dividida, com troco por parte no dinheiro. A taxa de serviço de 10% (`p_taxa_servico`) é decidida no primeiro pagamento e não muda depois. Exige caixa aberto. Paga por completo, a conta fecha.
+- No PDV: **Balcão, Mesa, Retirada ou Delivery**; **Enviar para a cozinha** (paga depois) ou **Cobrar agora**. A aba **Contas abertas** mostra mesas e pedidos a receber, com as rodadas, **Fechar conta** e **Nova rodada**.
+- Testes em `supabase/tests/contas.test.sql`.
 
 ## Caixa (E06)
 
-- Ao abrir o PDV sem caixa aberto, o app pede o **fundo de troco** (`abrir_caixa`). Sem caixa aberto, `registrar_pagamento` recusa: todo pagamento cai num turno (`payments.cash_session_id`).
+- Ao abrir o PDV sem caixa aberto, o app pede o **fundo de troco** (`abrir_caixa`). Sem caixa aberto, `receber_conta` recusa: todo pagamento cai num turno (`payments.cash_session_id`).
 - No PDV, o botão **Caixa** abre o resumo do turno, a sangria e o suprimento (`movimentar_caixa`, com motivo) e o fechamento.
 - Dinheiro esperado na gaveta = fundo + vendas em dinheiro + suprimentos − sangrias (`resumo_do_caixa`). Vendas em dinheiro contam o valor da venda; o troco já saiu da nota recebida.
 - No fechamento (`fechar_caixa`), a pessoa conta sem ver o esperado; a diferença fica gravada no turno ("Bateu certinho", "Sobrou", "Faltou").

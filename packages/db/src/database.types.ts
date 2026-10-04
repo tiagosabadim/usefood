@@ -518,6 +518,7 @@ export type Database = {
           service_fee_cents: number
           status: Database["public"]["Enums"]["order_status"]
           subtotal_cents: number
+          tab_id: string | null
           total_cents: number
           type: Database["public"]["Enums"]["order_type"]
           updated_at: string
@@ -537,6 +538,7 @@ export type Database = {
           service_fee_cents?: number
           status?: Database["public"]["Enums"]["order_status"]
           subtotal_cents?: number
+          tab_id?: string | null
           total_cents?: number
           type: Database["public"]["Enums"]["order_type"]
           updated_at?: string
@@ -556,11 +558,19 @@ export type Database = {
           service_fee_cents?: number
           status?: Database["public"]["Enums"]["order_status"]
           subtotal_cents?: number
+          tab_id?: string | null
           total_cents?: number
           type?: Database["public"]["Enums"]["order_type"]
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_tab_fkey"
+            columns: ["tab_id", "restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "tabs"
+            referencedColumns: ["id", "restaurant_id"]
+          },
           {
             foreignKeyName: "orders_restaurant_id_fkey"
             columns: ["restaurant_id"]
@@ -614,8 +624,9 @@ export type Database = {
           created_by: string | null
           id: string
           method: Database["public"]["Enums"]["payment_method"]
-          order_id: string
+          order_id: string | null
           restaurant_id: string
+          tab_id: string | null
         }
         Insert: {
           amount_cents: number
@@ -625,8 +636,9 @@ export type Database = {
           created_by?: string | null
           id?: string
           method: Database["public"]["Enums"]["payment_method"]
-          order_id: string
+          order_id?: string | null
           restaurant_id: string
+          tab_id?: string | null
         }
         Update: {
           amount_cents?: number
@@ -636,8 +648,9 @@ export type Database = {
           created_by?: string | null
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
-          order_id?: string
+          order_id?: string | null
           restaurant_id?: string
+          tab_id?: string | null
         }
         Relationships: [
           {
@@ -1118,6 +1131,71 @@ export type Database = {
           },
         ]
       }
+      tabs: {
+        Row: {
+          change_for_cents: number | null
+          closed_at: string | null
+          discount_cents: number
+          expected_method: Database["public"]["Enums"]["payment_method"] | null
+          id: string
+          identifier: string
+          identifier_type: Database["public"]["Enums"]["identifier_type"]
+          opened_at: string
+          opened_by: string | null
+          paid_cents: number
+          restaurant_id: string
+          service_fee_cents: number
+          status: Database["public"]["Enums"]["tab_status"]
+          subtotal_cents: number
+          total_cents: number
+          type: Database["public"]["Enums"]["order_type"]
+        }
+        Insert: {
+          change_for_cents?: number | null
+          closed_at?: string | null
+          discount_cents?: number
+          expected_method?: Database["public"]["Enums"]["payment_method"] | null
+          id?: string
+          identifier: string
+          identifier_type: Database["public"]["Enums"]["identifier_type"]
+          opened_at?: string
+          opened_by?: string | null
+          paid_cents?: number
+          restaurant_id: string
+          service_fee_cents?: number
+          status?: Database["public"]["Enums"]["tab_status"]
+          subtotal_cents?: number
+          total_cents?: number
+          type: Database["public"]["Enums"]["order_type"]
+        }
+        Update: {
+          change_for_cents?: number | null
+          closed_at?: string | null
+          discount_cents?: number
+          expected_method?: Database["public"]["Enums"]["payment_method"] | null
+          id?: string
+          identifier?: string
+          identifier_type?: Database["public"]["Enums"]["identifier_type"]
+          opened_at?: string
+          opened_by?: string | null
+          paid_cents?: number
+          restaurant_id?: string
+          service_fee_cents?: number
+          status?: Database["public"]["Enums"]["tab_status"]
+          subtotal_cents?: number
+          total_cents?: number
+          type?: Database["public"]["Enums"]["order_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tabs_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       territories: {
         Row: {
           area: unknown
@@ -1212,11 +1290,13 @@ export type Database = {
           p_identificador_tipo: Database["public"]["Enums"]["identifier_type"]
           p_itens: Json
           p_observacao?: string | null
+          p_pagamento_previsto?: Database["public"]["Enums"]["payment_method"] | null
           p_restaurant_id: string
-          p_taxa_servico?: boolean
           p_tipo: Database["public"]["Enums"]["order_type"]
+          p_troco_para_cents?: number | null
         }
         Returns: {
+          conta_id: string
           id: string
           identificador: string
           numero: number
@@ -1263,16 +1343,18 @@ export type Database = {
           port: number
         }[]
       }
-      registrar_pagamento: {
+      receber_conta: {
         Args: {
+          p_conta: string
           p_metodo: Database["public"]["Enums"]["payment_method"]
-          p_pedido: string
           p_recebido_cents?: number | null
+          p_taxa_servico?: boolean | null
           p_valor_cents: number
         }
         Returns: {
           falta_cents: number
           pago_cents: number
+          total_cents: number
           troco_cents: number
         }[]
       }
@@ -1320,6 +1402,7 @@ export type Database = {
       restaurant_role: "dono" | "gerente" | "caixa" | "garcom" | "cozinha"
       restaurant_status: "rascunho" | "ativo" | "pausado" | "encerrado"
       sales_channel: "salao" | "balcao" | "delivery" | "marketplace"
+      tab_status: "aberta" | "fechada" | "cancelada"
     }
     CompositeTypes: {
       [_ in never]: never

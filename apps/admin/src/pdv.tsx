@@ -1,18 +1,15 @@
 import {
   adicionarItem,
   detalheDoItem,
-  dividirIgual,
   formatarPreco,
   itemSimples,
   lerPreco,
-  precoParaCampo,
   quantidadeDoProduto,
   quantidadeTotal,
   removerUnidade,
+  rotuloDaConta,
   somarUnidade,
   subtotalCentavos,
-  sugestoesDeNotas,
-  taxaServicoCentavos,
   type ItemCarrinho,
   type NovoItem,
 } from '@usefood/core';
@@ -26,61 +23,51 @@ import {
   ProductTile,
   QuantityStepper,
   SegmentedControl,
-  Switch,
   TextField,
   type Option,
 } from '@usefood/ui';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Cobranca, ContaPaga, METODOS, type Conta, type PagamentoFeito } from './cobranca';
+import { ContasAbertas } from './contas-abertas';
 import { MontarItem, type GrupoDeOpcoes, type OpcaoTamanho } from './montar-item';
 
 type Categoria = Pick<Tables<'categories'>, 'id' | 'name'>;
 type Produto = Pick<Tables<'products'>, 'id' | 'category_id' | 'name' | 'price_cents'>;
-type Identificacao = 'senha' | 'nome' | 'mesa';
+type TipoPedido = Enums<'order_type'>;
 type Metodo = Enums<'payment_method'>;
 interface Opcoes {
   tamanhos: OpcaoTamanho[];
   grupos: GrupoDeOpcoes[];
 }
-interface PedidoCriado {
-  id: string;
-  numero: number;
-  identificador: string;
-  totalCentavos: number;
-}
-interface PagamentoFeito {
-  metodo: Metodo;
-  valorCentavos: number;
-  trocoCentavos: number;
-}
+type Painel =
+  | { tela: 'pedido' }
+  | { tela: 'contas' }
+  | { tela: 'cobrando'; conta: Conta; pedidoId: string | null }
+  | { tela: 'paga'; conta: Conta; pagamentos: PagamentoFeito[]; pedidoId: string | null };
 
-const METODOS: Option<Metodo>[] = [
-  { value: 'dinheiro', label: 'Dinheiro' },
-  { value: 'pix', label: 'Pix' },
-  { value: 'credito', label: 'Crédito' },
-  { value: 'debito', label: 'Débito' },
-];
-const IDENTIFICACOES: Option<Identificacao>[] = [
-  { value: 'senha', label: 'Senha' },
-  { value: 'nome', label: 'Nome' },
+const TIPOS: Option<TipoPedido>[] = [
+  { value: 'balcao', label: 'Balcão' },
   { value: 'mesa', label: 'Mesa' },
-];
-const DIVISOES: Option<'1' | '2' | '3' | '4'>[] = [
-  { value: '1', label: 'Inteira' },
-  { value: '2', label: '÷ 2' },
-  { value: '3', label: '÷ 3' },
-  { value: '4', label: '÷ 4' },
+  { value: 'retirada', label: 'Retirada' },
+  { value: 'delivery', label: 'Delivery' },
 ];
 const ERROS_CONHECIDOS = new Set(['P0001', 'P0002', '22023', '42501']);
 const SEM_OPCOES: Opcoes = { tamanhos: [], grupos: [] };
+const CAMPOS_DA_CONTA =
+  'id, type, identifier_type, identifier, subtotal_cents, service_fee_cents, total_cents, paid_cents, expected_method, change_for_cents';
 
 function mensagem(erro: { code?: string; message?: string }): string {
   return erro.code && ERROS_CONHECIDOS.has(erro.code) && erro.message
     ? erro.message
     : 'Não deu certo agora. Confira a internet e tente de novo.';
 }
-const rotuloDoMetodo = (m: Metodo) => METODOS.find((x) => x.value === m)?.label ?? m;
 
-/** Venda de balcão: tocar nos produtos, montar opções, identificar e cobrar (inteira ou em partes). */
+/**
+ * PDV: monta o pedido e decide o que fazer com ele.
+ *   Enviar para a cozinha: lança e deixa a conta aberta (mesa, delivery, retirada, balcão "paga depois").
+ *   Cobrar agora: lança e já cobra a conta (balcão de fast food).
+ * A aba Contas abertas fecha mesas e recebe pedidos entregues.
+ */
 export function Pdv({
   supabase,
   loja,
@@ -106,20 +93,17 @@ export function Pdv({
   const [montando, setMontando] = useState<Produto | null>(null);
 
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
-  const [identificacao, setIdentificacao] = useState<Identificacao>('senha');
+  const [tipo, setTipo] = useState<TipoPedido>('balcao');
+  const [usarNome, setUsarNome] = useState(false);
   const [identificador, setIdentificador] = useState('');
-  const [taxa, setTaxa] = useState(false);
+  const [previsto, setPrevisto] = useState<Metodo | null>(null);
+  const [trocoPara, setTrocoPara] = useState('');
 
-  const [etapa, setEtapa] = useState<'montando' | 'cobrando' | 'concluido'>('montando');
-  const [pedidoCriado, setPedidoCriado] = useState<PedidoCriado | null>(null);
-  const [pagamentos, setPagamentos] = useState<PagamentoFeito[]>([]);
-  const [dividirPor, setDividirPor] = useState(1);
-  const [parteDigitada, setParteDigitada] = useState<string | null>(null);
-  const [metodo, setMetodo] = useState<Metodo | null>(null);
-  const [recebido, setRecebido] = useState('');
-  const [enviando, setEnviando] = useState(false);
+  const [painel, setPainel] = useState<Painel>({ tela: 'pedido' });
+  const [contasAbertas, setContasAbertas] = useState(0);
+  const [enviando, setEnviando] = useState<'cozinha' | 'cobrar' | null>(null);
   const [erro, setErro] = useState('');
-  const [reimpresso, setReimpresso] = useState<'nao' | 'enviando' | 'sim'>('nao');
+  const [enviado, setEnviado] = useState('');
 
   useEffect(() => {
     let ativo = true;
@@ -220,26 +204,10 @@ export function Pdv({
   }, [produtos, categoriaAtual, busca]);
 
   const subtotal = subtotalCentavos(carrinho);
-  const taxaCentavos = taxa ? taxaServicoCentavos(subtotal) : 0;
-  // Depois que o pedido existe, vale o total calculado pelo banco.
-  const total = pedidoCriado?.totalCentavos ?? subtotal + taxaCentavos;
-  const pago = pagamentos.reduce((s, p) => s + p.valorCentavos, 0);
-  const falta = total - pago;
-  const pessoasRestantes = Math.max(1, dividirPor - pagamentos.length);
-  const parteSugerida = dividirIgual(falta, pessoasRestantes)[0] ?? falta;
-  const parte = parteDigitada === null ? parteSugerida : lerPreco(parteDigitada);
-  const parteValida = parte !== null && parte > 0 && parte <= falta;
-  const recebidoCentavos = lerPreco(recebido);
-  const troco =
-    metodo === 'dinheiro' && recebidoCentavos !== null && parte !== null
-      ? recebidoCentavos - parte
-      : 0;
-  const identificacaoFalta = identificacao !== 'senha' && !identificador.trim();
-  const podeConfirmar =
-    metodo !== null &&
-    parteValida &&
-    (metodo !== 'dinheiro' ||
-      (recebidoCentavos !== null && parte !== null && recebidoCentavos >= parte));
+  const precisaNome = tipo === 'retirada' || tipo === 'delivery' || (tipo === 'balcao' && usarNome);
+  const identificacaoFalta = (tipo === 'mesa' || precisaNome) && !identificador.trim();
+  const trocoParaCentavos = trocoPara.trim() === '' ? null : lerPreco(trocoPara);
+  const montandoPedido = painel.tela === 'pedido';
 
   function tocarProduto(p: Produto) {
     const o = opcoes.get(p.id) ?? SEM_OPCOES;
@@ -247,101 +215,71 @@ export function Pdv({
     else setCarrinho((c) => adicionarItem(c, itemSimples(p)));
   }
 
-  function escolherIdentificacao(tipo: Identificacao) {
-    setIdentificacao(tipo);
+  function escolherTipo(novo: TipoPedido) {
+    setTipo(novo);
     setIdentificador('');
-    setTaxa(tipo === 'mesa');
+    setUsarNome(false);
+    setPrevisto(null);
+    setTrocoPara('');
   }
 
-  function novoPedido() {
+  function limparPedido() {
     setCarrinho([]);
-    setIdentificacao('senha');
-    setIdentificador('');
-    setTaxa(false);
-    setEtapa('montando');
-    setPedidoCriado(null);
-    setPagamentos([]);
-    setDividirPor(1);
-    setParteDigitada(null);
-    setMetodo(null);
-    setRecebido('');
+    escolherTipo('balcao');
     setErro('');
-    setReimpresso('nao');
   }
 
-  async function imprimirDeNovo() {
-    if (!pedidoCriado) return;
-    setReimpresso('enviando');
-    const { error } = await supabase.rpc('reimprimir_pedido', { p_pedido: pedidoCriado.id });
-    setReimpresso(error ? 'nao' : 'sim');
-  }
+  const contarContas = useCallback((n: number) => setContasAbertas(n), []);
 
-  async function confirmarPagamento() {
-    if (!metodo || parte === null) return;
+  async function lancar(destino: 'cozinha' | 'cobrar') {
     setErro('');
-    setEnviando(true);
-
-    // 1. Cria o pedido uma vez só; as partes seguintes só registram pagamento.
-    let pedido: PedidoCriado | null = pedidoCriado;
-    if (!pedido) {
-      const { data, error } = await supabase.rpc('criar_pedido', {
-        p_restaurant_id: loja.id,
-        p_tipo: identificacao === 'mesa' ? 'mesa' : 'balcao',
-        p_identificador_tipo: identificacao,
-        p_identificador: identificacao === 'senha' ? null : identificador.trim(),
-        p_itens: carrinho.map((i) => ({
-          product_id: i.productId,
-          quantidade: i.quantidade,
-          variant_id: i.tamanhoId,
-          adicionais: i.adicionais.map((a) => a.id),
-          observacao: i.observacao || null,
-        })),
-        p_taxa_servico: taxa,
-      });
-      const linha = data?.[0];
-      if (error || !linha) {
-        setEnviando(false);
-        setErro(error ? mensagem(error) : 'Não foi possível criar o pedido.');
-        return;
-      }
-      pedido = {
-        id: linha.id,
-        numero: linha.numero,
-        identificador: linha.identificador,
-        totalCentavos: linha.total_cents,
-      };
-      setPedidoCriado(pedido);
-      if (linha.total_cents !== total) {
-        setEnviando(false);
-        setParteDigitada(null);
-        setErro(
-          `O total foi atualizado para ${formatarPreco(linha.total_cents)}. Confira e confirme de novo.`,
-        );
-        return;
-      }
-    }
-
-    // 2. Registra esta parte (no dinheiro, o banco calcula o troco sobre o recebido)
-    const { data, error } = await supabase.rpc('registrar_pagamento', {
-      p_pedido: pedido.id,
-      p_metodo: metodo,
-      p_valor_cents: parte,
-      p_recebido_cents: metodo === 'dinheiro' ? recebidoCentavos : null,
+    setEnviado('');
+    setEnviando(destino);
+    const identificacao = tipo === 'mesa' ? 'mesa' : precisaNome ? 'nome' : 'senha';
+    const { data, error } = await supabase.rpc('criar_pedido', {
+      p_restaurant_id: loja.id,
+      p_tipo: tipo,
+      p_identificador_tipo: identificacao,
+      p_identificador: identificacao === 'senha' ? null : identificador.trim(),
+      p_itens: carrinho.map((i) => ({
+        product_id: i.productId,
+        quantidade: i.quantidade,
+        variant_id: i.tamanhoId,
+        adicionais: i.adicionais.map((a) => a.id),
+        observacao: i.observacao || null,
+      })),
+      p_pagamento_previsto: tipo === 'delivery' || tipo === 'retirada' ? previsto : null,
+      p_troco_para_cents: previsto === 'dinheiro' ? trocoParaCentavos : null,
     });
-    setEnviando(false);
-    const resultado = data?.[0];
-    if (error || !resultado) {
-      setErro(error ? mensagem(error) : 'Não foi possível registrar o pagamento.');
+    const linha = data?.[0];
+    if (error || !linha) {
+      setEnviando(null);
+      setErro(error ? mensagem(error) : 'Não foi possível lançar o pedido.');
       return;
     }
-    setPagamentos((ps) => [
-      ...ps,
-      { metodo, valorCentavos: resultado.pago_cents - pago, trocoCentavos: resultado.troco_cents },
-    ]);
-    setMetodo(null);
-    setRecebido('');
-    setParteDigitada(null);
-    if (resultado.falta_cents <= 0) setEtapa('concluido');
+
+    if (destino === 'cozinha') {
+      setEnviando(null);
+      setEnviado(
+        `${rotuloDaConta(identificacao, linha.identificador)}: pedido #${String(linha.numero).padStart(3, '0')} enviado para a cozinha.`,
+      );
+      limparPedido();
+      return;
+    }
+
+    const { data: conta } = await supabase
+      .from('tabs')
+      .select(CAMPOS_DA_CONTA)
+      .eq('id', linha.conta_id)
+      .single();
+    setEnviando(null);
+    limparPedido();
+    if (conta) setPainel({ tela: 'cobrando', conta, pedidoId: linha.id });
+  }
+
+  async function imprimirDeNovo(pedidoId: string) {
+    const { error } = await supabase.rpc('reimprimir_pedido', { p_pedido: pedidoId });
+    return !error;
   }
 
   if (carregando || falhou) {
@@ -371,23 +309,10 @@ export function Pdv({
     );
   }
 
-  const ultimoTroco = pagamentos.at(-1)?.trocoCentavos ?? 0;
-  const listaDePagamentos = pagamentos.length > 0 && (
-    <ul className="flex flex-col gap-1 text-body text-ink-muted">
-      {pagamentos.map((p, i) => (
-        <li key={i} className="flex justify-between">
-          <span>
-            {rotuloDoMetodo(p.metodo)}
-            {p.trocoCentavos > 0 && ` · troco ${formatarPreco(p.trocoCentavos)}`}
-          </span>
-          <span className="tabular-nums">{formatarPreco(p.valorCentavos)}</span>
-        </li>
-      ))}
-    </ul>
-  );
+  const primarioEnviar = tipo !== 'balcao';
 
   return (
-    <div className="grid min-h-dvh grid-cols-1 bg-canvas lg:h-dvh lg:grid-cols-[112px_minmax(0,1fr)_400px]">
+    <div className="grid min-h-dvh grid-cols-1 bg-canvas lg:h-dvh lg:grid-cols-[112px_minmax(0,1fr)_420px]">
       <nav
         aria-label="Categorias"
         className="flex gap-2 overflow-x-auto bg-brand p-3 lg:flex-col lg:overflow-y-auto"
@@ -462,7 +387,7 @@ export function Pdv({
                       : formatarPreco(menor)
                   }
                   quantity={quantidadeDoProduto(carrinho, p.id)}
-                  disabled={etapa !== 'montando'}
+                  disabled={!montandoPedido}
                   onClick={() => tocarProduto(p)}
                 />
               );
@@ -472,170 +397,135 @@ export function Pdv({
       </main>
 
       <aside
-        aria-label="Pedido atual"
+        aria-label="Pedido e contas"
         className="flex flex-col border-t border-line bg-surface lg:border-t-0 lg:border-l"
       >
-        {etapa === 'concluido' && pedidoCriado ? (
-          <div className="flex flex-1 flex-col justify-center gap-6 p-6">
-            <div className="flex flex-col gap-2">
-              <span className="text-caption text-ink-muted">
-                Pedido #{String(pedidoCriado.numero).padStart(3, '0')} pago
-              </span>
-              <span className="font-display text-display text-ink">
-                {identificacao === 'senha' && `Senha ${pedidoCriado.identificador}`}
-                {identificacao === 'nome' && pedidoCriado.identificador}
-                {identificacao === 'mesa' && `Mesa ${pedidoCriado.identificador}`}
-              </span>
-            </div>
-            {listaDePagamentos}
-            {ultimoTroco > 0 && (
-              <div className="rounded-lg bg-sun p-5">
-                <span className="text-label text-sun-ink">Troco</span>
-                <p className="font-display text-display text-sun-ink tabular-nums">
-                  {formatarPreco(ultimoTroco)}
-                </p>
-              </div>
-            )}
-            <Button className="h-target-pdv" onClick={novoPedido}>
-              Novo pedido
-            </Button>
-            <Button
-              variant="ghost"
-              loading={reimpresso === 'enviando'}
-              disabled={reimpresso === 'sim'}
-              onClick={() => void imprimirDeNovo()}
-            >
-              {reimpresso === 'sim' ? 'Enviado para a cozinha de novo' : 'Imprimir de novo'}
-            </Button>
-          </div>
-        ) : etapa === 'cobrando' ? (
-          <div className="flex flex-1 flex-col gap-5 p-6 lg:overflow-y-auto">
-            <div className="flex flex-col gap-1">
-              <span className="text-caption text-ink-muted">
-                {pagamentos.length ? `Falta pagar · total ${formatarPreco(total)}` : 'Cobrar'}
-              </span>
-              <span className="font-display text-display text-ink tabular-nums">
-                {formatarPreco(falta)}
-              </span>
-            </div>
-
-            {listaDePagamentos}
-
-            <div className="flex flex-col gap-2">
-              <span className="text-label text-ink">Dividir a conta</span>
-              <SegmentedControl
-                label="Dividir a conta"
-                options={DIVISOES}
-                value={String(dividirPor) as '1' | '2' | '3' | '4'}
-                onChange={(v) => {
-                  setDividirPor(Number(v));
-                  setParteDigitada(null);
-                }}
-              />
-            </div>
-            {(dividirPor > 1 || pagamentos.length > 0) && (
-              <TextField
-                label="Valor desta parte"
-                inputMode="decimal"
-                value={parteDigitada ?? precoParaCampo(parteSugerida)}
-                onChange={(e) => setParteDigitada(e.target.value)}
-                error={!parteValida ? `Digite um valor de até ${formatarPreco(falta)}.` : undefined}
-                hint={
-                  dividirPor > 1 ? `Parte ${pagamentos.length + 1} de ${dividirPor}` : undefined
-                }
-              />
-            )}
-
-            <ChoiceGrid
-              label="Forma de pagamento"
-              options={METODOS}
-              value={metodo}
-              onChange={(m) => {
-                setMetodo(m);
-                setErro('');
-              }}
+        {(painel.tela === 'pedido' || painel.tela === 'contas') && (
+          <div className="border-b border-line p-4">
+            <SegmentedControl
+              label="Painel do PDV"
+              options={[
+                { value: 'pedido', label: 'Novo pedido' },
+                {
+                  value: 'contas',
+                  label: contasAbertas ? `Contas abertas (${contasAbertas})` : 'Contas abertas',
+                },
+              ]}
+              value={painel.tela}
+              onChange={(t) => setPainel({ tela: t })}
             />
-            {metodo === 'dinheiro' && parte !== null && (
-              <div className="flex flex-col gap-3">
-                <TextField
-                  label="Valor recebido"
-                  inputMode="decimal"
-                  placeholder="0,00"
-                  autoFocus
-                  value={recebido}
-                  onChange={(e) => setRecebido(e.target.value)}
-                  error={
-                    recebidoCentavos !== null && recebidoCentavos < parte
-                      ? 'Valor menor que a parte.'
-                      : undefined
-                  }
-                />
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" onClick={() => setRecebido(precoParaCampo(parte))}>
-                    Valor exato
-                  </Button>
-                  {sugestoesDeNotas(parte).map((nota) => (
-                    <Button
-                      key={nota}
-                      variant="secondary"
-                      onClick={() => setRecebido(precoParaCampo(nota))}
-                    >
-                      {formatarPreco(nota)}
-                    </Button>
-                  ))}
-                </div>
-                {troco > 0 && (
-                  <p className="text-body-strong text-ink">
-                    Troco: <span className="tabular-nums">{formatarPreco(troco)}</span>
-                  </p>
-                )}
-              </div>
-            )}
-            <Alert>{erro}</Alert>
-            <div className="mt-auto flex flex-col gap-2">
-              <Button
-                className="h-target-pdv"
-                disabled={!podeConfirmar}
-                loading={enviando}
-                onClick={() => void confirmarPagamento()}
-              >
-                {parte !== null && parte < falta
-                  ? `Receber ${formatarPreco(parte)}`
-                  : 'Confirmar pagamento'}
-              </Button>
-              {!pedidoCriado && (
-                <Button variant="ghost" onClick={() => setEtapa('montando')}>
-                  Voltar ao pedido
-                </Button>
-              )}
-            </div>
           </div>
-        ) : (
+        )}
+
+        {painel.tela === 'contas' && (
+          <ContasAbertas
+            supabase={supabase}
+            lojaId={loja.id}
+            onQuantidade={contarContas}
+            onCobrar={(conta) => setPainel({ tela: 'cobrando', conta, pedidoId: null })}
+            onNovaRodada={(mesa) => {
+              escolherTipo('mesa');
+              setIdentificador(mesa);
+              setPainel({ tela: 'pedido' });
+            }}
+          />
+        )}
+
+        {painel.tela === 'cobrando' && (
+          <Cobranca
+            supabase={supabase}
+            conta={painel.conta}
+            onVoltar={() => setPainel({ tela: painel.pedidoId ? 'pedido' : 'contas' })}
+            onPaga={(pagamentos) =>
+              setPainel({
+                tela: 'paga',
+                conta: painel.conta,
+                pagamentos,
+                pedidoId: painel.pedidoId,
+              })
+            }
+          />
+        )}
+
+        {painel.tela === 'paga' && (
+          <ContaPaga
+            conta={painel.conta}
+            pagamentos={painel.pagamentos}
+            onNovo={() => setPainel({ tela: 'pedido' })}
+            onImprimirDeNovo={painel.pedidoId ? () => imprimirDeNovo(painel.pedidoId!) : undefined}
+          />
+        )}
+
+        {painel.tela === 'pedido' && (
           <>
             <div className="flex flex-col gap-3 border-b border-line p-5">
               <SegmentedControl
-                label="Identificação do pedido"
-                className="self-start"
-                options={IDENTIFICACOES}
-                value={identificacao}
-                onChange={escolherIdentificacao}
+                label="Tipo do pedido"
+                options={TIPOS}
+                value={tipo}
+                onChange={escolherTipo}
               />
-              {identificacao === 'senha' ? (
+              {tipo === 'balcao' && (
+                <SegmentedControl
+                  label="Identificação no balcão"
+                  className="self-start"
+                  options={[
+                    { value: 'senha', label: 'Senha' },
+                    { value: 'nome', label: 'Nome' },
+                  ]}
+                  value={usarNome ? 'nome' : 'senha'}
+                  onChange={(v) => {
+                    setUsarNome(v === 'nome');
+                    setIdentificador('');
+                  }}
+                />
+              )}
+              {tipo === 'balcao' && !usarNome && (
                 <p className="text-caption text-ink-muted">
-                  A senha sai sozinha quando o pedido for pago.
+                  A senha sai sozinha quando o pedido for lançado.
                 </p>
-              ) : (
+              )}
+              {(tipo === 'mesa' || precisaNome) && (
                 <TextField
-                  label={identificacao === 'nome' ? 'Nome do cliente' : 'Número da mesa'}
-                  inputMode={identificacao === 'mesa' ? 'numeric' : 'text'}
+                  label={tipo === 'mesa' ? 'Número da mesa' : 'Nome do cliente'}
+                  inputMode={tipo === 'mesa' ? 'numeric' : 'text'}
                   maxLength={40}
                   value={identificador}
                   onChange={(e) => setIdentificador(e.target.value)}
                 />
               )}
+              {(tipo === 'delivery' || tipo === 'retirada') && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-label text-ink">Como vai pagar</span>
+                  <ChoiceGrid
+                    label="Como o cliente vai pagar"
+                    columns={4}
+                    options={METODOS}
+                    value={previsto}
+                    onChange={setPrevisto}
+                  />
+                  {previsto === 'dinheiro' && (
+                    <TextField
+                      label="Troco para (opcional)"
+                      inputMode="decimal"
+                      placeholder="Ex.: 100,00"
+                      value={trocoPara}
+                      onChange={(e) => setTrocoPara(e.target.value)}
+                      error={
+                        trocoPara && trocoParaCentavos === null
+                          ? 'Digite um valor, por exemplo 100,00.'
+                          : undefined
+                      }
+                    />
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-1 flex-col px-5 lg:overflow-y-auto">
+              <Alert tone="sucesso" className="mt-4">
+                {enviado}
+              </Alert>
               {carrinho.length === 0 ? (
                 <p className="py-8 text-body text-ink-muted">
                   Toque nos produtos para montar o pedido.
@@ -667,55 +557,59 @@ export function Pdv({
             </div>
 
             <div className="flex flex-col gap-3 border-t border-line bg-surface-strong p-5">
-              <Switch checked={taxa} onChange={setTaxa} label="Taxa de serviço (10%)" showLabel />
-              <div className="flex justify-between text-body text-ink-muted">
-                <span>
-                  Subtotal ·{' '}
+              <div className="flex items-baseline justify-between">
+                <span className="text-body-strong text-ink">
+                  Total ·{' '}
                   {quantidadeTotal(carrinho) === 1
                     ? '1 item'
                     : `${quantidadeTotal(carrinho)} itens`}
                 </span>
-                <span className="tabular-nums">{formatarPreco(subtotal)}</span>
-              </div>
-              {taxa && (
-                <div className="flex justify-between text-body text-ink-muted">
-                  <span>Taxa de serviço</span>
-                  <span className="tabular-nums">{formatarPreco(taxaCentavos)}</span>
-                </div>
-              )}
-              <div className="flex items-baseline justify-between">
-                <span className="text-body-strong text-ink">Total</span>
                 <span className="font-display text-display text-ink tabular-nums">
-                  {formatarPreco(total)}
+                  {formatarPreco(subtotal)}
                 </span>
               </div>
-              <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2">
+              {tipo === 'mesa' && (
+                <p className="text-caption text-ink-muted">
+                  A taxa de serviço entra no fechamento da conta.
+                </p>
+              )}
+              <Alert>{erro}</Alert>
+              <div className="grid grid-cols-2 gap-2">
                 <Button
-                  variant="secondary"
+                  variant={primarioEnviar ? 'primary' : 'secondary'}
                   className="h-target-pdv"
+                  disabled={carrinho.length === 0 || identificacaoFalta || enviando !== null}
+                  loading={enviando === 'cozinha'}
+                  onClick={() => void lancar('cozinha')}
+                >
+                  Enviar para a cozinha
+                </Button>
+                <Button
+                  variant={primarioEnviar ? 'secondary' : 'primary'}
+                  className="h-target-pdv"
+                  disabled={carrinho.length === 0 || identificacaoFalta || enviando !== null}
+                  loading={enviando === 'cobrar'}
+                  onClick={() => void lancar('cobrar')}
+                >
+                  Cobrar agora
+                </Button>
+              </div>
+              <div className="flex items-center justify-between">
+                {identificacaoFalta && carrinho.length > 0 ? (
+                  <p className="text-caption text-ink-muted">
+                    {tipo === 'mesa' ? 'Digite o número da mesa.' : 'Digite o nome do cliente.'}
+                  </p>
+                ) : (
+                  <span />
+                )}
+                <Button
+                  variant="ghost"
                   disabled={carrinho.length === 0}
                   onClick={() => setCarrinho([])}
                 >
                   Limpar
                 </Button>
-                <Button
-                  className="h-target-pdv"
-                  disabled={carrinho.length === 0 || identificacaoFalta}
-                  onClick={() => {
-                    setErro('');
-                    setEtapa('cobrando');
-                  }}
-                >
-                  Cobrar {formatarPreco(total)}
-                </Button>
               </div>
-              {identificacaoFalta && carrinho.length > 0 && (
-                <p className="text-caption text-ink-muted">
-                  {identificacao === 'nome'
-                    ? 'Digite o nome do cliente para cobrar.'
-                    : 'Digite o número da mesa para cobrar.'}
-                </p>
-              )}
             </div>
           </>
         )}
@@ -730,6 +624,7 @@ export function Pdv({
           onAdicionar={(item: NovoItem) => {
             setCarrinho((c) => adicionarItem(c, item));
             setMontando(null);
+            setEnviado('');
           }}
         />
       )}

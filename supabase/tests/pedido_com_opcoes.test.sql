@@ -84,14 +84,14 @@ select is(
 
 -- Conta dividida do lanche (26,50): 13,25 no Pix e 13,25 em dinheiro com nota de 20
 create temp table parte1 on commit drop as
-select * from public.registrar_pagamento((select id from lanche), 'pix', 1325);
+select * from public.receber_conta((select conta_id from lanche), 'pix', 1325);
 select is((select falta_cents from parte1), 1325, 'primeira parte paga, falta a outra metade');
 create temp table parte2 on commit drop as
-select * from public.registrar_pagamento((select id from lanche), 'dinheiro', 1325, 2000);
+select * from public.receber_conta((select conta_id from lanche), 'dinheiro', 1325, 2000);
 select is((select troco_cents from parte2), 675, 'troco calculado sobre a parte (20,00 − 13,25)');
 select is((select falta_cents from parte2), 0, 'conta quitada nas duas partes');
 select throws_ok(
-  format($$ select * from public.registrar_pagamento(%L, 'pix', 100, 200) $$, (select id from pizza)),
+  format($$ select * from public.receber_conta(%L, 'pix', 100, 200) $$, (select conta_id from pizza)),
   '22023', null, 'valor recebido só vale para dinheiro');
 
 select * from finish();
