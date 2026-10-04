@@ -5,6 +5,12 @@ export { Chip, type ChipProps } from './chip';
 export { cn } from './cn';
 export { EmptyState } from './empty-state';
 export { Icon, type IconName, type IconProps } from './icon';
+export {
+  OrderCard,
+  type OrderCardItem,
+  type OrderCardProps,
+  type OrderCardTone,
+} from './order-card';
 export { Panel, type PanelProps } from './panel';
 export { PhotoField, type PhotoFieldProps } from './photo-field';
 export { ProductTile, type ProductTileProps } from './product-tile';

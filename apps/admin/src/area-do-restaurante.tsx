@@ -5,6 +5,7 @@ import { Cardapio } from './cardapio';
 import { CriarRestaurante } from './criar-restaurante';
 import { AlertasDeImpressao } from './alerta-impressao';
 import { PdvComCaixa } from './caixa';
+import { TelaDaCozinha } from './cozinha';
 import { Impressao } from './impressao';
 import { Pdv } from './pdv';
 import { Tela, Titulo } from './tela';
@@ -35,7 +36,9 @@ export function AreaDoRestaurante({
   const [estado, setEstado] = useState<Estado>({ tipo: 'carregando' });
   const [versao, setVersao] = useState(0);
   const [selecionada, setSelecionada] = useState(0);
-  const [tela, setTela] = useState<'inicio' | 'cardapio' | 'pdv' | 'impressao'>('inicio');
+  const [tela, setTela] = useState<'inicio' | 'cardapio' | 'pdv' | 'impressao' | 'cozinha'>(
+    'inicio',
+  );
 
   useEffect(() => {
     let ativo = true;
@@ -101,6 +104,12 @@ export function AreaDoRestaurante({
     );
   }
 
+  if (tela === 'cozinha') {
+    return (
+      <TelaDaCozinha supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />
+    );
+  }
+
   if (tela === 'impressao') {
     return <Impressao supabase={supabase} loja={atual.loja} onVoltar={() => setTela('inicio')} />;
   }
@@ -132,6 +141,13 @@ export function AreaDoRestaurante({
           )}
           <Button variant="secondary" className="h-target-pdv" onClick={() => setTela('cardapio')}>
             {podeEditar ? 'Montar o cardápio' : 'Ver o cardápio'}
+          </Button>
+          <Button
+            variant={atual.papel === 'cozinha' ? 'primary' : 'secondary'}
+            className="h-target-pdv"
+            onClick={() => setTela('cozinha')}
+          >
+            Tela da cozinha
           </Button>
           {podeEditar && (
             <Button

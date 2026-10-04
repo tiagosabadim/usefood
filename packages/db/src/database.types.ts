@@ -431,6 +431,7 @@ export type Database = {
           id: string
           notes: string | null
           order_id: string
+          prepared_at: string | null
           product_id: string | null
           product_name: string
           quantity: number
@@ -446,6 +447,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_id: string
+          prepared_at?: string | null
           product_id?: string | null
           product_name: string
           quantity: number
@@ -461,6 +463,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_id?: string
+          prepared_at?: string | null
           product_id?: string | null
           product_name?: string
           quantity?: number
@@ -507,6 +510,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           day: string
+          delivered_at: string | null
           discount_cents: number
           id: string
           identifier: string
@@ -514,6 +518,7 @@ export type Database = {
           notes: string | null
           number: number
           paid_cents: number
+          ready_at: string | null
           restaurant_id: string
           service_fee_cents: number
           status: Database["public"]["Enums"]["order_status"]
@@ -527,6 +532,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           day: string
+          delivered_at?: string | null
           discount_cents?: number
           id?: string
           identifier: string
@@ -534,6 +540,7 @@ export type Database = {
           notes?: string | null
           number: number
           paid_cents?: number
+          ready_at?: string | null
           restaurant_id: string
           service_fee_cents?: number
           status?: Database["public"]["Enums"]["order_status"]
@@ -547,6 +554,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           day?: string
+          delivered_at?: string | null
           discount_cents?: number
           id?: string
           identifier?: string
@@ -554,6 +562,7 @@ export type Database = {
           notes?: string | null
           number?: number
           paid_cents?: number
+          ready_at?: string | null
           restaurant_id?: string
           service_fee_cents?: number
           status?: Database["public"]["Enums"]["order_status"]
@@ -1307,6 +1316,10 @@ export type Database = {
         Args: { p_marca: string; p_nome: string; p_slug: string }
         Returns: string
       }
+      desfazer_pronto: {
+        Args: { p_pedido: string; p_praca?: string | null }
+        Returns: Database["public"]["Enums"]["order_status"]
+      }
       desligar_agente: {
         Args: { p_agente: string }
         Returns: undefined
@@ -1322,6 +1335,14 @@ export type Database = {
       imprimir_teste: {
         Args: { p_impressora: string }
         Returns: string
+      }
+      marcar_entregue: {
+        Args: { p_pedido: string }
+        Returns: Database["public"]["Enums"]["order_status"]
+      }
+      marcar_pronto: {
+        Args: { p_pedido: string; p_praca?: string | null }
+        Returns: Database["public"]["Enums"]["order_status"]
       }
       movimentar_caixa: {
         Args: {

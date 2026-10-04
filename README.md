@@ -74,6 +74,14 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - No PDV: **Balcão, Mesa, Retirada ou Delivery**; **Enviar para a cozinha** (paga depois) ou **Cobrar agora**. A aba **Contas abertas** mostra mesas e pedidos a receber, com as rodadas, **Fechar conta** e **Nova rodada**.
 - Testes em `supabase/tests/contas.test.sql`.
 
+## Tela da cozinha (KDS)
+
+- Em `/pdv` → **Tela da cozinha** (qualquer pessoa da equipe; é o botão principal para quem tem o papel Cozinha). Abre em tema escuro, em tela cheia.
+- Escolha a praça (ou Todas); a escolha fica lembrada naquele aparelho. Cada pedido em preparo vira um cartão (`OrderCard`) com os itens daquela praça, adicionais, observação em destaque e o tempo de espera: normal até 8 min, amarelo até 15, vermelho depois.
+- **Pronto** (`marcar_pronto`) marca a parte daquela praça. Quando todas as praças terminam, o pedido inteiro fica pronto e vai para **Prontos para entregar**, com **Entregue** (`marcar_entregue`) e **Desfazer** (`desfazer_pronto`).
+- Atualiza em tempo real (Realtime na tabela `orders`) e a cada 15 s. **Ligar som** toca um bipe a cada pedido novo (o navegador exige um toque antes de liberar o som).
+- Testes em `supabase/tests/cozinha.test.sql`.
+
 ## Caixa (E06)
 
 - Ao abrir o PDV sem caixa aberto, o app pede o **fundo de troco** (`abrir_caixa`). Sem caixa aberto, `receber_conta` recusa: todo pagamento cai num turno (`payments.cash_session_id`).
