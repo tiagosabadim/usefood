@@ -60,7 +60,7 @@ export function Comanda({
           </p>
         </div>
         <Button variant="ghost" onClick={onBloquear}>
-          Bloquear
+          Sair
         </Button>
       </header>
 
