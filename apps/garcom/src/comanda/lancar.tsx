@@ -1,44 +1,70 @@
 import {
   adicionarItem,
+  DADOS_INICIAIS,
+  type DadosDoPedido,
   detalheDoItem,
   formatarPreco,
+  type ItemCarrinho,
   itemSimples,
+  parametrosDoPedido,
   quantidadeDoProduto,
   quantidadeTotal,
   removerUnidade,
+  rotuloDaConta,
   somarUnidade,
   subtotalCentavos,
-  type ItemCarrinho,
+  type TipoPedido,
 } from '@usefood/core';
 import type { AppSupabaseClient } from '@usefood/db';
 import {
+  type Cardapio,
   carregarCardapio,
   MontarItem,
-  temOpcoes,
-  urlDaFoto,
-  type Cardapio,
   type ProdutoDoCardapio,
+  temOpcoes,
+  TipoEIdentificacao,
+  urlDaFoto,
+  useAtendimento,
 } from '@usefood/pedidos';
 import { Alert, Button, Chip, Icon, ProductTile, QuantityStepper, Sheet } from '@usefood/ui';
 import { useEffect, useMemo, useState } from 'react';
 
 const ERROS_CONHECIDOS = new Set(['P0001', 'P0002', '22023', '42501']);
 
-/** Cardápio no celular para lançar uma rodada na mesa. */
+/** Rodada numa mesa do Salão, ou pedido avulso com os mesmos tipos do PDV. */
+export type ModoDeLancar =
+  | { tipo: 'mesa'; mesa: string }
+  | { tipo: 'livre'; titulo?: string; inicial?: Partial<DadosDoPedido>; observacao?: string };
+
+export interface PedidoEnviado {
+  contaId: string;
+  numero: number;
+  rotulo: string;
+  tipo: TipoPedido;
+}
+
+/** Cardápio no celular para lançar uma rodada na mesa ou um pedido avulso (para viagem, delivery…). */
 export function Lancar({
   supabase,
   lojaId,
-  mesa,
+  modo,
   onEnviado,
   onVoltar,
 }: {
   supabase: AppSupabaseClient;
   lojaId: string;
-  mesa: string;
-  /** Rodada enviada; recebe a conta da mesa. */
-  onEnviado: (contaId: string, numero: number) => void;
-  onVoltar: () => void;
+  modo: ModoDeLancar;
+  onEnviado: (pedido: PedidoEnviado) => void;
+  onVoltar?: () => void;
 }) {
+  const atendimento = useAtendimento(supabase, lojaId);
+  const [dados, setDados] = useState<DadosDoPedido>(() =>
+    modo.tipo === 'mesa'
+      ? { ...DADOS_INICIAIS, tipo: 'mesa', identificador: modo.mesa }
+      : { ...DADOS_INICIAIS, ...modo.inicial },
+  );
+  const parametros = parametrosDoPedido(dados, atendimento);
+  const titulo = modo.tipo === 'mesa' ? `Mesa ${modo.mesa}` : (modo.titulo ?? 'Novo pedido');
   const [cardapio, setCardapio] = useState<Cardapio | null>(null);
   const [falhou, setFalhou] = useState(false);
   const [categoria, setCategoria] = useState<string | null>(null);
@@ -75,13 +101,17 @@ export function Lancar({
   }
 
   async function enviar() {
+    if (!parametros.ok) return;
     setErro('');
     setEnviando(true);
     const { data, error } = await supabase.rpc('criar_pedido', {
       p_restaurant_id: lojaId,
-      p_tipo: 'mesa',
-      p_identificador_tipo: 'mesa',
-      p_identificador: mesa,
+      p_tipo: parametros.p_tipo,
+      p_identificador_tipo: parametros.p_identificador_tipo,
+      p_identificador: parametros.p_identificador,
+      p_pagamento_previsto: parametros.p_pagamento_previsto,
+      p_troco_para_cents: parametros.p_troco_para_cents,
+      p_observacao: modo.tipo === 'livre' ? (modo.observacao ?? null) : null,
       p_itens: carrinho.map((i) => ({
         product_id: i.productId,
         quantidade: i.quantidade,
@@ -101,7 +131,12 @@ export function Lancar({
       return;
     }
     setRevisando(false);
-    onEnviado(linha.conta_id, linha.numero);
+    onEnviado({
+      contaId: linha.conta_id,
+      numero: linha.numero,
+      rotulo: rotuloDaConta(parametros.p_identificador_tipo, linha.identificador),
+      tipo: parametros.p_tipo,
+    });
   }
 
   if (falhou) return <Alert>Não conseguimos carregar o cardápio. Confira a internet.</Alert>;
@@ -109,14 +144,16 @@ export function Lancar({
 
   return (
     <div className="flex flex-col gap-4 pb-24">
-      <button
-        type="button"
-        onClick={onVoltar}
-        className="flex min-h-target-min items-center gap-1 self-start text-label text-ink-muted"
-      >
-        <Icon name="voltar" size={18} /> Voltar
-      </button>
-      <h2 className="font-display text-title-screen text-ink">Mesa {mesa}</h2>
+      {onVoltar && (
+        <button
+          type="button"
+          onClick={onVoltar}
+          className="flex min-h-target-min items-center gap-1 self-start text-label text-ink-muted"
+        >
+          <Icon name="voltar" size={18} /> Voltar
+        </button>
+      )}
+      <h2 className="font-display text-title-screen text-ink">{titulo}</h2>
 
       <div
         className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1"
@@ -165,14 +202,17 @@ export function Lancar({
         <Sheet
           open
           onClose={() => setRevisando(false)}
-          title={`Rodada da mesa ${mesa}`}
+          title={modo.tipo === 'mesa' ? `Rodada da mesa ${modo.mesa}` : titulo}
           footer={
             <div className="flex flex-col gap-3">
               <Alert>{erro}</Alert>
+              {!parametros.ok && carrinho.length > 0 && (
+                <p className="text-caption text-ink-muted">{parametros.motivo}</p>
+              )}
               <Button
                 className="h-target-pdv"
                 loading={enviando}
-                disabled={carrinho.length === 0}
+                disabled={carrinho.length === 0 || !parametros.ok}
                 onClick={() => void enviar()}
               >
                 Enviar para a cozinha · {formatarPreco(subtotalCentavos(carrinho))}
@@ -180,6 +220,15 @@ export function Lancar({
             </div>
           }
         >
+          {modo.tipo === 'livre' && (
+            <section className="flex flex-col gap-3 border-b border-line pb-5">
+              <TipoEIdentificacao dados={dados} onChange={setDados} atendimento={atendimento} />
+              {modo.observacao && (
+                <p className="text-caption text-ink-muted">Anotação no ticket: {modo.observacao}</p>
+              )}
+              <p className="text-caption text-ink-muted">Quem recebe o pagamento é o caixa.</p>
+            </section>
+          )}
           {carrinho.length === 0 ? (
             <p className="text-body text-ink-muted">O pedido está vazio.</p>
           ) : (

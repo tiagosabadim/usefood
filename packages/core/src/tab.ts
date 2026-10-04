@@ -1,3 +1,5 @@
+import { lerPreco } from './money';
+
 export type TipoIdentificador = 'senha' | 'nome' | 'mesa' | 'comanda';
 export type TipoPedido = 'balcao' | 'mesa' | 'retirada' | 'delivery';
 
@@ -58,3 +60,64 @@ const PAPEIS: Record<Papel, string> = {
   cozinha: 'Cozinha',
 };
 export const rotuloDoPapel = (papel: Papel) => PAPEIS[papel];
+
+export type MetodoPagamento = 'dinheiro' | 'pix' | 'credito' | 'debito' | 'vale_refeicao' | 'outro';
+
+/** O que a pessoa escolheu antes de lançar: tipo, identificação e, no delivery e na retirada, como vai pagar. */
+export interface DadosDoPedido {
+  tipo: TipoPedido;
+  identificador: string;
+  previsto: MetodoPagamento | null;
+  trocoPara: string;
+}
+
+export const DADOS_INICIAIS: DadosDoPedido = {
+  tipo: 'balcao',
+  identificador: '',
+  previsto: null,
+  trocoPara: '',
+};
+
+export type ParametrosDoPedido =
+  | {
+      ok: true;
+      identificacao: Identificacao;
+      p_tipo: TipoPedido;
+      p_identificador_tipo: TipoIdentificador;
+      p_identificador: string | null;
+      p_pagamento_previsto: MetodoPagamento | null;
+      p_troco_para_cents: number | null;
+    }
+  | { ok: false; motivo: string };
+
+/** Confere os dados e monta o que vai para criar_pedido; igual no PDV e na comanda. */
+export function parametrosDoPedido(
+  dados: DadosDoPedido,
+  atendimento: Atendimento,
+): ParametrosDoPedido {
+  const identificacao = identificacaoPara(dados.tipo, atendimento);
+  const valor = dados.identificador.trim();
+  if (identificacao.campo && !valor) {
+    return {
+      ok: false,
+      motivo:
+        identificacao.tipo === 'mesa' ? 'Digite o número da mesa.' : 'Digite o nome do cliente.',
+    };
+  }
+  const pagaNaEntrega = dados.tipo === 'delivery' || dados.tipo === 'retirada';
+  const previsto = pagaNaEntrega ? dados.previsto : null;
+  let troco: number | null = null;
+  if (previsto === 'dinheiro' && dados.trocoPara.trim()) {
+    troco = lerPreco(dados.trocoPara);
+    if (troco === null) return { ok: false, motivo: 'Confira o troco, por exemplo 100,00.' };
+  }
+  return {
+    ok: true,
+    identificacao,
+    p_tipo: dados.tipo,
+    p_identificador_tipo: identificacao.tipo,
+    p_identificador: identificacao.campo ? valor : null,
+    p_pagamento_previsto: previsto,
+    p_troco_para_cents: troco,
+  };
+}

@@ -11,5 +11,6 @@ export {
   type ProdutoDoCardapio,
 } from './cardapio';
 export { urlDaFoto } from './foto';
+export { TipoEIdentificacao, useAtendimento } from './identificacao';
 export { MontarItem } from './montar-item';
 export { Salao } from './salao';

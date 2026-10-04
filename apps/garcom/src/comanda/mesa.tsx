@@ -36,11 +36,14 @@ export function Mesa({
   supabase,
   contaId,
   onNovaRodada,
+  onParaViagem,
   onVoltar,
 }: {
   supabase: AppSupabaseClient;
   contaId: string;
   onNovaRodada: (mesa: string) => void;
+  /** Alguém da mesa quer levar algo para casa: pedido para viagem, em conta própria. */
+  onParaViagem: (mesa: string) => void;
   onVoltar: () => void;
 }) {
   const [conta, setConta] = useState<ContaDaMesa | null>(null);
@@ -139,6 +142,13 @@ export function Mesa({
         </p>
         <Button className="h-target-pdv" onClick={() => onNovaRodada(conta.identifier)}>
           Nova rodada
+        </Button>
+        <Button
+          variant="secondary"
+          className="h-target-pdv"
+          onClick={() => onParaViagem(conta.identifier)}
+        >
+          Pedido para viagem
         </Button>
       </div>
     </div>

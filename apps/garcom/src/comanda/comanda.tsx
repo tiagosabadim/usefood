@@ -4,16 +4,24 @@ import { Salao } from '@usefood/pedidos';
 import { Alert, Button, SegmentedControl } from '@usefood/ui';
 import { useState } from 'react';
 import { useAgora } from './agora';
-import { Lancar } from './lancar';
+import { Lancar, type PedidoEnviado } from './lancar';
 import { Mesa } from './mesa';
 import { useProntos } from './prontos';
 
 type Tela =
   | { tipo: 'salao' }
   | { tipo: 'mesa'; contaId: string }
-  | { tipo: 'lancar'; mesa: string; contaId: string | null };
+  | { tipo: 'lancar'; mesa: string; contaId: string | null }
+  | { tipo: 'viagem'; mesa: string; contaId: string };
 
-/** Comanda do garçom: Salão, mesa, nova rodada e prontos para levar. */
+function avisoDeEnvio(p: PedidoEnviado): string {
+  const numero = String(p.numero).padStart(3, '0');
+  return p.tipo === 'mesa'
+    ? `${p.rotulo}: pedido #${numero} enviado para a cozinha.`
+    : `${p.rotulo}: pedido #${numero} enviado para a cozinha. O cliente paga no caixa.`;
+}
+
+/** Comanda do garçom: Salão, pedido avulso (mesmos tipos do PDV), mesa, nova rodada e prontos para levar. */
 export function Comanda({
   supabase,
   lojaId,
@@ -27,7 +35,8 @@ export function Comanda({
   pessoa: { nome: string; papel: Papel };
   onBloquear: () => void;
 }) {
-  const [aba, setAba] = useState<'salao' | 'prontos'>('salao');
+  const [aba, setAba] = useState<'salao' | 'novo' | 'prontos'>('salao');
+  const [pedidoNovo, setPedidoNovo] = useState(0);
   const [tela, setTela] = useState<Tela>({ tipo: 'salao' });
   const [aviso, setAviso] = useState('');
   const [entregando, setEntregando] = useState<string | null>(null);
@@ -61,6 +70,7 @@ export function Comanda({
           className="self-stretch [&>button]:flex-1"
           options={[
             { value: 'salao', label: 'Salão' },
+            { value: 'novo', label: 'Novo pedido' },
             { value: 'prontos', label: prontos.length ? `Prontos (${prontos.length})` : 'Prontos' },
           ]}
           value={aba}
@@ -81,6 +91,19 @@ export function Comanda({
           onMesaOcupada={(contaId) => {
             setAviso('');
             setTela({ tipo: 'mesa', contaId });
+          }}
+        />
+      )}
+
+      {tela.tipo === 'salao' && aba === 'novo' && (
+        <Lancar
+          key={pedidoNovo}
+          supabase={supabase}
+          lojaId={lojaId}
+          modo={{ tipo: 'livre' }}
+          onEnviado={(p) => {
+            setAviso(avisoDeEnvio(p));
+            setPedidoNovo((n) => n + 1);
           }}
         />
       )}
@@ -130,6 +153,7 @@ export function Comanda({
           contaId={tela.contaId}
           onVoltar={() => setTela({ tipo: 'salao' })}
           onNovaRodada={(mesa) => setTela({ tipo: 'lancar', mesa, contaId: tela.contaId })}
+          onParaViagem={(mesa) => setTela({ tipo: 'viagem', mesa, contaId: tela.contaId })}
         />
       )}
 
@@ -137,15 +161,31 @@ export function Comanda({
         <Lancar
           supabase={supabase}
           lojaId={lojaId}
-          mesa={tela.mesa}
+          modo={{ tipo: 'mesa', mesa: tela.mesa }}
           onVoltar={() =>
             setTela(tela.contaId ? { tipo: 'mesa', contaId: tela.contaId } : { tipo: 'salao' })
           }
-          onEnviado={(contaId, numero) => {
-            setAviso(
-              `Mesa ${tela.mesa}: pedido #${String(numero).padStart(3, '0')} enviado para a cozinha.`,
-            );
-            setTela({ tipo: 'mesa', contaId });
+          onEnviado={(p) => {
+            setAviso(avisoDeEnvio(p));
+            setTela({ tipo: 'mesa', contaId: p.contaId });
+          }}
+        />
+      )}
+
+      {tela.tipo === 'viagem' && (
+        <Lancar
+          supabase={supabase}
+          lojaId={lojaId}
+          modo={{
+            tipo: 'livre',
+            titulo: `Para viagem · mesa ${tela.mesa}`,
+            inicial: { tipo: 'retirada' },
+            observacao: `Cliente da mesa ${tela.mesa}`,
+          }}
+          onVoltar={() => setTela({ tipo: 'mesa', contaId: tela.contaId })}
+          onEnviado={(p) => {
+            setAviso(avisoDeEnvio(p));
+            setTela({ tipo: 'mesa', contaId: tela.contaId });
           }}
         />
       )}

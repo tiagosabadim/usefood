@@ -3,16 +3,15 @@ import {
   detalheDoItem,
   formatarPreco,
   itemSimples,
-  lerPreco,
   quantidadeDoProduto,
   quantidadeTotal,
   removerUnidade,
-  identificacaoPara,
+  DADOS_INICIAIS,
+  parametrosDoPedido,
   rotuloDaConta,
-  rotuloDoTipo,
   somarUnidade,
   subtotalCentavos,
-  type Atendimento,
+  type DadosDoPedido,
   type ItemCarrinho,
   type NovoItem,
 } from '@usefood/core';
@@ -20,25 +19,25 @@ import type { AppSupabaseClient, Enums, Tables } from '@usefood/db';
 import {
   Alert,
   Button,
-  ChoiceGrid,
   cn,
   Icon,
   ProductTile,
   QuantityStepper,
   SegmentedControl,
   TextField,
-  type Option,
 } from '@usefood/ui';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Cobranca, ContaPaga, METODOS, type Conta, type PagamentoFeito } from './cobranca';
+import { Cobranca, ContaPaga, type Conta, type PagamentoFeito } from './cobranca';
 import { ContasAbertas } from './contas-abertas';
 import {
   carregarCardapio,
   MontarItem,
+  type OpcoesDoProduto,
   Salao,
   SEM_OPCOES,
+  TipoEIdentificacao,
   urlDaFoto,
-  type OpcoesDoProduto,
+  useAtendimento,
 } from '@usefood/pedidos';
 
 type Categoria = Pick<Tables<'categories'>, 'id' | 'name'>;
@@ -47,7 +46,6 @@ type Produto = Pick<
   'id' | 'category_id' | 'name' | 'price_cents' | 'photo_path'
 >;
 type TipoPedido = Enums<'order_type'>;
-type Metodo = Enums<'payment_method'>;
 type Opcoes = OpcoesDoProduto;
 type Painel =
   | { tela: 'pedido' }
@@ -55,13 +53,6 @@ type Painel =
   | { tela: 'cobrando'; conta: Conta; pedidoId: string | null }
   | { tela: 'paga'; conta: Conta; pagamentos: PagamentoFeito[]; pedidoId: string | null };
 
-const TIPOS: Option<TipoPedido>[] = (['balcao', 'mesa', 'retirada', 'delivery'] as const).map(
-  (t) => ({
-    value: t,
-    label: rotuloDoTipo(t),
-  }),
-);
-const ATENDIMENTO_PADRAO: Atendimento = { chamarPor: 'senha', balcao: 'cliente_busca' };
 const ERROS_CONHECIDOS = new Set(['P0001', 'P0002', '22023', '42501']);
 const CAMPOS_DA_CONTA =
   'id, type, identifier_type, identifier, subtotal_cents, service_fee_cents, total_cents, paid_cents, expected_method, change_for_cents';
@@ -106,29 +97,16 @@ export function Pdv({
   const [montando, setMontando] = useState<Produto | null>(null);
 
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
-  const [tipo, setTipo] = useState<TipoPedido>('balcao');
-  const [atendimento, setAtendimento] = useState<Atendimento>(ATENDIMENTO_PADRAO);
+  const [dados, setDados] = useState<DadosDoPedido>(DADOS_INICIAIS);
+  const tipo = dados.tipo;
+  const atendimento = useAtendimento(supabase, loja.id);
   const [modo, setModo] = useState<'cardapio' | 'salao'>(modoInicial);
-  const [identificador, setIdentificador] = useState('');
-  const [previsto, setPrevisto] = useState<Metodo | null>(null);
-  const [trocoPara, setTrocoPara] = useState('');
 
   const [painel, setPainel] = useState<Painel>({ tela: 'pedido' });
   const [contasAbertas, setContasAbertas] = useState(0);
   const [enviando, setEnviando] = useState<'cozinha' | 'cobrar' | null>(null);
   const [erro, setErro] = useState('');
   const [enviado, setEnviado] = useState('');
-
-  useEffect(() => {
-    void supabase
-      .from('restaurants')
-      .select('call_by, counter_dine_in')
-      .eq('id', loja.id)
-      .single()
-      .then(({ data }) => {
-        if (data) setAtendimento({ chamarPor: data.call_by, balcao: data.counter_dine_in });
-      });
-  }, [supabase, loja.id]);
 
   useEffect(() => {
     let ativo = true;
@@ -162,9 +140,8 @@ export function Pdv({
   const gradeComFotos = visiveis.some((p) => p.photo_path);
   const fotoDoProduto = (id: string) =>
     urlDaFoto(supabase, produtos.find((p) => p.id === id)?.photo_path ?? null);
-  const ident = identificacaoPara(tipo, atendimento);
-  const identificacaoFalta = ident.campo !== null && !identificador.trim();
-  const trocoParaCentavos = trocoPara.trim() === '' ? null : lerPreco(trocoPara);
+  const parametros = parametrosDoPedido(dados, atendimento);
+  const identificacaoFalta = !parametros.ok;
   const montandoPedido = painel.tela === 'pedido';
 
   function tocarProduto(p: Produto) {
@@ -173,11 +150,8 @@ export function Pdv({
     else setCarrinho((c) => adicionarItem(c, itemSimples(p)));
   }
 
-  function escolherTipo(novo: TipoPedido) {
-    setTipo(novo);
-    setIdentificador('');
-    setPrevisto(null);
-    setTrocoPara('');
+  function escolherTipo(novo: TipoPedido, identificador = '') {
+    setDados({ ...DADOS_INICIAIS, tipo: novo, identificador });
   }
 
   function limparPedido() {
@@ -191,13 +165,14 @@ export function Pdv({
   async function lancar(destino: 'cozinha' | 'cobrar') {
     setErro('');
     setEnviado('');
+    if (!parametros.ok) return;
     setEnviando(destino);
-    const identificacao = ident.tipo;
+    const identificacao = parametros.p_identificador_tipo;
     const { data, error } = await supabase.rpc('criar_pedido', {
       p_restaurant_id: loja.id,
-      p_tipo: tipo,
+      p_tipo: parametros.p_tipo,
       p_identificador_tipo: identificacao,
-      p_identificador: ident.campo ? identificador.trim() : null,
+      p_identificador: parametros.p_identificador,
       p_itens: carrinho.map((i) => ({
         product_id: i.productId,
         quantidade: i.quantidade,
@@ -205,8 +180,8 @@ export function Pdv({
         adicionais: i.adicionais.map((a) => a.id),
         observacao: i.observacao || null,
       })),
-      p_pagamento_previsto: tipo === 'delivery' || tipo === 'retirada' ? previsto : null,
-      p_troco_para_cents: previsto === 'dinheiro' ? trocoParaCentavos : null,
+      p_pagamento_previsto: parametros.p_pagamento_previsto,
+      p_troco_para_cents: parametros.p_troco_para_cents,
     });
     const linha = data?.[0];
     if (error || !linha) {
@@ -321,8 +296,7 @@ export function Pdv({
             supabase={supabase}
             lojaId={loja.id}
             onMesaLivre={(label) => {
-              escolherTipo('mesa');
-              setIdentificador(label);
+              escolherTipo('mesa', label);
               setModo('cardapio');
               setPainel({ tela: 'pedido' });
             }}
@@ -412,8 +386,7 @@ export function Pdv({
             abrirContaId={painel.abrir ?? null}
             onCobrar={(conta) => setPainel({ tela: 'cobrando', conta, pedidoId: null })}
             onNovaRodada={(mesa) => {
-              escolherTipo('mesa');
-              setIdentificador(mesa);
+              escolherTipo('mesa', mesa);
               setModo('cardapio');
               setPainel({ tela: 'pedido' });
             }}
@@ -448,51 +421,7 @@ export function Pdv({
         {painel.tela === 'pedido' && (
           <>
             <div className="flex flex-col gap-3 border-b border-line p-5">
-              <SegmentedControl
-                label="Tipo do pedido"
-                options={TIPOS}
-                value={tipo}
-                onChange={escolherTipo}
-              />
-              {ident.campo ? (
-                <TextField
-                  label={ident.campo.rotulo}
-                  inputMode={ident.campo.numerico ? 'numeric' : 'text'}
-                  maxLength={40}
-                  value={identificador}
-                  onChange={(e) => setIdentificador(e.target.value)}
-                />
-              ) : (
-                <p className="text-caption text-ink-muted">
-                  A senha sai sozinha e é chamada quando o pedido ficar pronto.
-                </p>
-              )}
-              {(tipo === 'delivery' || tipo === 'retirada') && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-label text-ink">Como vai pagar</span>
-                  <ChoiceGrid
-                    label="Como o cliente vai pagar"
-                    columns={4}
-                    options={METODOS}
-                    value={previsto}
-                    onChange={setPrevisto}
-                  />
-                  {previsto === 'dinheiro' && (
-                    <TextField
-                      label="Troco para (opcional)"
-                      inputMode="decimal"
-                      placeholder="Ex.: 100,00"
-                      value={trocoPara}
-                      onChange={(e) => setTrocoPara(e.target.value)}
-                      error={
-                        trocoPara && trocoParaCentavos === null
-                          ? 'Digite um valor, por exemplo 100,00.'
-                          : undefined
-                      }
-                    />
-                  )}
-                </div>
-              )}
+              <TipoEIdentificacao dados={dados} onChange={setDados} atendimento={atendimento} />
             </div>
 
             <div className="flex flex-1 flex-col px-5 lg:overflow-y-auto">
@@ -578,9 +507,7 @@ export function Pdv({
               <div className="flex items-center justify-between">
                 {identificacaoFalta && carrinho.length > 0 ? (
                   <p className="text-caption text-ink-muted">
-                    {ident.tipo === 'mesa'
-                      ? 'Digite o número da mesa.'
-                      : 'Digite o nome do cliente.'}
+                    {!parametros.ok && parametros.motivo}
                   </p>
                 ) : (
                   <span />
