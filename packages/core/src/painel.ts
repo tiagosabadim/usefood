@@ -44,3 +44,19 @@ export function csv(linhas: (string | number)[][]): string {
 
 /** Centavos como número de planilha em português: 1234 → "12,34". */
 export const reaisNaPlanilha = (centavos: number) => (centavos / 100).toFixed(2).replace('.', ',');
+
+export type Segmento = 'todos' | 'frequentes' | 'novos' | 'sumidos';
+const DIA_MS = 86_400_000;
+
+/** Cliente novo (primeiro pedido nos últimos 30 dias), frequente (3+ pedidos) ou sumido (sem pedir há 30+ dias). */
+export function noSegmento(
+  cliente: { pedidos: number; primeiro_em: string; ultimo_em: string },
+  segmento: Segmento,
+  agora: Date,
+): boolean {
+  const dias = (iso: string) => (agora.getTime() - new Date(iso).getTime()) / DIA_MS;
+  if (segmento === 'novos') return dias(cliente.primeiro_em) <= 30;
+  if (segmento === 'frequentes') return cliente.pedidos >= 3;
+  if (segmento === 'sumidos') return dias(cliente.ultimo_em) > 30;
+  return true;
+}

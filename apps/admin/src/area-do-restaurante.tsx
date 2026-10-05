@@ -22,6 +22,7 @@ import { Equipe } from './equipe';
 import { TelaDaCozinha } from './cozinha';
 import { Impressao } from './impressao';
 import { LojaOnline } from './loja-online';
+import { Clientes } from './clientes';
 import { Numeros } from './numeros';
 import { ListaDeEntregas } from '@usefood/pedidos';
 import { Pdv } from './pdv';
@@ -56,7 +57,8 @@ type TelaDoPainel =
   | 'equipe'
   | 'loja-online'
   | 'numeros'
-  | 'entregas';
+  | 'entregas'
+  | 'clientes';
 
 export function AreaDoRestaurante({
   supabase,
@@ -198,6 +200,13 @@ export function AreaDoRestaurante({
                 icon: 'grafico' as const,
                 onClick: ir('numeros'),
                 active: tela === 'numeros',
+              },
+              {
+                id: 'clientes',
+                label: 'Clientes',
+                icon: 'perfil' as const,
+                onClick: ir('clientes'),
+                active: tela === 'clientes',
               },
             ]
           : []),
@@ -341,6 +350,20 @@ export function AreaDoRestaurante({
             euId={session.user.id}
             modo="loja"
           />
+        </Tela>
+      );
+    }
+    if (tela === 'clientes') {
+      return (
+        <Tela larga>
+          <Button
+            variant="ghost"
+            className="self-start px-0 lg:hidden"
+            onClick={() => setTela('inicio')}
+          >
+            ← {atual.loja.name}
+          </Button>
+          <Clientes supabase={supabase} loja={atual.loja} />
         </Tela>
       );
     }
@@ -553,6 +576,15 @@ export function AreaDoRestaurante({
                 onClick={() => setTela('numeros')}
               >
                 Números da loja
+              </Button>
+            )}
+            {podeEditar && (
+              <Button
+                variant="secondary"
+                className="h-target-pdv"
+                onClick={() => setTela('clientes')}
+              >
+                Clientes
               </Button>
             )}
             <Button

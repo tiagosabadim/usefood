@@ -1628,6 +1628,24 @@ export type Database = {
         }
         Returns: { atende: boolean; distancia_km: number | null; motivo: string | null; taxa_cents: number }[]
       }
+      cliente_da_loja: {
+        Args: { p_restaurant_id: string; p_telefone: string }
+        Returns: Json
+      }
+      clientes_da_loja: {
+        Args: { p_restaurant_id: string }
+        Returns: {
+          bairro: string | null
+          canais: string[]
+          favorito: string | null
+          nome: string | null
+          pedidos: number
+          primeiro_em: string
+          telefone: string
+          total_cents: number
+          ultimo_em: string
+        }[]
+      }
       concluir_impressao: {
         Args: { p_erro?: string | null; p_job: string; p_ok: boolean }
         Returns: Database["public"]["Enums"]["print_job_status"]

@@ -82,6 +82,13 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Clientes da loja
+
+- Gestão → **Clientes** (dono e gerente): quem pediu por delivery, retirada ou loja online, agrupado pelo celular (`clientes_da_loja`): nome e bairro mais recentes, pedidos, total gasto, ticket médio, primeiro e último pedido, canais e produto favorito. Balcão e mesa não deixam celular e não entram.
+- Resumo (clientes, novos em 30 dias, % que voltou a pedir, sumidos há 30+ dias), grupos (Todos, Frequentes 3+, Novos, Sumidos), busca sem acento, ordem e **Exportar planilha**. Ficha (`cliente_da_loja`): o que mais pede, endereços e últimos pedidos, com botão de WhatsApp.
+- Os dados são do restaurante. Para mandar promoções, o cliente precisa ter concordado (LGPD); o aceite no checkout entra junto com a política de privacidade.
+- Testes em `supabase/tests/clientes.test.sql`.
+
 ## Dashboard do restaurante (Números)
 
 - `painel_da_loja(loja, início, fim)` (dono e gerente) devolve, numa consulta só, os números do período e do anterior (mesma duração): vendas (pedidos sem cancelados e sem online não aceito), recebido (pagamentos menos troco), pedidos e contas (ticket médio por conta); canais, formas de pagamento, 10 mais vendidos, por hora e por dia (no fuso da loja), cozinha (tempo médio e passaram de 15 min), pedidos online (aceitos, recusados com motivos, tempo para aceitar), caixas (quem abriu, diferença) e 10 melhores clientes pelo celular.

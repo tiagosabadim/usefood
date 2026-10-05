@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { csv, periodo, reaisNaPlanilha, variacao } from './painel';
+import { csv, noSegmento, periodo, reaisNaPlanilha, variacao } from './painel';
 
 describe('periodo', () => {
   const agora = new Date(2026, 9, 15, 14, 30); // 15/10/2026 14:30
@@ -32,5 +32,28 @@ describe('planilha', () => {
         ['X; Tudo', reaisNaPlanilha(1234)],
       ]),
     ).toBe('\uFEFFProduto;Total\r\n"X; Tudo";12,34');
+  });
+});
+
+describe('noSegmento', () => {
+  const agora = new Date('2026-10-31T12:00:00Z');
+  const cliente = (pedidos: number, primeiro: string, ultimo: string) => ({
+    pedidos,
+    primeiro_em: primeiro,
+    ultimo_em: ultimo,
+  });
+  it('novos, frequentes e sumidos', () => {
+    expect(
+      noSegmento(cliente(1, '2026-10-20T00:00:00Z', '2026-10-20T00:00:00Z'), 'novos', agora),
+    ).toBe(true);
+    expect(
+      noSegmento(cliente(5, '2026-01-01T00:00:00Z', '2026-10-30T00:00:00Z'), 'frequentes', agora),
+    ).toBe(true);
+    expect(
+      noSegmento(cliente(2, '2026-05-01T00:00:00Z', '2026-08-01T00:00:00Z'), 'sumidos', agora),
+    ).toBe(true);
+    expect(
+      noSegmento(cliente(2, '2026-05-01T00:00:00Z', '2026-10-25T00:00:00Z'), 'sumidos', agora),
+    ).toBe(false);
   });
 });
