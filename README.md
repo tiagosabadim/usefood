@@ -82,6 +82,14 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Console da plataforma (parte 1)
+
+- `/console`, só para administradores da plataforma (`platform_admins`; incluir alguém é feito direto no banco, pela equipe técnica). Mesmo login do painel (e-mail e código): `Login`, `useSession` e a moldura `Tela` ficaram em `@usefood/app`.
+- **Lojas**: todas as lojas (`console_lojas`), com marca, endereço, cidade, situação, dono e pedidos e vendas dos últimos 30 dias; filtro por situação e busca; **Pausar**, **Reativar** e **Encerrar** (`console_mudar_situacao`; publicar continua sendo do dono).
+- **Nova loja**: marca, nome, endereço e e-mail do dono. A Edge Function `console-lojas` acha o dono pelo e-mail ou cria a conta dele (sem senha; ele entra com o código do e-mail) e chama `console_criar_loja`. Sai pronta a mensagem para mandar ao dono (copiar ou WhatsApp).
+- O dono também pode criar a própria loja sozinho: em `/pdv`, quem entra sem loja vê "Criar restaurante".
+- Testes em `supabase/tests/console.test.sql`.
+
 ## Conta do cliente neste aparelho
 
 - Criada sozinha no primeiro pedido online: nome, celular e o endereço (com nome: "Casa"). Fica no aparelho (`usefood.conta` no armazenamento do navegador), não no servidor: sem confirmar o celular por código, qualquer um veria os endereços de outra pessoa digitando o número dela. Quando entrar a conta única (bloco 3, com código no celular), estes dados sobem para o servidor.

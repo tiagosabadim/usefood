@@ -1636,6 +1636,35 @@ export type Database = {
         Args: { p_codigo?: string | null; p_pedido: string }
         Returns: Database["public"]["Enums"]["order_status"]
       }
+      console_criar_loja: {
+        Args: { p_dono: string; p_marca: string; p_nome: string; p_slug: string }
+        Returns: string
+      }
+      console_lojas: {
+        Args: never
+        Returns: {
+          cidade: string | null
+          criada_em: string
+          donos: string[]
+          id: string
+          marca: string
+          marca_slug: string
+          nome: string
+          pedidos_30d: number
+          situacao: Database["public"]["Enums"]["restaurant_status"]
+          slug: string
+          ultimo_pedido_em: string | null
+          vendas_30d_cents: number
+        }[]
+      }
+      console_mudar_situacao: {
+        Args: { p_restaurant_id: string; p_situacao: Database["public"]["Enums"]["restaurant_status"] }
+        Returns: Database["public"]["Enums"]["restaurant_status"]
+      }
+      console_usuario_por_email: {
+        Args: { p_email: string }
+        Returns: string
+      }
       criar_codigo_de_pareamento: {
         Args: { p_restaurant_id: string; p_tipo?: string }
         Returns: { codigo: string; expira_em: string }[]
@@ -1840,6 +1869,10 @@ export type Database = {
       sair_para_entrega: {
         Args: { p_pedido: string }
         Returns: Database["public"]["Enums"]["order_status"]
+      }
+      sou_admin_da_plataforma: {
+        Args: never
+        Returns: boolean
       }
     }
     Enums: {

@@ -1,10 +1,60 @@
-import { StatusScreen } from '@usefood/app';
+import { Login, StatusScreen, Tela, useAppContext, useSession } from '@usefood/app';
+import { Button } from '@usefood/ui';
+import { useEffect, useState } from 'react';
+import { Lojas } from './lojas';
 
+/** Console da plataforma: só a equipe usefood (administradores da plataforma) entra. */
 export function App() {
-  return (
-    <StatusScreen
-      title="Console da plataforma"
-      description="Painel master e painel do franqueado. As telas reais chegam na E20."
-    />
-  );
+  const { supabase } = useAppContext();
+  if (!supabase) {
+    return (
+      <StatusScreen
+        title="Console usefood"
+        description="Faltam as chaves do banco nesta publicação."
+      />
+    );
+  }
+  return <ComSessao supabase={supabase} />;
+}
+
+function ComSessao({
+  supabase,
+}: {
+  supabase: NonNullable<ReturnType<typeof useAppContext>['supabase']>;
+}) {
+  const sessao = useSession(supabase);
+  const [admin, setAdmin] = useState<boolean | undefined>(undefined);
+
+  useEffect(() => {
+    if (!sessao) return;
+    let ativo = true;
+    void supabase.rpc('sou_admin_da_plataforma').then(({ data }) => {
+      if (ativo) setAdmin(data === true);
+    });
+    return () => {
+      ativo = false;
+    };
+  }, [supabase, sessao]);
+
+  if (sessao === undefined) return null;
+  if (!sessao) return <Login supabase={supabase} />;
+  if (admin === undefined) return null;
+  if (!admin) {
+    return (
+      <Tela>
+        <h1 className="font-display text-title-screen text-ink">Acesso só para a equipe usefood</h1>
+        <p className="text-body text-ink-muted">
+          Você entrou como {sessao.user.email}. Para administrar a sua loja, use o painel em /pdv.
+        </p>
+        <Button
+          variant="secondary"
+          className="self-start"
+          onClick={() => void supabase.auth.signOut()}
+        >
+          Sair
+        </Button>
+      </Tela>
+    );
+  }
+  return <Lojas supabase={supabase} email={sessao.user.email ?? ''} />;
 }

@@ -1,9 +1,7 @@
-import { StatusScreen, useAppContext } from '@usefood/app';
+import { Login, StatusScreen, useAppContext, useSession } from '@usefood/app';
 import type { AppSupabaseClient } from '@usefood/db';
 import { AreaDoRestaurante } from './area-do-restaurante';
-import { Login } from './login';
 import { Tela } from './tela';
-import { useSession } from './use-session';
 
 export function App() {
   const { supabase } = useAppContext();
