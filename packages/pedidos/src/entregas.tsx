@@ -8,6 +8,7 @@ interface Entrega {
   number: number;
   status: string;
   courier_id: string | null;
+  delivered_at: string | null;
   tabs: {
     customer_name: string | null;
     customer_phone: string | null;
@@ -60,29 +61,33 @@ export function ListaDeEntregas({
   lojaId,
   euId,
   modo,
+  abaInicial = 'prontos',
 }: {
   supabase: AppSupabaseClient;
   lojaId: string;
   euId: string;
   modo: 'entregador' | 'loja';
+  /** Abre já numa aba (o aviso de entregue abre em Entregues). */
+  abaInicial?: 'prontos' | 'saiu' | 'entregues';
 }) {
   const [entregas, setEntregas] = useState<Entrega[]>([]);
-  const [aba, setAba] = useState<'prontos' | 'saiu'>('prontos');
+  const [aba, setAba] = useState<'prontos' | 'saiu' | 'entregues'>(abaInicial);
   const [codigos, setCodigos] = useState<Record<string, string>>({});
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const conhecidos = useRef<Set<string> | null>(null);
+  const entreguesConhecidos = useRef<Set<string> | null>(null);
 
   const carregar = useCallback(async () => {
     const { data } = await supabase
       .from('orders')
       .select(
-        'id, number, status, courier_id, tabs(customer_name, customer_phone, delivery_address, total_cents, paid_cents, expected_method, change_for_cents)',
+        'id, number, status, courier_id, delivered_at, tabs(customer_name, customer_phone, delivery_address, total_cents, paid_cents, expected_method, change_for_cents)',
       )
       .eq('restaurant_id', lojaId)
       .eq('type', 'delivery')
-      .in('status', ['pronto', 'em_entrega'])
+      .in('status', ['pronto', 'em_entrega', 'concluido'])
       .gte('created_at', new Date(Date.now() - JANELA_MS).toISOString())
       .order('ready_at');
     if (!data) return;
@@ -91,11 +96,20 @@ export function ListaDeEntregas({
     if (conhecidos.current && [...prontos].some((id) => !conhecidos.current!.has(id)))
       navigator.vibrate?.([200, 100, 200]);
     conhecidos.current = prontos;
+    // Loja: avisa quando o entregador dá baixa (pedido passou para entregue)
+    const entregues = lista.filter((e) => e.status === 'concluido');
+    if (modo === 'loja' && entreguesConhecidos.current) {
+      const novo = entregues.find((e) => !entreguesConhecidos.current!.has(e.id));
+      if (novo)
+        setAviso(
+          `Entregue: pedido ${numero(novo.number)} · ${novo.tabs?.customer_name ?? 'cliente'}.`,
+        );
+    }
+    entreguesConhecidos.current = new Set(entregues.map((e) => e.id));
     setEntregas(lista);
-  }, [supabase, lojaId]);
+  }, [supabase, lojaId, modo]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void carregar();
     const canal = canalUnico(supabase, `entregas-${modo}-${lojaId}`)
       .on(
@@ -147,6 +161,9 @@ export function ListaDeEntregas({
   const saiu = entregas.filter(
     (e) => e.status === 'em_entrega' && (modo === 'loja' || e.courier_id === euId),
   );
+  const entregues = entregas
+    .filter((e) => e.status === 'concluido' && (modo === 'loja' || e.courier_id === euId))
+    .sort((x, y) => (y.delivered_at ?? '').localeCompare(x.delivered_at ?? ''));
   const mapa = (e: Entrega) => {
     const a = e.tabs?.delivery_address;
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${a?.rua ?? ''} ${a?.numero ?? ''}, ${a?.bairro ?? ''}, ${a?.cidade ?? ''}`)}`;
@@ -169,6 +186,10 @@ export function ListaDeEntregas({
                 : saiu.length
                   ? `Em entrega (${saiu.length})`
                   : 'Em entrega',
+          },
+          {
+            value: 'entregues',
+            label: entregues.length ? `Entregues (${entregues.length})` : 'Entregues',
           },
         ]}
         value={aba}
@@ -271,6 +292,35 @@ export function ListaDeEntregas({
               );
             })}
           </div>
+        ))}
+
+      {aba === 'entregues' &&
+        (entregues.length === 0 ? (
+          <p className="text-body text-ink-muted">
+            Nenhuma entrega concluída nas últimas 12 horas.
+          </p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-line rounded-lg border border-line bg-surface">
+            {entregues.map((e) => (
+              <li
+                key={e.id}
+                className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
+              >
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-body-strong text-ink">
+                    {e.tabs?.customer_name ?? 'Cliente'} · {numero(e.number)}
+                  </span>
+                  <span className="text-caption text-ink-muted">{endereco(e)}</span>
+                </div>
+                <span className="text-label text-success">
+                  Entregue
+                  {e.delivered_at
+                    ? ` às ${new Date(e.delivered_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+                    : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
         ))}
     </div>
   );

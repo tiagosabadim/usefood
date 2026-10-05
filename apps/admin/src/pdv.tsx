@@ -25,10 +25,11 @@ import {
   SegmentedControl,
   TextField,
 } from '@usefood/ui';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Cobranca, ContaPaga, type Conta, type PagamentoFeito } from './cobranca';
 import { ContasAbertas } from './contas-abertas';
 import { TelaDaCozinha } from './cozinha';
+import { tocarAviso } from './tela-escura';
 import { PedidosOnline } from './pedidos-online';
 import {
   carregarCardapio,
@@ -109,6 +110,23 @@ export function Pdv({
     modoInicial,
   );
   const [emPreparo, setEmPreparo] = useState(0);
+  // Aviso quando o entregador dá baixa (em qualquer tela do menu rápido)
+  const [entregue, setEntregue] = useState<{ numero: number; nome: string } | null>(null);
+  const [abaDasEntregas, setAbaDasEntregas] = useState<'prontos' | 'entregues'>('prontos');
+  const entreguesConhecidos = useRef<Set<string> | null>(null);
+  const somDoAviso = useRef<AudioContext | null>(null);
+  useEffect(() => {
+    const liberar = () => {
+      somDoAviso.current ??= new AudioContext();
+    };
+    window.addEventListener('pointerdown', liberar, { once: true });
+    return () => window.removeEventListener('pointerdown', liberar);
+  }, []);
+  useEffect(() => {
+    if (!entregue) return;
+    const t = setTimeout(() => setEntregue(null), 10_000);
+    return () => clearTimeout(t);
+  }, [entregue]);
   const [esperandoOnline, setEsperandoOnline] = useState(0);
   const [entregasProntas, setEntregasProntas] = useState(0);
 
@@ -116,7 +134,7 @@ export function Pdv({
   useEffect(() => {
     let ativo = true;
     const contar = async () => {
-      const [online, entregas, preparo] = await Promise.all([
+      const [online, entregas, preparo, concluidas] = await Promise.all([
         supabase
           .from('orders')
           .select('id', { count: 'exact', head: true })
@@ -135,11 +153,28 @@ export function Pdv({
           .eq('restaurant_id', loja.id)
           .eq('status', 'em_preparo')
           .gte('created_at', new Date(Date.now() - 12 * 3_600_000).toISOString()),
+        supabase
+          .from('orders')
+          .select('id, number, identifier')
+          .eq('restaurant_id', loja.id)
+          .eq('type', 'delivery')
+          .eq('status', 'concluido')
+          .gte('delivered_at', new Date(Date.now() - 12 * 3_600_000).toISOString())
+          .limit(200),
       ]);
       if (!ativo) return;
       setEsperandoOnline(online.count ?? 0);
       setEntregasProntas(entregas.count ?? 0);
       setEmPreparo(preparo.count ?? 0);
+      const lista = concluidas.data ?? [];
+      if (entreguesConhecidos.current) {
+        const novo = lista.find((o) => !entreguesConhecidos.current!.has(o.id));
+        if (novo) {
+          setEntregue({ numero: novo.number, nome: novo.identifier });
+          if (somDoAviso.current) tocarAviso(somDoAviso.current);
+        }
+      }
+      entreguesConhecidos.current = new Set(lista.map((o) => o.id));
     };
     void contar();
     const canal = canalUnico(supabase, `pdv-menu-${loja.id}`)
@@ -319,7 +354,10 @@ export function Pdv({
               id: 'entregas',
               rotulo: 'Entregas',
               icone: 'moto',
-              onClick: () => setModo('entregas'),
+              onClick: () => {
+                setAbaDasEntregas('prontos');
+                setModo('entregas');
+              },
               contador: entregasProntas,
             },
             {
@@ -374,11 +412,39 @@ export function Pdv({
       </nav>
 
       <main className="flex min-w-0 flex-col gap-5 p-5 lg:overflow-y-auto lg:p-6">
+        {entregue && (
+          <div
+            role="status"
+            className="flex items-center justify-between gap-3 rounded-md bg-success-soft px-4 py-3 text-success"
+          >
+            <span className="text-body-strong">
+              Entregue: pedido #{String(entregue.numero).padStart(3, '0')} · {entregue.nome}
+            </span>
+            <Button
+              variant="ghost"
+              className="h-9"
+              onClick={() => {
+                setEntregue(null);
+                setAbaDasEntregas('entregues');
+                setModo('entregas');
+              }}
+            >
+              Ver
+            </Button>
+          </div>
+        )}
         {avisos}
         {modo === 'entregas' && (
           <section aria-label="Entregas" className="flex flex-col gap-4">
             <h1 className="font-display text-title-screen text-ink">Entregas</h1>
-            <ListaDeEntregas supabase={supabase} lojaId={loja.id} euId={euId} modo="loja" />
+            <ListaDeEntregas
+              key={abaDasEntregas}
+              supabase={supabase}
+              lojaId={loja.id}
+              euId={euId}
+              modo="loja"
+              abaInicial={abaDasEntregas}
+            />
           </section>
         )}
         {modo === 'cozinha' && <TelaDaCozinha supabase={supabase} loja={loja} encaixada />}
