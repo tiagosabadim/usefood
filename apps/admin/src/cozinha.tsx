@@ -5,7 +5,7 @@ import {
   rotuloDaConta,
   rotuloDoTipo,
 } from '@usefood/core';
-import type { AppSupabaseClient, Enums } from '@usefood/db';
+import { canalUnico, type AppSupabaseClient, type Enums } from '@usefood/db';
 import { Alert, Button, EmptyState, Icon, OrderCard, SegmentedControl } from '@usefood/ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { tocarAviso, useTelaEscura } from './tela-escura';
@@ -117,8 +117,7 @@ export function TelaDaCozinha({
       .then(({ data }) => setPracas(data ?? []));
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void carregar();
-    const canal = supabase
-      .channel(`cozinha-${loja.id}`)
+    const canal = canalUnico(supabase, `cozinha-${loja.id}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${loja.id}` },

@@ -1,4 +1,4 @@
-import type { AppSupabaseClient } from '@usefood/db';
+import { canalUnico, type AppSupabaseClient } from '@usefood/db';
 import { Button, Icon } from '@usefood/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { tocarAviso, useTelaEscura } from './tela-escura';
@@ -59,8 +59,7 @@ export function PainelDeChamada({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void carregar();
-    const canal = supabase
-      .channel(`chamada-${loja.id}`)
+    const canal = canalUnico(supabase, `chamada-${loja.id}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${loja.id}` },

@@ -1,5 +1,5 @@
 import { formatarPreco, tempoDesde } from '@usefood/core';
-import type { AppSupabaseClient } from '@usefood/db';
+import { canalUnico, type AppSupabaseClient } from '@usefood/db';
 import { cn, EmptyState, StatusPill } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 
@@ -88,8 +88,7 @@ export function Salao({
       setAgora(Date.now());
     };
     void carregar();
-    const canal = supabase
-      .channel(`salao-${lojaId}`)
+    const canal = canalUnico(supabase, `salao-${lojaId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${lojaId}` },

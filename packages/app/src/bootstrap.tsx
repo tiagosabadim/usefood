@@ -2,6 +2,7 @@ import { brandThemeCss, resolveSite, type DomainRecord } from '@usefood/core';
 import { createSupabaseClient, type AppSupabaseClient } from '@usefood/db';
 import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { LimiteDeErro } from './limite-de-erro';
 import { AppContextProvider, type AppName } from './app-context';
 
 export interface BootstrapOptions {
@@ -69,7 +70,7 @@ export async function bootstrap({
   createRoot(container).render(
     <StrictMode>
       <AppContextProvider value={{ app, site, brand: site.brand, environment, supabase }}>
-        {element}
+        <LimiteDeErro>{element}</LimiteDeErro>
       </AppContextProvider>
     </StrictMode>,
   );

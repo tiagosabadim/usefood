@@ -82,6 +82,12 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Tempo real e proteção contra tela branca
+
+- Toda escuta em tempo real usa `canalUnico(supabase, nome)` (`@usefood/db`): nome com sufixo único. Duas telas com o mesmo nome (a faixa de pedidos online e a tela Online do PDV, ou a troca rápida de tela) davam erro e deixavam a página em branco.
+- `LimiteDeErro` (`@usefood/app`) envolve todos os apps: se uma tela quebrar, aparece "Algo deu errado nesta tela" com **Recarregar**.
+- Contadores do menu rápido do PDV usam a mesma janela das listas (12 horas).
+
 ## PDV como central (um notebook só)
 
 - Barra lateral do PDV virou **menu rápido**: Painel (volta ao início), **Vender** (cardápio), **Salão**, **Entregas** (prontas para sair, com contador), **Online** (pedidos esperando a loja, com contador) e **Cozinha**. Trocam o meio da tela sem sair do PDV; o pedido em montagem à direita continua.

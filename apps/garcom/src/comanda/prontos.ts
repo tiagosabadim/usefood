@@ -1,4 +1,4 @@
-import type { AppSupabaseClient } from '@usefood/db';
+import { canalUnico, type AppSupabaseClient } from '@usefood/db';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface ProntoParaLevar {
@@ -47,8 +47,7 @@ export function useProntos(supabase: AppSupabaseClient, lojaId: string) {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void carregar();
-    const canal = supabase
-      .channel(`garcom-prontos-${lojaId}`)
+    const canal = canalUnico(supabase, `garcom-prontos-${lojaId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${lojaId}` },

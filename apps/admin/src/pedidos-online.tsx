@@ -1,5 +1,5 @@
 import { formatarPreco, formatarTelefone } from '@usefood/core';
-import type { AppSupabaseClient } from '@usefood/db';
+import { canalUnico, type AppSupabaseClient } from '@usefood/db';
 import { Alert, Button, Chip, Panel, Sheet, TextField } from '@usefood/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { tocarAviso } from './tela-escura';
@@ -97,8 +97,7 @@ export function PedidosOnline({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void carregar();
-    const canal = supabase
-      .channel(`online-${lojaId}`)
+    const canal = canalUnico(supabase, `online-${lojaId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${lojaId}` },

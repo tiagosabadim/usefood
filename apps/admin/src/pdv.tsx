@@ -12,7 +12,7 @@ import {
   type ItemCarrinho,
   type NovoItem,
 } from '@usefood/core';
-import type { AppSupabaseClient, Enums, Tables } from '@usefood/db';
+import { canalUnico, type AppSupabaseClient, type Enums, type Tables } from '@usefood/db';
 import {
   Alert,
   Button,
@@ -127,7 +127,8 @@ export function Pdv({
           .select('id', { count: 'exact', head: true })
           .eq('restaurant_id', loja.id)
           .eq('type', 'delivery')
-          .eq('status', 'pronto'),
+          .eq('status', 'pronto')
+          .gte('created_at', new Date(Date.now() - 12 * 3_600_000).toISOString()),
         supabase
           .from('orders')
           .select('id', { count: 'exact', head: true })
@@ -141,8 +142,7 @@ export function Pdv({
       setEmPreparo(preparo.count ?? 0);
     };
     void contar();
-    const canal = supabase
-      .channel(`pdv-menu-${loja.id}`)
+    const canal = canalUnico(supabase, `pdv-menu-${loja.id}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${loja.id}` },
