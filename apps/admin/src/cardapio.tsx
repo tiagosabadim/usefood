@@ -169,7 +169,7 @@ export function Cardapio({
   return (
     <Tela larga>
       <div className="flex flex-col gap-4">
-        <Button variant="ghost" className="self-start px-0" onClick={onVoltar}>
+        <Button variant="ghost" className="self-start px-0 lg:hidden" onClick={onVoltar}>
           ← {loja.name}
         </Button>
         <div className="flex flex-wrap items-end justify-between gap-4">

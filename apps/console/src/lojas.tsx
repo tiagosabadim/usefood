@@ -83,6 +83,31 @@ export function Lojas({ supabase, email }: { supabase: AppSupabaseClient; email:
     };
   }, [lojas]);
 
+  const acoes = (l: Loja) => (
+    <div className="flex flex-wrap gap-2">
+      {l.situacao === 'ativo' && (
+        <>
+          <a href={`/${l.slug}`} target="_blank" rel="noreferrer">
+            <Button variant="secondary">Ver loja</Button>
+          </a>
+          <Button variant="ghost" onClick={() => void mudar(l, 'pausado')}>
+            Pausar
+          </Button>
+        </>
+      )}
+      {l.situacao === 'pausado' && (
+        <Button variant="secondary" onClick={() => void mudar(l, 'ativo')}>
+          Reativar
+        </Button>
+      )}
+      {l.situacao !== 'encerrado' && (
+        <Button variant="ghost" className="text-danger" onClick={() => void mudar(l, 'encerrado')}>
+          Encerrar
+        </Button>
+      )}
+    </div>
+  );
+
   async function mudar(loja: Loja, situacao: Situacao) {
     if (
       situacao === 'encerrado' &&
@@ -103,15 +128,22 @@ export function Lojas({ supabase, email }: { supabase: AppSupabaseClient; email:
 
   return (
     <Tela larga>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <Titulo titulo="Console usefood" texto={`Todas as lojas da plataforma · ${email}`} />
-        <div className="flex gap-2">
-          <Button onClick={() => setCriando(true)}>Nova loja</Button>
-          <Button variant="ghost" onClick={() => void supabase.auth.signOut()}>
-            Sair
-          </Button>
-        </div>
-      </div>
+      <Titulo
+        titulo="Lojas"
+        texto={`Todas as lojas da plataforma · ${email}`}
+        acoes={
+          <>
+            <Button onClick={() => setCriando(true)}>Nova loja</Button>
+            <Button
+              variant="ghost"
+              className="lg:hidden"
+              onClick={() => void supabase.auth.signOut()}
+            >
+              Sair
+            </Button>
+          </>
+        }
+      />
       <Alert>{erro}</Alert>
       <Alert tone="sucesso">{aviso}</Alert>
 
@@ -154,65 +186,90 @@ export function Lojas({ supabase, email }: { supabase: AppSupabaseClient; email:
       ) : visiveis.length === 0 ? (
         <p className="text-body text-ink-muted">Nenhuma loja aqui.</p>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {visiveis.map((l) => (
-            <li
-              key={l.id}
-              className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4 md:flex-row md:items-center"
-            >
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-body-strong text-ink">{l.nome}</span>
-                  <StatusPill tone={SITUACAO[l.situacao].tom}>
-                    {SITUACAO[l.situacao].texto}
-                  </StatusPill>
+        <>
+          <ul className="flex flex-col gap-3 lg:hidden">
+            {visiveis.map((l) => (
+              <li
+                key={l.id}
+                className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4 md:flex-row md:items-center"
+              >
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-body-strong text-ink">{l.nome}</span>
+                    <StatusPill tone={SITUACAO[l.situacao].tom}>
+                      {SITUACAO[l.situacao].texto}
+                    </StatusPill>
+                  </div>
+                  <span className="text-caption text-ink-muted">
+                    {l.marca} · /{l.slug}
+                    {l.cidade ? ` · ${l.cidade}` : ''} · criada em{' '}
+                    {new Date(l.criada_em).toLocaleDateString('pt-BR')}
+                  </span>
+                  <span className="text-caption text-ink-muted">
+                    Dono: {l.donos.length ? l.donos.join(', ') : '—'}
+                  </span>
                 </div>
-                <span className="text-caption text-ink-muted">
-                  {l.marca} · /{l.slug}
-                  {l.cidade ? ` · ${l.cidade}` : ''} · criada em{' '}
-                  {new Date(l.criada_em).toLocaleDateString('pt-BR')}
-                </span>
-                <span className="text-caption text-ink-muted">
-                  Dono: {l.donos.length ? l.donos.join(', ') : '—'}
-                </span>
-              </div>
-              <div className="flex flex-col text-caption text-ink-muted md:w-48">
-                <span className="text-body-strong text-ink tabular-nums">
-                  {formatarPreco(Number(l.vendas_30d_cents))}
-                </span>
-                <span>
-                  {l.pedidos_30d} pedidos em 30 dias · último {quando(l.ultimo_pedido_em)}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {l.situacao === 'ativo' && (
-                  <>
-                    <a href={`/${l.slug}`} target="_blank" rel="noreferrer">
-                      <Button variant="secondary">Ver loja</Button>
-                    </a>
-                    <Button variant="ghost" onClick={() => void mudar(l, 'pausado')}>
-                      Pausar
-                    </Button>
-                  </>
-                )}
-                {l.situacao === 'pausado' && (
-                  <Button variant="secondary" onClick={() => void mudar(l, 'ativo')}>
-                    Reativar
-                  </Button>
-                )}
-                {l.situacao !== 'encerrado' && (
-                  <Button
-                    variant="ghost"
-                    className="text-danger"
-                    onClick={() => void mudar(l, 'encerrado')}
-                  >
-                    Encerrar
-                  </Button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
+                <div className="flex flex-col text-caption text-ink-muted md:w-48">
+                  <span className="text-body-strong text-ink tabular-nums">
+                    {formatarPreco(Number(l.vendas_30d_cents))}
+                  </span>
+                  <span>
+                    {l.pedidos_30d} pedidos em 30 dias · último {quando(l.ultimo_pedido_em)}
+                  </span>
+                </div>
+                {acoes(l)}
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto rounded-lg border border-line lg:block">
+            <table className="w-full text-left text-body">
+              <thead className="bg-surface-strong text-label text-ink-muted">
+                <tr>
+                  <th className="px-4 py-3 font-normal">Loja</th>
+                  <th className="px-4 py-3 font-normal">Situação</th>
+                  <th className="px-4 py-3 font-normal">Dono</th>
+                  <th className="px-4 py-3 text-right font-normal">Vendas 30 dias</th>
+                  <th className="px-4 py-3 text-right font-normal">Pedidos</th>
+                  <th className="px-4 py-3 font-normal">Último pedido</th>
+                  <th className="px-4 py-3 font-normal">
+                    <span className="sr-only">Ações</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line bg-surface">
+                {visiveis.map((l) => (
+                  <tr key={l.id} className="align-middle">
+                    <td className="px-4 py-3">
+                      <span className="block text-body-strong text-ink">{l.nome}</span>
+                      <span className="text-caption text-ink-muted">
+                        {l.marca} · /{l.slug}
+                        {l.cidade ? ` · ${l.cidade}` : ''}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusPill tone={SITUACAO[l.situacao].tom}>
+                        {SITUACAO[l.situacao].texto}
+                      </StatusPill>
+                    </td>
+                    <td className="px-4 py-3 text-caption text-ink-muted">
+                      {l.donos.join(', ') || '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right text-body-strong text-ink tabular-nums">
+                      {formatarPreco(Number(l.vendas_30d_cents))}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums">{l.pedidos_30d}</td>
+                    <td className="px-4 py-3 text-caption text-ink-muted">
+                      {quando(l.ultimo_pedido_em)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end">{acoes(l)}</div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {criando && (

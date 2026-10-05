@@ -1,3 +1,4 @@
+export { AppShell, type AppShellProps, type NavGroup, type NavItem } from './app-shell';
 export { Alert } from './alert';
 export { BottomNav, type BottomNavItem } from './bottom-nav';
 export { Button, type ButtonProps } from './button';

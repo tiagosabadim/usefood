@@ -2,7 +2,7 @@ import { agenteLigado, tempoDesde } from '@usefood/core';
 import type { AppSupabaseClient, Tables } from '@usefood/db';
 import { Alert, Button, Panel, SegmentedControl, StatusPill, Switch, TextField } from '@usefood/ui';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Tela, Titulo } from './tela';
+import { Colunas, Tela, Titulo } from './tela';
 
 type Praca = Pick<Tables<'stations'>, 'id' | 'name'>;
 type Impressora = Pick<
@@ -199,7 +199,7 @@ export function Impressao({
 
   return (
     <Tela larga>
-      <Button variant="ghost" className="self-start px-0" onClick={onVoltar}>
+      <Button variant="ghost" className="self-start px-0 lg:hidden" onClick={onVoltar}>
         ← {loja.name}
       </Button>
       <Titulo
@@ -209,121 +209,138 @@ export function Impressao({
       <Alert>{erro}</Alert>
       <Alert tone="sucesso">{aviso}</Alert>
 
-      <Panel title="Computador de impressão">
-        {agentes.length === 0 && !pareamento && (
-          <p className="text-body text-ink-muted">
-            Nenhum computador conectado ainda. Use um computador que fique ligado na loja, na mesma
-            rede das impressoras.
-          </p>
-        )}
-        {agentes.length > 0 && (
-          <ul className="flex flex-col divide-y divide-line">
-            {agentes.map((a) => {
-              const ligado = agenteLigado(
-                {
-                  id: a.id,
-                  nome: a.name,
-                  vistoEm: a.last_seen_at,
-                  desligado: a.revoked_at !== null,
-                },
-                agora,
-              );
+      <Colunas
+        esquerda={
+          <>
+            <Panel title="Computador de impressão">
+              {agentes.length === 0 && !pareamento && (
+                <p className="text-body text-ink-muted">
+                  Nenhum computador conectado ainda. Use um computador que fique ligado na loja, na
+                  mesma rede das impressoras.
+                </p>
+              )}
+              {agentes.length > 0 && (
+                <ul className="flex flex-col divide-y divide-line">
+                  {agentes.map((a) => {
+                    const ligado = agenteLigado(
+                      {
+                        id: a.id,
+                        nome: a.name,
+                        vistoEm: a.last_seen_at,
+                        desligado: a.revoked_at !== null,
+                      },
+                      agora,
+                    );
+                    return (
+                      <li key={a.id} className="flex flex-wrap items-center gap-3 py-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-body-strong text-ink">{a.name}</p>
+                          <p className="text-caption text-ink-muted">
+                            {a.last_seen_at
+                              ? `Último sinal ${tempoDesde(a.last_seen_at, agora)}`
+                              : 'Ainda não deu sinal'}
+                            {a.version && ` · versão ${a.version}`}
+                          </p>
+                        </div>
+                        <StatusPill tone={ligado ? 'sucesso' : 'neutro'}>
+                          {ligado ? 'Ligado' : 'Desligado'}
+                        </StatusPill>
+                        <Button
+                          variant="ghost"
+                          className="text-danger"
+                          onClick={() => void desligar(a)}
+                        >
+                          Desconectar
+                        </Button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {pareamento ? (
+                <Pareamento
+                  codigo={pareamento.codigo}
+                  expiraEm={pareamento.expiraEm}
+                  onCancelar={() => setPareamento(null)}
+                />
+              ) : (
+                <Button
+                  variant="secondary"
+                  className="self-start"
+                  loading={gerando}
+                  onClick={() => void gerarCodigo()}
+                >
+                  Conectar um computador
+                </Button>
+              )}
+            </Panel>
+          </>
+        }
+        direita={
+          <>
+            {pracas.map((praca) => {
+              const daPraca = impressoras.filter((i) => i.station_id === praca.id);
               return (
-                <li key={a.id} className="flex flex-wrap items-center gap-3 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-body-strong text-ink">{a.name}</p>
-                    <p className="text-caption text-ink-muted">
-                      {a.last_seen_at
-                        ? `Último sinal ${tempoDesde(a.last_seen_at, agora)}`
-                        : 'Ainda não deu sinal'}
-                      {a.version && ` · versão ${a.version}`}
+                <Panel key={praca.id} id={`praca-${praca.id}`} title={praca.name}>
+                  {daPraca.length === 0 && (
+                    <p className="text-body text-ink-muted">
+                      Sem impressora: os pedidos desta praça não vão sair no papel.
                     </p>
-                  </div>
-                  <StatusPill tone={ligado ? 'sucesso' : 'neutro'}>
-                    {ligado ? 'Ligado' : 'Desligado'}
-                  </StatusPill>
-                  <Button variant="ghost" className="text-danger" onClick={() => void desligar(a)}>
-                    Desconectar
-                  </Button>
-                </li>
+                  )}
+                  <ul className="flex flex-col divide-y divide-line">
+                    {daPraca.map((i) => (
+                      <li key={i.id} className="flex flex-wrap items-center gap-3 py-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-body-strong text-ink">{i.name}</p>
+                          <p className="text-caption text-ink-muted tabular-nums">
+                            {i.host}:{i.port} · papel {i.paper_width} mm
+                          </p>
+                        </div>
+                        <Switch
+                          checked={i.is_active}
+                          onChange={(v) => void alternar(i, v)}
+                          label={`${i.name}: ativa`}
+                        />
+                        <Button
+                          variant="secondary"
+                          disabled={!i.is_active}
+                          onClick={() => void testar(i)}
+                        >
+                          Imprimir teste
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="text-danger"
+                          onClick={() => void remover(i)}
+                        >
+                          Remover
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                  {adicionandoEm === praca.id ? (
+                    <NovaImpressora
+                      pracaId={praca.id}
+                      onSalvar={salvarImpressora}
+                      onCancelar={() => setAdicionandoEm(null)}
+                    />
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      className="self-start px-0 text-brand-text"
+                      onClick={() => setAdicionandoEm(praca.id)}
+                    >
+                      + Adicionar impressora
+                    </Button>
+                  )}
+                </Panel>
               );
             })}
-          </ul>
-        )}
-        {pareamento ? (
-          <Pareamento
-            codigo={pareamento.codigo}
-            expiraEm={pareamento.expiraEm}
-            onCancelar={() => setPareamento(null)}
-          />
-        ) : (
-          <Button
-            variant="secondary"
-            className="self-start"
-            loading={gerando}
-            onClick={() => void gerarCodigo()}
-          >
-            Conectar um computador
-          </Button>
-        )}
-      </Panel>
 
-      {pracas.map((praca) => {
-        const daPraca = impressoras.filter((i) => i.station_id === praca.id);
-        return (
-          <Panel key={praca.id} id={`praca-${praca.id}`} title={praca.name}>
-            {daPraca.length === 0 && (
-              <p className="text-body text-ink-muted">
-                Sem impressora: os pedidos desta praça não vão sair no papel.
-              </p>
-            )}
-            <ul className="flex flex-col divide-y divide-line">
-              {daPraca.map((i) => (
-                <li key={i.id} className="flex flex-wrap items-center gap-3 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-body-strong text-ink">{i.name}</p>
-                    <p className="text-caption text-ink-muted tabular-nums">
-                      {i.host}:{i.port} · papel {i.paper_width} mm
-                    </p>
-                  </div>
-                  <Switch
-                    checked={i.is_active}
-                    onChange={(v) => void alternar(i, v)}
-                    label={`${i.name}: ativa`}
-                  />
-                  <Button
-                    variant="secondary"
-                    disabled={!i.is_active}
-                    onClick={() => void testar(i)}
-                  >
-                    Imprimir teste
-                  </Button>
-                  <Button variant="ghost" className="text-danger" onClick={() => void remover(i)}>
-                    Remover
-                  </Button>
-                </li>
-              ))}
-            </ul>
-            {adicionandoEm === praca.id ? (
-              <NovaImpressora
-                pracaId={praca.id}
-                onSalvar={salvarImpressora}
-                onCancelar={() => setAdicionandoEm(null)}
-              />
-            ) : (
-              <Button
-                variant="ghost"
-                className="self-start px-0 text-brand-text"
-                onClick={() => setAdicionandoEm(praca.id)}
-              >
-                + Adicionar impressora
-              </Button>
-            )}
-          </Panel>
-        );
-      })}
-
-      <NovaPraca onSalvar={novaPraca} />
+            <NovaPraca onSalvar={novaPraca} />
+          </>
+        }
+      />
     </Tela>
   );
 }

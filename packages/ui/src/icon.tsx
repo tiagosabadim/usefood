@@ -17,6 +17,21 @@ const CAMINHOS = {
   moto: 'M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM8 17h8M16 17l-1.5-6H11M14 8h2.5l1.5 3M4 17l1.5-4H11v4',
   sacola: 'M6 8h12l-1 12H7zM9 8a3 3 0 0 1 6 0',
   calendario: 'M5 5h14v15H5zM5 10h14M9 3v4M15 3v4',
+  pdv: 'M3 4h18v12H3zM8 20h8M12 16v4',
+  mesa: 'M3 10h18M6 10v9M18 10v9M8 6h8',
+  cozinha: 'M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1 1 2 2 3 3 0-2 0-4 0-6z',
+  chamada: 'M3 10v4h4l6 4V6l-6 4zM17 9a4 4 0 0 1 0 6',
+  cardapio: 'M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM9 8h6M9 12h6',
+  loja: 'M4 9l2-5h12l2 5M4 9v11h16V9M4 9h16M9 20v-6h6v6',
+  impressora: 'M7 8V3h10v5M5 8h14v8h-2v4H7v-4H5zM9 15h6',
+  equipe:
+    'M9 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM3 20c1-3.5 3.5-5 6-5s5 1.5 6 5M16 5a3 3 0 0 1 0 6M18 15c1.5.7 2.5 2.3 3 5',
+  ajustes: 'M4 6h10M18 6h2M14 4v4M4 12h4M12 12h8M8 10v4M4 18h12M20 18h0M16 16v4',
+  grafico: 'M4 20h16M7 16v-5M12 16V6M17 16v-8',
+  marca: 'M3 12l9-9h8v8l-9 9zM15 8h.01',
+  globo:
+    'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18',
+  sair: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10',
   conversa: 'M4 5h16v11H10l-6 4zM8 10h.01M12 10h.01M16 10h.01',
 } as const;
 

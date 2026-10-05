@@ -82,6 +82,13 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Painéis no computador
+
+- `AppShell` (`@usefood/ui`): menu lateral fixo a partir de 1024 px no painel da loja (Início; Operação: PDV, Salão, Tela da cozinha, Painel de chamada; Gestão: Cardápio, Loja online, Impressão, Equipe, Configurações; rodapé com troca de loja, e-mail e Sair) e no console (Lojas; Números, Marcas e Domínios em breve). No celular nada muda.
+- PDV, Salão, Tela da cozinha e Painel de chamada continuam em tela cheia, sem menu.
+- `Tela larga` cresce até 6xl no computador; `Titulo` aceita `acoes`; `Colunas` põe painéis lado a lado (Loja online, Equipe, Impressão, Configurações). O "← Voltar" das telas de gestão só aparece no celular.
+- Início do painel no computador: cards com ícone e descrição (Operação e Gestão). Console no computador: lojas em tabela.
+
 ## Console da plataforma (parte 1)
 
 - `/console`, só para administradores da plataforma (`platform_admins`; incluir alguém é feito direto no banco, pela equipe técnica). Mesmo login do painel (e-mail e código): `Login`, `useSession` e a moldura `Tela` ficaram em `@usefood/app`.

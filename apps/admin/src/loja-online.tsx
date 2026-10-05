@@ -22,7 +22,7 @@ import {
 } from '@usefood/ui';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { apagarFoto, baixarFoto, enviarImagem, urlDaFoto } from './foto';
-import { Tela, Titulo } from './tela';
+import { Colunas, Tela, Titulo } from './tela';
 
 type Loja = Pick<
   Tables<'restaurants'>,
@@ -134,7 +134,7 @@ export function LojaOnline({
 
   return (
     <Tela larga>
-      <Button variant="ghost" className="self-start px-0" onClick={onVoltar}>
+      <Button variant="ghost" className="self-start px-0 lg:hidden" onClick={onVoltar}>
         ← {loja.name}
       </Button>
       <Titulo
@@ -199,36 +199,46 @@ export function LojaOnline({
         </div>
       </Panel>
 
-      <LogoECapa
-        supabase={supabase}
-        lojaId={loja.id}
-        dados={dados}
-        onSalvo={avisar}
-        onErro={falhar}
-      />
+      <Colunas
+        esquerda={
+          <>
+            <LogoECapa
+              supabase={supabase}
+              lojaId={loja.id}
+              dados={dados}
+              onSalvo={avisar}
+              onErro={falhar}
+            />
 
-      <DadosDaLoja
-        supabase={supabase}
-        lojaId={loja.id}
-        dados={dados}
-        onSalvo={avisar}
-        onErro={falhar}
-      />
-      <Horarios
-        supabase={supabase}
-        lojaId={loja.id}
-        horarios={horarios}
-        onSalvo={avisar}
-        onErro={falhar}
-      />
-      <Entrega
-        supabase={supabase}
-        lojaId={loja.id}
-        dados={dados}
-        bairros={bairros}
-        faixas={faixas}
-        onSalvo={avisar}
-        onErro={falhar}
+            <DadosDaLoja
+              supabase={supabase}
+              lojaId={loja.id}
+              dados={dados}
+              onSalvo={avisar}
+              onErro={falhar}
+            />
+          </>
+        }
+        direita={
+          <>
+            <Horarios
+              supabase={supabase}
+              lojaId={loja.id}
+              horarios={horarios}
+              onSalvo={avisar}
+              onErro={falhar}
+            />
+            <Entrega
+              supabase={supabase}
+              lojaId={loja.id}
+              dados={dados}
+              bairros={bairros}
+              faixas={faixas}
+              onSalvo={avisar}
+              onErro={falhar}
+            />
+          </>
+        }
       />
     </Tela>
   );

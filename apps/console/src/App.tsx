@@ -1,5 +1,5 @@
 import { Login, StatusScreen, Tela, useAppContext, useSession } from '@usefood/app';
-import { Button } from '@usefood/ui';
+import { AppShell, Button } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { Lojas } from './lojas';
 
@@ -56,5 +56,38 @@ function ComSessao({
       </Tela>
     );
   }
-  return <Lojas supabase={supabase} email={sessao.user.email ?? ''} />;
+  return (
+    <AppShell
+      header={
+        <div className="flex flex-col gap-1">
+          <span className="font-display text-wordmark text-ink">usefood</span>
+          <span className="text-caption text-ink-muted">Console da plataforma</span>
+        </div>
+      }
+      groups={[
+        {
+          items: [
+            { id: 'lojas', label: 'Lojas', icon: 'loja', active: true },
+            { id: 'numeros', label: 'Números', icon: 'grafico', soon: true },
+            { id: 'marcas', label: 'Marcas', icon: 'marca', soon: true },
+            { id: 'dominios', label: 'Domínios', icon: 'globo', soon: true },
+          ],
+        },
+      ]}
+      footer={
+        <div className="flex flex-col gap-2">
+          <span className="truncate text-caption text-ink-muted">{sessao.user.email}</span>
+          <Button
+            variant="ghost"
+            className="justify-start px-3"
+            onClick={() => void supabase.auth.signOut()}
+          >
+            Sair
+          </Button>
+        </div>
+      }
+    >
+      <Lojas supabase={supabase} email={sessao.user.email ?? ''} />
+    </AppShell>
+  );
 }
