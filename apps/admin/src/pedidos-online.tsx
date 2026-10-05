@@ -51,9 +51,12 @@ const MOTIVOS = [
 export function PedidosOnline({
   supabase,
   lojaId,
+  emLinha = false,
 }: {
   supabase: AppSupabaseClient;
   lojaId: string;
+  /** Mostra a lista na própria tela (menu Online do PDV), sem a faixa amarela. */
+  emLinha?: boolean;
 }) {
   const [pedidos, setPedidos] = useState<PedidoOnline[]>([]);
   const [aberto, setAberto] = useState(false);
@@ -131,6 +134,107 @@ export function PedidosOnline({
     await carregar();
   }
 
+  const lista = (
+    <>
+      <Alert>{erro}</Alert>
+      {pedidos.length === 0 && <p className="text-body text-ink-muted">Nenhum pedido esperando.</p>}
+      {pedidos.map((p) => {
+        const t = p.tabs;
+        const end = t?.delivery_address;
+        return (
+          <Panel
+            key={p.id}
+            title={`${t?.customer_name ?? 'Cliente'} · ${p.type === 'delivery' ? 'Entrega' : 'Retirada'}`}
+          >
+            <p className="text-caption text-ink-muted">
+              Pedido #{String(p.number).padStart(3, '0')} ·{' '}
+              {new Date(p.created_at).toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+              {t?.customer_phone && ` · ${formatarTelefone(t.customer_phone)}`}
+            </p>
+            {end && (
+              <p className="text-body text-ink">
+                {end.rua}, {end.numero}
+                {end.complemento ? ` (${end.complemento})` : ''} · {end.bairro}
+                {end.referencia ? ` · ${end.referencia}` : ''}
+              </p>
+            )}
+            <ul className="flex flex-col gap-1 text-body text-ink">
+              {p.order_items.map((i) => (
+                <li key={i.id} className="flex justify-between gap-3">
+                  <span>
+                    {i.quantity}× {i.product_name}
+                    {i.variant_name ? ` · ${i.variant_name}` : ''}
+                  </span>
+                  <span className="text-ink-muted tabular-nums">
+                    {formatarPreco(i.total_cents)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {p.notes && (
+              <p className="rounded-sm bg-sun px-2 py-1 text-body text-sun-ink">Obs.: {p.notes}</p>
+            )}
+            <p className="text-body-strong text-ink">
+              Total {formatarPreco(t?.total_cents ?? 0)}
+              {t?.delivery_fee_cents ? ` (entrega ${formatarPreco(t.delivery_fee_cents)})` : ''} ·
+              paga em {PAGAMENTO[t?.expected_method ?? ''] ?? '—'}
+              {t?.change_for_cents ? `, troco para ${formatarPreco(t.change_for_cents)}` : ''}
+            </p>
+            {recusando === p.id ? (
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap gap-2">
+                  {MOTIVOS.map((m) => (
+                    <Chip key={m} selected={motivo === m} onClick={() => setMotivo(m)}>
+                      {m}
+                    </Chip>
+                  ))}
+                </div>
+                <TextField
+                  label="Motivo (o cliente vê)"
+                  maxLength={200}
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Button
+                    variant="danger"
+                    loading={ocupado === p.id}
+                    disabled={!motivo.trim()}
+                    onClick={() => void recusar(p.id)}
+                  >
+                    Recusar pedido
+                  </Button>
+                  <Button variant="ghost" onClick={() => setRecusando(null)}>
+                    Voltar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                <Button
+                  className="h-target-pdv"
+                  loading={ocupado === p.id}
+                  onClick={() => void aceitar(p.id)}
+                >
+                  Aceitar
+                </Button>
+                <Button variant="ghost" className="text-danger" onClick={() => setRecusando(p.id)}>
+                  Recusar
+                </Button>
+              </div>
+            )}
+          </Panel>
+        );
+      })}
+    </>
+  );
+
+  // Dentro do PDV (menu Online): a lista direto na tela, sem a faixa
+  if (emLinha) return <div className="flex flex-col gap-4">{lista}</div>;
+
   if (pedidos.length === 0 && !aberto) return null;
 
   return (
@@ -151,109 +255,7 @@ export function PedidosOnline({
       )}
       {aberto && (
         <Sheet open onClose={() => setAberto(false)} title="Pedidos online">
-          <Alert>{erro}</Alert>
-          {pedidos.length === 0 && (
-            <p className="text-body text-ink-muted">Nenhum pedido esperando.</p>
-          )}
-          {pedidos.map((p) => {
-            const t = p.tabs;
-            const end = t?.delivery_address;
-            return (
-              <Panel
-                key={p.id}
-                title={`${t?.customer_name ?? 'Cliente'} · ${p.type === 'delivery' ? 'Entrega' : 'Retirada'}`}
-              >
-                <p className="text-caption text-ink-muted">
-                  Pedido #{String(p.number).padStart(3, '0')} ·{' '}
-                  {new Date(p.created_at).toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                  {t?.customer_phone && ` · ${formatarTelefone(t.customer_phone)}`}
-                </p>
-                {end && (
-                  <p className="text-body text-ink">
-                    {end.rua}, {end.numero}
-                    {end.complemento ? ` (${end.complemento})` : ''} · {end.bairro}
-                    {end.referencia ? ` · ${end.referencia}` : ''}
-                  </p>
-                )}
-                <ul className="flex flex-col gap-1 text-body text-ink">
-                  {p.order_items.map((i) => (
-                    <li key={i.id} className="flex justify-between gap-3">
-                      <span>
-                        {i.quantity}× {i.product_name}
-                        {i.variant_name ? ` · ${i.variant_name}` : ''}
-                      </span>
-                      <span className="text-ink-muted tabular-nums">
-                        {formatarPreco(i.total_cents)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                {p.notes && (
-                  <p className="rounded-sm bg-sun px-2 py-1 text-body text-sun-ink">
-                    Obs.: {p.notes}
-                  </p>
-                )}
-                <p className="text-body-strong text-ink">
-                  Total {formatarPreco(t?.total_cents ?? 0)}
-                  {t?.delivery_fee_cents
-                    ? ` (entrega ${formatarPreco(t.delivery_fee_cents)})`
-                    : ''}{' '}
-                  · paga em {PAGAMENTO[t?.expected_method ?? ''] ?? '—'}
-                  {t?.change_for_cents ? `, troco para ${formatarPreco(t.change_for_cents)}` : ''}
-                </p>
-                {recusando === p.id ? (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex flex-wrap gap-2">
-                      {MOTIVOS.map((m) => (
-                        <Chip key={m} selected={motivo === m} onClick={() => setMotivo(m)}>
-                          {m}
-                        </Chip>
-                      ))}
-                    </div>
-                    <TextField
-                      label="Motivo (o cliente vê)"
-                      maxLength={200}
-                      value={motivo}
-                      onChange={(e) => setMotivo(e.target.value)}
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        variant="danger"
-                        loading={ocupado === p.id}
-                        disabled={!motivo.trim()}
-                        onClick={() => void recusar(p.id)}
-                      >
-                        Recusar pedido
-                      </Button>
-                      <Button variant="ghost" onClick={() => setRecusando(null)}>
-                        Voltar
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-                    <Button
-                      className="h-target-pdv"
-                      loading={ocupado === p.id}
-                      onClick={() => void aceitar(p.id)}
-                    >
-                      Aceitar
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="text-danger"
-                      onClick={() => setRecusando(p.id)}
-                    >
-                      Recusar
-                    </Button>
-                  </div>
-                )}
-              </Panel>
-            );
-          })}
+          {lista}
         </Sheet>
       )}
     </>

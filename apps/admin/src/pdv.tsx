@@ -17,8 +17,10 @@ import {
   Alert,
   Button,
   CartList,
+  Chip,
   cn,
   Icon,
+  type IconName,
   ProductTile,
   SegmentedControl,
   TextField,
@@ -26,8 +28,10 @@ import {
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Cobranca, ContaPaga, type Conta, type PagamentoFeito } from './cobranca';
 import { ContasAbertas } from './contas-abertas';
+import { PedidosOnline } from './pedidos-online';
 import {
   carregarCardapio,
+  ListaDeEntregas,
   MontarItem,
   type OpcoesDoProduto,
   Salao,
@@ -73,6 +77,8 @@ export function Pdv({
   cabecalhoDoCaixa,
   avisos,
   modoInicial = 'cardapio',
+  euId,
+  onCozinha,
 }: {
   supabase: AppSupabaseClient;
   loja: { id: string; name: string };
@@ -83,6 +89,10 @@ export function Pdv({
   avisos?: ReactNode;
   /** Abrir mostrando o cardápio ou o mapa do salão. */
   modoInicial?: 'cardapio' | 'salao';
+  /** Quem está usando (para despachar entregas). */
+  euId: string;
+  /** Menu rápido: abre a tela da cozinha. */
+  onCozinha?: () => void;
 }) {
   const [carregando, setCarregando] = useState(true);
   const [falhou, setFalhou] = useState(false);
@@ -97,7 +107,49 @@ export function Pdv({
   const [dados, setDados] = useState<DadosDoPedido>(DADOS_INICIAIS);
   const tipo = dados.tipo;
   const atendimento = useAtendimento(supabase, loja.id);
-  const [modo, setModo] = useState<'cardapio' | 'salao'>(modoInicial);
+  const [modo, setModo] = useState<'cardapio' | 'salao' | 'entregas' | 'online'>(modoInicial);
+  const [esperandoOnline, setEsperandoOnline] = useState(0);
+  const [entregasProntas, setEntregasProntas] = useState(0);
+
+  // Contadores do menu rápido: pedidos online esperando e entregas prontas para sair
+  useEffect(() => {
+    let ativo = true;
+    const contar = async () => {
+      const [online, entregas] = await Promise.all([
+        supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('restaurant_id', loja.id)
+          .eq('status', 'aguardando'),
+        supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('restaurant_id', loja.id)
+          .eq('type', 'delivery')
+          .eq('status', 'pronto'),
+      ]);
+      if (!ativo) return;
+      setEsperandoOnline(online.count ?? 0);
+      setEntregasProntas(entregas.count ?? 0);
+    };
+    void contar();
+    const canal = supabase
+      .channel(`pdv-menu-${loja.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${loja.id}` },
+        () => {
+          void contar();
+        },
+      )
+      .subscribe();
+    const t = setInterval(() => void contar(), 20_000);
+    return () => {
+      ativo = false;
+      clearInterval(t);
+      void supabase.removeChannel(canal);
+    };
+  }, [supabase, loja.id]);
 
   const [painel, setPainel] = useState<Painel>({ tela: 'pedido' });
   const [contasAbertas, setContasAbertas] = useState(0);
@@ -247,34 +299,63 @@ export function Pdv({
   return (
     <div className="grid min-h-dvh grid-cols-1 bg-canvas lg:h-dvh lg:grid-cols-[112px_minmax(0,1fr)_420px]">
       <nav
-        aria-label="Categorias"
-        className="flex gap-2 overflow-x-auto bg-brand p-3 lg:flex-col lg:overflow-y-auto"
+        aria-label="Menu rápido"
+        className="flex gap-1 overflow-x-auto bg-brand p-2 lg:flex-col lg:gap-2 lg:overflow-y-auto lg:p-3"
       >
-        <button
-          type="button"
-          onClick={onVoltar}
-          aria-label={`Sair do PDV e voltar para ${loja.name}`}
-          className="flex min-h-14 shrink-0 items-center justify-center rounded-md px-4 text-brand-ink hover:bg-canvas/15"
-        >
-          <Icon name="voltar" />
-        </button>
-        {categorias.map((c) => {
-          const selecionada = c.id === categoriaAtual && !busca;
+        {(
+          [
+            { id: 'voltar', rotulo: 'Painel', icone: 'voltar', onClick: onVoltar },
+            { id: 'cardapio', rotulo: 'Vender', icone: 'pdv', onClick: () => setModo('cardapio') },
+            { id: 'salao', rotulo: 'Salão', icone: 'mesa', onClick: () => setModo('salao') },
+            {
+              id: 'entregas',
+              rotulo: 'Entregas',
+              icone: 'moto',
+              onClick: () => setModo('entregas'),
+              contador: entregasProntas,
+            },
+            {
+              id: 'online',
+              rotulo: 'Online',
+              icone: 'loja',
+              onClick: () => setModo('online'),
+              contador: esperandoOnline,
+            },
+            ...(onCozinha
+              ? [{ id: 'cozinha', rotulo: 'Cozinha', icone: 'cozinha', onClick: onCozinha }]
+              : []),
+          ] as {
+            id: string;
+            rotulo: string;
+            icone: IconName;
+            onClick: () => void;
+            contador?: number;
+          }[]
+        ).map((item) => {
+          const ativo = item.id === modo;
           return (
             <button
-              key={c.id}
+              key={item.id}
               type="button"
-              aria-pressed={selecionada}
-              onClick={() => {
-                setCategoriaAtual(c.id);
-                setBusca('');
-              }}
+              onClick={item.onClick}
+              aria-current={ativo ? 'page' : undefined}
+              aria-label={
+                item.contador ? `${item.rotulo}: ${item.contador} esperando` : item.rotulo
+              }
               className={cn(
-                'min-h-16 shrink-0 rounded-md px-3 text-label lg:min-h-20',
-                selecionada ? 'bg-canvas text-brand-text' : 'text-brand-ink hover:bg-canvas/15',
+                'relative flex min-h-14 min-w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-md px-2 text-micro lg:min-h-18',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-canvas',
+                ativo ? 'bg-canvas text-brand-text' : 'text-brand-ink hover:bg-canvas/15',
+                item.id === 'voltar' && 'lg:mb-2',
               )}
             >
-              {c.name}
+              <Icon name={item.icone} size={22} />
+              {item.rotulo}
+              {item.contador ? (
+                <span className="absolute top-1 right-1 flex min-w-5 items-center justify-center rounded-pill bg-sun px-1 text-micro text-sun-ink">
+                  {item.contador}
+                </span>
+              ) : null}
             </button>
           );
         })}
@@ -282,16 +363,21 @@ export function Pdv({
 
       <main className="flex min-w-0 flex-col gap-5 p-5 lg:overflow-y-auto lg:p-6">
         {avisos}
-        <SegmentedControl
-          label="Área principal"
-          className="self-start"
-          options={[
-            { value: 'cardapio', label: 'Cardápio' },
-            { value: 'salao', label: 'Salão' },
-          ]}
-          value={modo}
-          onChange={setModo}
-        />
+        {modo === 'entregas' && (
+          <section aria-label="Entregas" className="flex flex-col gap-4">
+            <h1 className="font-display text-title-screen text-ink">Entregas</h1>
+            <ListaDeEntregas supabase={supabase} lojaId={loja.id} euId={euId} modo="loja" />
+          </section>
+        )}
+        {modo === 'online' && (
+          <section aria-label="Pedidos online" className="flex flex-col gap-4">
+            <h1 className="font-display text-title-screen text-ink">Pedidos online</h1>
+            {esperandoOnline === 0 && (
+              <p className="text-body text-ink-muted">Nenhum pedido online esperando agora.</p>
+            )}
+            <PedidosOnline supabase={supabase} lojaId={loja.id} emLinha />
+          </section>
+        )}
         {modo === 'salao' && (
           <Salao
             supabase={supabase}
@@ -307,7 +393,7 @@ export function Pdv({
         <div
           className={cn(
             'flex flex-wrap items-end justify-between gap-4',
-            modo === 'salao' && 'hidden',
+            modo !== 'cardapio' && 'hidden',
           )}
         >
           <div className="flex flex-col gap-1">
@@ -328,7 +414,28 @@ export function Pdv({
           />
         </div>
 
-        {modo === 'salao' ? null : visiveis.length === 0 ? (
+        {modo === 'cardapio' && !busca && (
+          <div
+            role="group"
+            aria-label="Categorias"
+            className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+          >
+            {categorias.map((c) => (
+              <Chip
+                key={c.id}
+                selected={c.id === categoriaAtual}
+                onClick={() => {
+                  setCategoriaAtual(c.id);
+                  setBusca('');
+                }}
+              >
+                {c.name}
+              </Chip>
+            ))}
+          </div>
+        )}
+
+        {modo !== 'cardapio' ? null : visiveis.length === 0 ? (
           <p className="text-body text-ink-muted">Nenhum produto aqui.</p>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">

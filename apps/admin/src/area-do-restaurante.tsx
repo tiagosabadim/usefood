@@ -128,6 +128,8 @@ export function AreaDoRestaurante({
           <Pdv
             supabase={supabase}
             loja={atual.loja}
+            euId={session.user.id}
+            onCozinha={() => setTela('cozinha')}
             onVoltar={() => setTela('inicio')}
             cabecalhoDoCaixa={cabecalho}
             avisos={

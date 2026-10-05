@@ -82,6 +82,12 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## PDV como central (um notebook só)
+
+- Barra lateral do PDV virou **menu rápido**: Painel (volta ao início), **Vender** (cardápio), **Salão**, **Entregas** (prontas para sair, com contador), **Online** (pedidos esperando a loja, com contador) e **Cozinha**. Trocam o meio da tela sem sair do PDV; o pedido em montagem à direita continua.
+- Categorias do cardápio em abas (Chip) acima dos produtos, junto com a busca.
+- Entregas usa `ListaDeEntregas` no modo loja; Online usa `PedidosOnline` com `emLinha` (a faixa amarela continua no topo).
+
 ## Clientes da loja
 
 - Gestão → **Clientes** (dono e gerente): quem pediu por delivery, retirada ou loja online, agrupado pelo celular (`clientes_da_loja`): nome e bairro mais recentes, pedidos, total gasto, ticket médio, primeiro e último pedido, canais e produto favorito. Balcão e mesa não deixam celular e não entram.
