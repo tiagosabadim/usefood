@@ -18,11 +18,21 @@ import {
   type Cardapio,
   type ProdutoDoCardapio,
 } from '@usefood/pedidos';
-import { Button, CartList, Chip, ProductTile, Sheet, StatusPill } from '@usefood/ui';
+import {
+  Button,
+  CartList,
+  Chip,
+  Icon,
+  ProductTile,
+  Sheet,
+  StatusPill,
+  type IconName,
+} from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { gravarSacola, lerSacola } from '../guardado';
 import { navegar } from '../rotas';
 import { Checkout } from './checkout';
+import { PedidoEmAndamento } from './pedido-em-andamento';
 import { buscarLoja, whatsapp, type Horario, type LojaPublica } from './dados';
 
 const hora = (t: string) => t.slice(0, 5);
@@ -35,18 +45,30 @@ function horarioDeHoje(horarios: Horario[]): string {
     : `${DIAS_DA_SEMANA[hoje]}: fechado`;
 }
 
-function resumoDaEntrega(loja: LojaPublica): string {
-  const tempo = `${loja.prep_minutes_min}–${loja.prep_minutes_max} min`;
-  if (!loja.accepts_delivery) return `Só retirada · ${tempo}`;
-  const taxa =
-    loja.delivery_fee_mode === 'gratis'
-      ? 'entrega grátis'
+/** Os 3 cards do topo: tempo, entrega e pedido mínimo. */
+function cardsDaLoja(loja: LojaPublica): { icone: IconName; titulo: string; valor: string }[] {
+  const entrega = !loja.accepts_delivery
+    ? 'Só retirada'
+    : loja.delivery_fee_mode === 'gratis'
+      ? 'Grátis'
       : loja.free_delivery_above_cents
-        ? `entrega grátis acima de ${formatarPreco(loja.free_delivery_above_cents)}`
+        ? `Grátis acima de ${formatarPreco(loja.free_delivery_above_cents)}`
         : loja.delivery_fee_mode === 'bairro'
-          ? 'taxa conforme o bairro'
-          : 'taxa conforme a distância';
-  return `${tempo} · ${taxa}`;
+          ? 'Pelo bairro'
+          : 'Pela distância';
+  return [
+    {
+      icone: 'relogio',
+      titulo: 'Tempo',
+      valor: `${loja.prep_minutes_min}–${loja.prep_minutes_max} min`,
+    },
+    { icone: 'moto', titulo: 'Entrega', valor: entrega },
+    {
+      icone: 'sacola',
+      titulo: 'Mínimo',
+      valor: loja.min_order_cents ? formatarPreco(loja.min_order_cents) : 'Sem mínimo',
+    },
+  ];
 }
 
 /** Loja online do restaurante: capa, cardápio, sacola e checkout. */
@@ -160,10 +182,18 @@ function LojaPronta({
           em Loja online no painel.
         </p>
       )}
-      <div className="aspect-[3/1] w-full overflow-hidden bg-surface-strong sm:rounded-b-lg">
+      <div className="relative aspect-[5/2] w-full overflow-hidden bg-surface-strong sm:rounded-b-lg">
         {loja.cover_path && (
           <img src={foto(loja.cover_path)!} alt="" className="size-full object-cover" />
         )}
+        <button
+          type="button"
+          aria-label="Minha conta"
+          onClick={() => navegar(`${base}/conta`)}
+          className="absolute top-3 right-3 flex size-11 items-center justify-center rounded-pill bg-canvas text-ink shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          <Icon name="perfil" size={22} />
+        </button>
       </div>
       <header className="flex flex-col gap-3 px-5">
         <div className="-mt-10 flex size-20 items-center justify-center overflow-hidden rounded-lg border-4 border-canvas bg-surface-strong">
@@ -189,10 +219,23 @@ function LojaPronta({
           </StatusPill>
           <span>{horarioDeHoje(horarios)}</span>
         </div>
-        <p className="text-body text-ink">
-          {resumoDaEntrega(loja)}
-          {loja.min_order_cents > 0 && ` · pedido mínimo ${formatarPreco(loja.min_order_cents)}`}
-        </p>
+        <ul className="grid grid-cols-3 gap-2">
+          {cardsDaLoja(loja).map((c) => (
+            <li
+              key={c.titulo}
+              className="flex flex-col items-start gap-2 rounded-lg border border-line bg-surface p-3"
+            >
+              <span className="flex size-9 items-center justify-center rounded-pill bg-brand-soft text-brand-text">
+                <Icon name={c.icone} size={20} />
+              </span>
+              <span className="flex flex-col">
+                <span className="text-caption text-ink-muted">{c.titulo}</span>
+                <span className="text-label text-ink">{c.valor}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <PedidoEmAndamento lojaSlug={loja.slug} base={base} />
         {loja.phone && (
           <a
             className="self-start text-label text-brand-text underline"

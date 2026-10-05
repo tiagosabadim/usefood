@@ -1,5 +1,6 @@
 import {
   formatarPreco,
+  formatarTelefone,
   lerCep,
   lerPreco,
   lerTelefone,
@@ -8,15 +9,39 @@ import {
   type MetodoPagamento,
 } from '@usefood/core';
 import type { AppSupabaseClient } from '@usefood/db';
-import { Alert, Button, ChoiceGrid, Panel, SegmentedControl, TextField } from '@usefood/ui';
+import {
+  Alert,
+  Button,
+  ChoiceGrid,
+  Panel,
+  SegmentedControl,
+  SelectField,
+  Switch,
+  TextField,
+} from '@usefood/ui';
 import { useEffect, useState, type FormEvent } from 'react';
-import { gravarCliente, lerCliente, type DadosDoCliente } from '../guardado';
+import {
+  ENDERECO_EM_BRANCO,
+  gravarConta,
+  lerConta,
+  novoId,
+  temConta,
+  type Conta,
+} from '../guardado';
+import { navegar } from '../rotas';
 import type { LojaPublica } from './dados';
+import {
+  CamposDeEndereco,
+  enderecoCompleto,
+  resumoDoEndereco,
+  type EnderecoEditavel,
+} from './endereco-form';
 
 type Cotacao = { atende: true; taxa: number } | { atende: false; motivo: string } | null;
 const ERROS = new Set(['P0001', 'P0002', '22023']);
+const OUTRO = 'outro';
 
-/** Fechar o pedido: entrega ou retirada, dados do cliente, taxa calculada pelo banco e pagamento. */
+/** Fechar o pedido. No primeiro pedido, a conta deste aparelho é criada com nome, celular e o endereço. */
 export function Checkout({
   supabase,
   loja,
@@ -32,36 +57,41 @@ export function Checkout({
   onVoltar: () => void;
   onFeito: (token: string) => void;
 }) {
+  const [conta] = useState<Conta>(() => lerConta());
   const [tipo, setTipo] = useState<'delivery' | 'retirada'>(
     loja.accepts_delivery ? 'delivery' : 'retirada',
   );
-  const [c, setC] = useState<DadosDoCliente>(() => lerCliente());
+  const [nome, setNome] = useState(conta.nome);
+  const [celular, setCelular] = useState(conta.celular ? formatarTelefone(conta.celular) : '');
+  const [escolhido, setEscolhido] = useState<string>(conta.enderecos[0]?.id ?? OUTRO);
+  const [novo, setNovo] = useState<EnderecoEditavel>({
+    ...ENDERECO_EM_BRANCO,
+    apelido: conta.enderecos.length ? '' : 'Casa',
+  });
+  const [salvarNovo, setSalvarNovo] = useState(true);
   const [ponto, setPonto] = useState<{ lat: number; lng: number } | null>(null);
   const [pagamento, setPagamento] = useState<MetodoPagamento | null>(null);
   const [trocoPara, setTrocoPara] = useState('');
   const [observacao, setObservacao] = useState('');
   const [cotacao, setCotacao] = useState<Cotacao>(null);
-  const [buscandoCep, setBuscandoCep] = useState(false);
   const [localizando, setLocalizando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState('');
 
   const subtotal = subtotalCentavos(itens);
   const precisaLocalizacao = loja.delivery_fee_mode === 'distancia';
-  const campo = (nome: keyof DadosDoCliente) => ({
-    value: c[nome],
-    onChange: (e: { target: { value: string } }) => setC({ ...c, [nome]: e.target.value }),
-  });
+  const salvo = conta.enderecos.find((e) => e.id === escolhido);
+  const endereco: EnderecoEditavel = salvo ?? novo;
 
-  // Taxa de entrega: pergunta ao banco sempre que bairro, cidade ou localização mudam
+  // Taxa de entrega: pergunta ao banco quando o bairro, a cidade ou a localização mudam
   useEffect(() => {
     if (tipo !== 'delivery') return;
     const t = setTimeout(() => {
       void supabase
         .rpc('calcular_entrega', {
           p_restaurant_id: loja.id,
-          p_bairro: c.bairro.trim() || null,
-          p_cidade: c.cidade.trim() || null,
+          p_bairro: endereco.bairro.trim() || null,
+          p_cidade: endereco.cidade.trim() || null,
           p_latitude: ponto?.lat ?? null,
           p_longitude: ponto?.lng ?? null,
           p_subtotal_cents: subtotal,
@@ -77,35 +107,7 @@ export function Checkout({
         });
     }, 500);
     return () => clearTimeout(t);
-  }, [supabase, loja.id, tipo, c.bairro, c.cidade, ponto, subtotal]);
-
-  async function buscarCep() {
-    const cep = lerCep(c.cep);
-    if (!cep) return setErro('O CEP tem 8 números.');
-    setBuscandoCep(true);
-    try {
-      const j = (await (await fetch(`https://viacep.com.br/ws/${cep}/json/`)).json()) as {
-        erro?: boolean;
-        logradouro?: string;
-        bairro?: string;
-        localidade?: string;
-      };
-      if (j.erro) setErro('CEP não encontrado. Preencha o endereço.');
-      else {
-        setErro('');
-        setC({
-          ...c,
-          rua: j.logradouro || c.rua,
-          bairro: j.bairro || c.bairro,
-          cidade: j.localidade || c.cidade,
-        });
-      }
-    } catch {
-      setErro('Não foi possível buscar o CEP agora. Preencha o endereço.');
-    } finally {
-      setBuscandoCep(false);
-    }
-  }
+  }, [supabase, loja.id, tipo, endereco.bairro, endereco.cidade, ponto, subtotal]);
 
   function usarLocalizacao() {
     if (!navigator.geolocation) return setErro('Este aparelho não informa a localização.');
@@ -125,32 +127,33 @@ export function Checkout({
 
   const taxa = tipo === 'delivery' && cotacao?.atende ? cotacao.taxa : 0;
   const total = subtotal + taxa;
-  const celular = lerTelefone(c.celular);
+  const cel = lerTelefone(celular);
   const troco = pagamento === 'dinheiro' && trocoPara.trim() ? lerPreco(trocoPara) : null;
   const faltando = !aberta
     ? 'A loja está fechada agora.'
-    : !c.nome.trim()
+    : !nome.trim()
       ? 'Informe seu nome.'
-      : !celular
+      : !cel
         ? 'Informe o celular com DDD.'
-        : tipo === 'delivery' && (!c.rua.trim() || !c.numero.trim() || !c.bairro.trim())
+        : tipo === 'delivery' && !enderecoCompleto(endereco)
           ? 'Informe rua, número e bairro.'
-          : tipo === 'delivery' && precisaLocalizacao && !ponto
-            ? 'Use sua localização para calcular a entrega.'
-            : tipo === 'delivery' && cotacao && !cotacao.atende
-              ? cotacao.motivo
-              : !pagamento
-                ? 'Escolha como vai pagar.'
-                : pagamento === 'dinheiro' && trocoPara.trim() && troco === null
-                  ? 'Confira o valor do troco.'
-                  : null;
+          : tipo === 'delivery' && !salvo && salvarNovo && !novo.apelido.trim()
+            ? 'Dê um nome ao endereço, como Casa ou Trabalho.'
+            : tipo === 'delivery' && precisaLocalizacao && !ponto
+              ? 'Use sua localização para calcular a entrega.'
+              : tipo === 'delivery' && cotacao && !cotacao.atende
+                ? cotacao.motivo
+                : !pagamento
+                  ? 'Escolha como vai pagar.'
+                  : pagamento === 'dinheiro' && trocoPara.trim() && troco === null
+                    ? 'Confira o valor do troco.'
+                    : null;
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
-    if (faltando || !pagamento || !celular) return;
+    if (faltando || !pagamento || !cel) return;
     setErro('');
     setEnviando(true);
-    gravarCliente(c);
     const { data, error } = await supabase.rpc('fazer_pedido_online', {
       p_restaurant_id: loja.id,
       p_tipo: tipo,
@@ -161,20 +164,20 @@ export function Checkout({
         adicionais: i.adicionais.map((a) => a.id),
         observacao: i.observacao || null,
       })),
-      p_nome: c.nome.trim(),
-      p_celular: celular,
+      p_nome: nome.trim(),
+      p_celular: cel,
       p_pagamento: pagamento,
       p_troco_para_cents: troco,
       p_endereco:
         tipo === 'delivery'
           ? {
-              cep: lerCep(c.cep),
-              rua: c.rua.trim(),
-              numero: c.numero.trim(),
-              complemento: c.complemento.trim(),
-              bairro: c.bairro.trim(),
-              cidade: c.cidade.trim(),
-              referencia: c.referencia.trim(),
+              cep: lerCep(endereco.cep),
+              rua: endereco.rua.trim(),
+              numero: endereco.numero.trim(),
+              complemento: endereco.complemento.trim(),
+              bairro: endereco.bairro.trim(),
+              cidade: endereco.cidade.trim(),
+              referencia: endereco.referencia.trim(),
             }
           : null,
       p_latitude: tipo === 'delivery' ? (ponto?.lat ?? null) : null,
@@ -191,11 +194,31 @@ export function Checkout({
       );
       return;
     }
+    // Conta deste aparelho: criada no primeiro pedido, atualizada nos próximos
+    const atual = lerConta();
+    const guardarEndereco = tipo === 'delivery' && !salvo && salvarNovo;
+    gravarConta({
+      nome: nome.trim(),
+      celular: cel,
+      enderecos: guardarEndereco
+        ? [...atual.enderecos, { ...novo, apelido: novo.apelido.trim(), id: novoId() }]
+        : atual.enderecos,
+      pedidos: [
+        {
+          token: r.token,
+          lojaSlug: loja.slug,
+          lojaNome: loja.name,
+          numero: r.numero,
+          criadoEm: new Date().toISOString(),
+        },
+        ...atual.pedidos,
+      ].slice(0, 30),
+    });
     onFeito(r.token);
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-5 px-5 py-6 pb-28">
+    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-5 px-5 py-6 pb-32">
       <button type="button" className="self-start text-label text-ink-muted" onClick={onVoltar}>
         ← Voltar ao cardápio
       </button>
@@ -219,41 +242,78 @@ export function Checkout({
         )}
 
         <Panel title="Seus dados">
-          <TextField label="Nome" autoComplete="name" maxLength={60} {...campo('nome')} />
+          {temConta(conta) && (
+            <p className="text-caption text-ink-muted">
+              Preenchido com a sua conta neste aparelho.
+            </p>
+          )}
+          <TextField
+            label="Nome"
+            autoComplete="name"
+            maxLength={60}
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+          />
           <TextField
             label="Celular com DDD"
             inputMode="tel"
             autoComplete="tel"
             placeholder="(17) 99123-4567"
-            {...campo('celular')}
+            value={celular}
+            onChange={(e) => setCelular(e.target.value)}
           />
         </Panel>
 
         {tipo === 'delivery' ? (
           <Panel title="Endereço de entrega">
-            <div className="flex items-end gap-3">
-              <TextField
-                label="CEP"
-                inputMode="numeric"
-                autoComplete="postal-code"
-                className="w-40"
-                maxLength={9}
-                {...campo('cep')}
+            {conta.enderecos.length > 0 && (
+              <SelectField
+                label="Entregar em"
+                options={[
+                  ...conta.enderecos.map((e) => ({
+                    value: e.id,
+                    label: `${e.apelido} · ${e.rua}, ${e.numero}`,
+                  })),
+                  { value: OUTRO, label: 'Outro endereço' },
+                ]}
+                value={escolhido}
+                onChange={setEscolhido}
               />
-              <Button variant="secondary" loading={buscandoCep} onClick={() => void buscarCep()}>
-                Buscar
-              </Button>
-            </div>
-            <div className="grid grid-cols-[minmax(0,1fr)_6rem] gap-3">
-              <TextField label="Rua" autoComplete="address-line1" {...campo('rua')} />
-              <TextField label="Número" {...campo('numero')} />
-            </div>
-            <TextField label="Complemento (opcional)" {...campo('complemento')} />
-            <div className="grid grid-cols-2 gap-3">
-              <TextField label="Bairro" {...campo('bairro')} />
-              <TextField label="Cidade" {...campo('cidade')} />
-            </div>
-            <TextField label="Ponto de referência (opcional)" {...campo('referencia')} />
+            )}
+            {salvo ? (
+              <div className="flex flex-col gap-1 rounded-md bg-surface-strong p-3">
+                <p className="text-body text-ink">{resumoDoEndereco(salvo)}</p>
+                {salvo.referencia && (
+                  <p className="text-caption text-ink-muted">Referência: {salvo.referencia}</p>
+                )}
+                <button
+                  type="button"
+                  className="self-start text-label text-brand-text underline"
+                  onClick={() => navegar(window.location.pathname.replace(/\/?$/, '/conta'))}
+                >
+                  Editar endereços
+                </button>
+              </div>
+            ) : (
+              <>
+                <CamposDeEndereco valor={novo} onChange={setNovo} />
+                <Switch
+                  checked={salvarNovo}
+                  onChange={setSalvarNovo}
+                  label="Salvar este endereço para os próximos pedidos"
+                  showLabel
+                />
+                {salvarNovo && (
+                  <TextField
+                    label="Nome do endereço"
+                    placeholder="Ex.: Casa, Trabalho"
+                    maxLength={30}
+                    value={novo.apelido}
+                    onChange={(e) => setNovo({ ...novo, apelido: e.target.value })}
+                  />
+                )}
+              </>
+            )}
             {(precisaLocalizacao || loja.delivery_fee_mode === 'gratis') && (
               <div className="flex flex-col gap-1">
                 <Button

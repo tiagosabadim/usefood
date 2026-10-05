@@ -192,8 +192,11 @@ export function Acompanhar({ token, voltar }: { token: string; voltar: string })
           </Button>
         </a>
       )}
+      <Button variant="ghost" onClick={() => navegar(`${voltar === '/' ? '' : voltar}/conta`)}>
+        Meus pedidos e endereços
+      </Button>
       <p className="text-center text-caption text-ink-muted">
-        Guarde este link para acompanhar o pedido. A página atualiza sozinha.
+        A página atualiza sozinha. O pedido também fica em Minha conta.
       </p>
     </main>
   );

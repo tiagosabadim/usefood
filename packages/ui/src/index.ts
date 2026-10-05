@@ -19,6 +19,7 @@ export { PinPad, type PinPadProps } from './pin-pad';
 export { ProductTile, type ProductTileProps } from './product-tile';
 export { QuantityStepper } from './quantity-stepper';
 export { ChoiceGrid, SegmentedControl, type Option } from './segmented-control';
+export { SelectField, type SelectFieldProps } from './select-field';
 export { Sheet, type SheetProps } from './sheet';
 export { StatusPill, type StatusTone } from './status-pill';
 export { StoreCard, type StoreCardProps } from './store-card';

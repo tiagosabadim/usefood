@@ -82,6 +82,14 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Conta do cliente neste aparelho
+
+- Criada sozinha no primeiro pedido online: nome, celular e o endereço (com nome: "Casa"). Fica no aparelho (`usefood.conta` no armazenamento do navegador), não no servidor: sem confirmar o celular por código, qualquer um veria os endereços de outra pessoa digitando o número dela. Quando entrar a conta única (bloco 3, com código no celular), estes dados sobem para o servidor.
+- **Minha conta** (`/<loja>/conta`, botão no canto do banner): nome e celular, vários endereços com nome (adicionar, editar, remover) e Meus pedidos.
+- Checkout: escolhe o endereço salvo numa lista (`SelectField`) ou "Outro endereço" para digitar e, se quiser, salvar com um nome.
+- Card no topo da loja enquanto houver pedido em andamento (aguardando, em preparo, pronto, saiu para entrega), levando ao acompanhamento.
+- Topo da loja: banner 5:2 (capa salva em 1500 × 600) e três cards com ícone: tempo, entrega e pedido mínimo.
+
 ## Delivery pelo PDV e ticket de entrega
 
 - No PDV e na comanda, o tipo **Delivery** pede celular, endereço (CEP com busca, rua, número, complemento, bairro, cidade, referência) e taxa de entrega; a taxa vem sugerida pela configuração da loja (`calcular_entrega`) e a equipe pode mudar. `criar_pedido` recebe `p_celular`, `p_endereco` e `p_taxa_entrega_cents` e exige rua, número e bairro no delivery.

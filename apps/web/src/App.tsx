@@ -1,5 +1,6 @@
 import { StatusScreen, useAppContext } from '@usefood/app';
 import { Acompanhar } from './loja/acompanhar';
+import { MinhaConta } from './loja/conta';
 import { Loja } from './loja/loja';
 import { useCaminho } from './rotas';
 
@@ -17,6 +18,7 @@ export function App() {
     const [a, token] = partes;
     if (a === 'pedido' && token && TOKEN.test(token))
       return <Acompanhar token={token} voltar="/" />;
+    if (a === 'conta') return <MinhaConta base="" />;
     return <Loja slug={site.store} base="" />;
   }
 
@@ -25,6 +27,7 @@ export function App() {
     const loja = slug.toLowerCase();
     if (a === 'pedido' && token && TOKEN.test(token))
       return <Acompanhar token={token} voltar={`/${loja}`} />;
+    if (a === 'conta') return <MinhaConta base={`/${loja}`} />;
     return <Loja slug={loja} base={`/${loja}`} />;
   }
 
