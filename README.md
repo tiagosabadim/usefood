@@ -82,6 +82,13 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Dashboard do restaurante (Números)
+
+- `painel_da_loja(loja, início, fim)` (dono e gerente) devolve, numa consulta só, os números do período e do anterior (mesma duração): vendas (pedidos sem cancelados e sem online não aceito), recebido (pagamentos menos troco), pedidos e contas (ticket médio por conta); canais, formas de pagamento, 10 mais vendidos, por hora e por dia (no fuso da loja), cozinha (tempo médio e passaram de 15 min), pedidos online (aceitos, recusados com motivos, tempo para aceitar), caixas (quem abriu, diferença) e 10 melhores clientes pelo celular.
+- Tela **Números** (`apps/admin/src/numeros.tsx`): período (Hoje, 7 dias, 30 dias, Este mês), 4 números com a variação contra o período anterior, gráficos de barras (por dia e por hora), proporções de canais e pagamentos, listas e **Exportar planilha** (CSV com ponto e vírgula, abre direto no Excel).
+- No computador é o **Início** do dono e do gerente (e item Números no menu); no celular, botão "Números da loja" em Gestão.
+- Testes em `supabase/tests/painel.test.sql`; período, variação e planilha em `packages/core/src/painel.ts`.
+
 ## Página da loja (padrão de app de delivery)
 
 - Topo: capa, logo redondo, nome e **Ver mais sobre a loja** (perfil: descrição, endereço, horários da semana, entrega, pagamento e WhatsApp); caixa de informações (aberto até / abre, tempo, entrega), pedido mínimo e **Falar com a loja**.

@@ -9,6 +9,7 @@ export * from './crop';
 export * from './kitchen';
 export * from './menu';
 export * from './money';
+export * from './painel';
 export * from './print-status';
 export * from './site';
 export * from './slug';

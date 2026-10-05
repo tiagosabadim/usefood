@@ -22,6 +22,7 @@ import { Equipe } from './equipe';
 import { TelaDaCozinha } from './cozinha';
 import { Impressao } from './impressao';
 import { LojaOnline } from './loja-online';
+import { Numeros } from './numeros';
 import { Pdv } from './pdv';
 import { Tela, Titulo } from './tela';
 
@@ -52,7 +53,8 @@ type TelaDoPainel =
   | 'chamada'
   | 'configuracoes'
   | 'equipe'
-  | 'loja-online';
+  | 'loja-online'
+  | 'numeros';
 
 export function AreaDoRestaurante({
   supabase,
@@ -179,6 +181,17 @@ export function AreaDoRestaurante({
     {
       title: 'Gestão',
       items: [
+        ...(podeEditar
+          ? [
+              {
+                id: 'numeros',
+                label: 'Números',
+                icon: 'grafico' as const,
+                onClick: ir('numeros'),
+                active: tela === 'numeros',
+              },
+            ]
+          : []),
         {
           id: 'cardapio',
           label: 'Cardápio',
@@ -299,6 +312,20 @@ export function AreaDoRestaurante({
         />
       );
     }
+    if (tela === 'numeros') {
+      return (
+        <Tela larga>
+          <Button
+            variant="ghost"
+            className="self-start px-0 lg:hidden"
+            onClick={() => setTela('inicio')}
+          >
+            ← {atual.loja.name}
+          </Button>
+          <Numeros supabase={supabase} loja={atual.loja} />
+        </Tela>
+      );
+    }
     return null;
   })();
   if (gestao) return menu(gestao);
@@ -405,28 +432,34 @@ export function AreaDoRestaurante({
 
   return menu(
     <Tela larga>
-      <section className="hidden flex-col gap-8 lg:flex">
-        <Titulo
-          titulo={atual.loja.name}
-          texto={
-            noAr
-              ? `Sua loja está no ar em ${window.location.host}/${atual.loja.slug}`
-              : 'Loja em cadastro: complete em Loja online e publique.'
-          }
-        />
-        <div className="flex flex-col gap-3">
-          <h2 className="text-label text-ink-muted uppercase">Operação</h2>
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-            {atalhos.filter((a) => a.mostrar && operacao.includes(a.id)).map(cartao)}
+      {podeEditar ? (
+        <section className="hidden lg:block">
+          <Numeros supabase={supabase} loja={atual.loja} titulo="Visão geral" />
+        </section>
+      ) : (
+        <section className="hidden flex-col gap-8 lg:flex">
+          <Titulo
+            titulo={atual.loja.name}
+            texto={
+              noAr
+                ? `Sua loja está no ar em ${window.location.host}/${atual.loja.slug}`
+                : 'Loja em cadastro: complete em Loja online e publique.'
+            }
+          />
+          <div className="flex flex-col gap-3">
+            <h2 className="text-label text-ink-muted uppercase">Operação</h2>
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+              {atalhos.filter((a) => a.mostrar && operacao.includes(a.id)).map(cartao)}
+            </div>
           </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          <h2 className="text-label text-ink-muted uppercase">Gestão</h2>
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
-            {atalhos.filter((a) => a.mostrar && !operacao.includes(a.id)).map(cartao)}
+          <div className="flex flex-col gap-3">
+            <h2 className="text-label text-ink-muted uppercase">Gestão</h2>
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+              {atalhos.filter((a) => a.mostrar && !operacao.includes(a.id)).map(cartao)}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
       <div className="flex flex-col gap-8 lg:hidden">
         <Titulo
           titulo={atual.loja.name}
@@ -464,6 +497,15 @@ export function AreaDoRestaurante({
 
         <Panel title="Gestão">
           <div className="flex flex-wrap gap-2">
+            {podeEditar && (
+              <Button
+                variant="secondary"
+                className="h-target-pdv"
+                onClick={() => setTela('numeros')}
+              >
+                Números da loja
+              </Button>
+            )}
             <Button
               variant="secondary"
               className="h-target-pdv"

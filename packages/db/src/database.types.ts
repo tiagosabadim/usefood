@@ -1788,6 +1788,10 @@ export type Database = {
         }
         Returns: string
       }
+      painel_da_loja: {
+        Args: { p_fim: string; p_inicio: string; p_restaurant_id: string }
+        Returns: Json
+      }
       parear_aparelho: {
         Args: { p_codigo: string; p_nome: string; p_token_hash: string }
         Returns: { loja: string; restaurant_id: string }[]
