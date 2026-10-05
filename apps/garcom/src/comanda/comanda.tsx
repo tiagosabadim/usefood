@@ -20,7 +20,7 @@ function avisoDeEnvio(p: PedidoEnviado): string {
     : `${p.rotulo}: pedido #${numero} enviado para a cozinha. O cliente paga no caixa.`;
 }
 
-/** Comanda do garçom: Salão, pedido avulso (mesmos tipos do PDV), mesa, nova rodada e prontos para levar. */
+/** Comanda do garçom: Mesas, pedido avulso (mesmos tipos do PDV), mesa, nova rodada e prontos para levar. */
 export function Comanda({
   supabase,
   lojaId,
@@ -68,7 +68,7 @@ export function Comanda({
           label="Comanda"
           className="self-stretch [&>button]:flex-1"
           options={[
-            { value: 'salao', label: 'Salão' },
+            { value: 'salao', label: 'Mesas' },
             { value: 'novo', label: 'Novo pedido' },
             { value: 'prontos', label: prontos.length ? `Prontos (${prontos.length})` : 'Prontos' },
           ]}

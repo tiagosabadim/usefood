@@ -87,7 +87,7 @@ export function Pdv({
   cabecalhoDoCaixa?: ReactNode;
   /** Avisos de impressão, no topo da área de produtos. */
   avisos?: ReactNode;
-  /** Abrir mostrando o cardápio ou o mapa do salão. */
+  /** Abrir mostrando o cardápio ou as mesas. */
   modoInicial?: 'cardapio' | 'salao';
   /** Quem está usando (para despachar entregas). */
   euId: string;
@@ -314,7 +314,7 @@ export function Pdv({
           [
             { id: 'voltar', rotulo: 'Painel', icone: 'voltar', onClick: onVoltar },
             { id: 'cardapio', rotulo: 'Vender', icone: 'pdv', onClick: () => setModo('cardapio') },
-            { id: 'salao', rotulo: 'Salão', icone: 'mesa', onClick: () => setModo('salao') },
+            { id: 'salao', rotulo: 'Mesas', icone: 'mesa', onClick: () => setModo('salao') },
             {
               id: 'entregas',
               rotulo: 'Entregas',

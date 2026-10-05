@@ -84,7 +84,7 @@ export function Mesa({
         onClick={onVoltar}
         className="flex min-h-target-min items-center gap-1 self-start text-label text-ink-muted"
       >
-        <Icon name="voltar" size={18} /> Salão
+        <Icon name="voltar" size={18} /> Mesas
       </button>
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="font-display text-title-screen text-ink">Mesa {conta.identifier}</h2>

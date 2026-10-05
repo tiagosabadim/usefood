@@ -71,7 +71,8 @@ export function TelaDaCozinha({
   const audio = useRef<AudioContext | null>(null);
   const conhecidos = useRef<Set<string> | null>(null);
 
-  useTelaEscura();
+  // Encaixada no PDV, segue as cores do resto do app; tela cheia (TV da cozinha) fica escura
+  useTelaEscura(!encaixada);
 
   useEffect(() => {
     const t = setInterval(() => setAgora(Date.now()), 1000);

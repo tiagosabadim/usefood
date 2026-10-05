@@ -18,7 +18,7 @@ const CAMINHOS = {
   sacola: 'M6 8h12l-1 12H7zM9 8a3 3 0 0 1 6 0',
   calendario: 'M5 5h14v15H5zM5 10h14M9 3v4M15 3v4',
   pdv: 'M3 4h18v12H3zM8 20h8M12 16v4',
-  mesa: 'M3 10h18M6 10v9M18 10v9M8 6h8',
+  mesa: 'M3 8.5h18v2.5H3zM6 11l-1.5 8M18 11l1.5 8M8.5 11v4.5h7V11',
   cozinha: 'M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1 1 2 2 3 3 0-2 0-4 0-6z',
   chamada: 'M3 10v4h4l6 4V6l-6 4zM17 9a4 4 0 0 1 0 6',
   cardapio: 'M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM9 8h6M9 12h6',

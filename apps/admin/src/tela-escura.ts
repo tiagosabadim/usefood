@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 
 /** Telas de parede (cozinha, painel de chamada) ficam no tema escuro enquanto estão abertas. */
-export function useTelaEscura(): void {
+export function useTelaEscura(ativo = true): void {
   useEffect(() => {
+    if (!ativo) return;
     const raiz = document.documentElement;
     const anterior = raiz.dataset.theme;
     raiz.dataset.theme = 'dark';
@@ -10,7 +11,7 @@ export function useTelaEscura(): void {
       if (anterior) raiz.dataset.theme = anterior;
       else delete raiz.dataset.theme;
     };
-  }, []);
+  }, [ativo]);
 }
 
 /** Bipe curto de dois tons (pedido novo, pedido pronto). */

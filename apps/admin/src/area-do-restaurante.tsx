@@ -176,7 +176,7 @@ export function AreaDoRestaurante({
         ...(podeVender
           ? [
               { id: 'pdv', label: 'PDV', icon: 'pdv' as const, onClick: ir('pdv') },
-              { id: 'salao', label: 'Salão', icon: 'mesa' as const, onClick: ir('salao') },
+              { id: 'salao', label: 'Mesas', icon: 'mesa' as const, onClick: ir('salao') },
               {
                 id: 'entregas',
                 label: 'Entregas',
@@ -405,7 +405,7 @@ export function AreaDoRestaurante({
     },
     {
       id: 'salao',
-      titulo: 'Salão',
+      titulo: 'Mesas',
       texto: 'Mesas livres e ocupadas, com valor e tempo.',
       icone: 'mesa',
       onClick: ir('salao'),
@@ -539,7 +539,7 @@ export function AreaDoRestaurante({
             )}
             {podeVender && (
               <Button variant="secondary" className="h-target-pdv" onClick={() => setTela('salao')}>
-                Salão
+                Mesas
               </Button>
             )}
             {podeVender && (

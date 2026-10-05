@@ -1,6 +1,6 @@
 import { formatarPreco, tempoDesde } from '@usefood/core';
 import { canalUnico, type AppSupabaseClient } from '@usefood/db';
-import { cn, EmptyState, StatusPill } from '@usefood/ui';
+import { cn, EmptyState, Icon, StatusPill } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 
 interface MesaNoSalao {
@@ -11,7 +11,7 @@ interface MesaNoSalao {
   prontos: number;
 }
 
-/** Mapa do salão: mesas livres e ocupadas, com valor, tempo e pedidos prontos para levar. */
+/** Mesas: livres e ocupadas, com valor, tempo e pedidos prontos para levar. */
 export function Salao({
   supabase,
   lojaId,
@@ -105,7 +105,7 @@ export function Salao({
     };
   }, [supabase, lojaId]);
 
-  if (mesas === null) return <p className="text-body text-ink-muted">Carregando o salão…</p>;
+  if (mesas === null) return <p className="text-body text-ink-muted">Carregando as mesas…</p>;
   if (mesas.length === 0) {
     return (
       <EmptyState
@@ -149,7 +149,18 @@ export function Salao({
                   )}
                 >
                   <span className="flex w-full items-start justify-between gap-2">
-                    <span className="font-display text-title-screen text-ink">{m.label}</span>
+                    <span className="flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          'flex size-9 items-center justify-center rounded-pill',
+                          m.conta ? 'bg-brand text-brand-ink' : 'bg-surface-strong text-ink-muted',
+                        )}
+                      >
+                        <Icon name="mesa" size={20} />
+                      </span>
+                      <span className="font-display text-title-screen text-ink">{m.label}</span>
+                    </span>
                     {m.prontos > 0 && <StatusPill tone="destaque">{m.prontos} pronto</StatusPill>}
                   </span>
                   {m.conta ? (

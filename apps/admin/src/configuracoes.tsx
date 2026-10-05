@@ -5,7 +5,7 @@ import { Colunas, Tela, Titulo } from './tela';
 
 type Mesa = Pick<Tables<'dining_tables'>, 'id' | 'label' | 'area' | 'is_active'>;
 
-/** Jeito de atender e mesas do salão. Só dono e gerente. */
+/** Jeito de atender e mesas da loja. Só dono e gerente. */
 export function Configuracoes({
   supabase,
   loja,
@@ -82,7 +82,7 @@ export function Configuracoes({
       <Button variant="ghost" className="self-start px-0 lg:hidden" onClick={onVoltar}>
         ← {loja.name}
       </Button>
-      <Titulo titulo="Configurações" texto="Como a loja atende e quais mesas existem no salão." />
+      <Titulo titulo="Configurações" texto="Como a loja atende e quais mesas ela tem." />
       <Alert>{erro}</Alert>
       <Alert tone="sucesso">{aviso}</Alert>
 
@@ -143,7 +143,7 @@ export function Configuracoes({
             >
               {mesas.length === 0 && (
                 <p className="text-body text-ink-muted">
-                  Cadastre as mesas para usar o Salão e, depois, o QR code de cada mesa.
+                  Cadastre as mesas para usar a tela Mesas e, depois, o QR code de cada mesa.
                 </p>
               )}
               {areas.map((area) => (
