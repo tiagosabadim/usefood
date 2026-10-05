@@ -82,6 +82,13 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Página da loja (padrão de app de delivery)
+
+- Topo: capa, logo redondo, nome e **Ver mais sobre a loja** (perfil: descrição, endereço, horários da semana, entrega, pagamento e WhatsApp); caixa de informações (aberto até / abre, tempo, entrega), pedido mínimo e **Falar com a loja**.
+- Barra fixa ao rolar com **busca no cardápio** (sem acento, por nome e descrição) e **abas de categoria** que acompanham a seção na tela.
+- **Destaques** (produtos com foto) numa faixa que desliza; produtos em lista (`ProductRow`): nome, descrição, preço e foto 4:3 à direita. O toque abre sempre o detalhe (Montar item, agora com a descrição).
+- Computador: cardápio à esquerda e **sacola fixa à direita**; no celular, a barra "Ver sacola" embaixo.
+
 ## Painéis no computador
 
 - `AppShell` (`@usefood/ui`): menu lateral fixo a partir de 1024 px no painel da loja (Início; Operação: PDV, Salão, Tela da cozinha, Painel de chamada; Gestão: Cardápio, Loja online, Impressão, Equipe, Configurações; rodapé com troca de loja, e-mail e Sair) e no console (Lojas; Números, Marcas e Domínios em breve). No celular nada muda.

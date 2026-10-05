@@ -3,7 +3,7 @@ import type { AppSupabaseClient, Tables } from '@usefood/db';
 export type CategoriaDoCardapio = Pick<Tables<'categories'>, 'id' | 'name'>;
 export type ProdutoDoCardapio = Pick<
   Tables<'products'>,
-  'id' | 'category_id' | 'name' | 'price_cents' | 'photo_path'
+  'id' | 'category_id' | 'name' | 'description' | 'price_cents' | 'photo_path'
 >;
 
 export interface OpcaoTamanho {
@@ -57,7 +57,7 @@ export async function carregarCardapio(
       .order('created_at'),
     supabase
       .from('products')
-      .select('id, category_id, name, price_cents, photo_path')
+      .select('id, category_id, name, description, price_cents, photo_path')
       .eq('restaurant_id', lojaId)
       .eq('is_active', true)
       .order('position')

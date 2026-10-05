@@ -15,7 +15,7 @@ export function MontarItem({
   onAdicionar,
   onFechar,
 }: {
-  produto: { id: string; name: string; price_cents: number };
+  produto: { id: string; name: string; price_cents: number; description?: string | null };
   fotoUrl?: string | null;
   tamanhos: OpcaoTamanho[];
   grupos: GrupoDeOpcoes[];
@@ -108,6 +108,7 @@ export function MontarItem({
       {fotoUrl && (
         <img src={fotoUrl} alt="" className="aspect-[4/3] w-full rounded-lg object-cover" />
       )}
+      {produto.description && <p className="text-body text-ink-muted">{produto.description}</p>}
 
       {tamanhos.length > 0 && (
         <section className="flex flex-col gap-2">

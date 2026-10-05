@@ -17,6 +17,7 @@ export {
 export { Panel, type PanelProps } from './panel';
 export { PhotoField, type PhotoFieldProps } from './photo-field';
 export { PinPad, type PinPadProps } from './pin-pad';
+export { ProductRow, type ProductRowProps } from './product-row';
 export { ProductTile, type ProductTileProps } from './product-tile';
 export { QuantityStepper } from './quantity-stepper';
 export { ChoiceGrid, SegmentedControl, type Option } from './segmented-control';
