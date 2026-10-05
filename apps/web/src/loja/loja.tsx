@@ -153,6 +153,13 @@ function LojaPronta({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col pb-28">
+      {loja.status !== 'ativo' && (
+        // Só a equipe enxerga loja fora do ar (está logada); o cliente vê "Loja não encontrada"
+        <p role="status" className="bg-sun px-5 py-3 text-body text-sun-ink">
+          <strong>Prévia:</strong> só você está vendo. Para os clientes acessarem, publique a loja
+          em Loja online no painel.
+        </p>
+      )}
       <div className="aspect-[3/1] w-full overflow-hidden bg-surface-strong sm:rounded-b-lg">
         {loja.cover_path && (
           <img src={foto(loja.cover_path)!} alt="" className="size-full object-cover" />

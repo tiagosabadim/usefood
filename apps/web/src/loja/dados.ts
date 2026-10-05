@@ -20,11 +20,12 @@ export type LojaPublica = Pick<
   | 'free_delivery_above_cents'
   | 'prep_minutes_min'
   | 'prep_minutes_max'
+  | 'status'
 >;
 export type Horario = Pick<Tables<'opening_hours'>, 'weekday' | 'opens' | 'closes'>;
 
 const CAMPOS =
-  'id, name, slug, description, phone, logo_path, cover_path, street, street_number, district, city, accepts_delivery, accepts_pickup, delivery_fee_mode, min_order_cents, free_delivery_above_cents, prep_minutes_min, prep_minutes_max';
+  'id, status, name, slug, description, phone, logo_path, cover_path, street, street_number, district, city, accepts_delivery, accepts_pickup, delivery_fee_mode, min_order_cents, free_delivery_above_cents, prep_minutes_min, prep_minutes_max';
 
 /** Loja no ar da marca do site, pelo endereço. Loja em cadastro ou pausada não aparece. */
 export async function buscarLoja(
