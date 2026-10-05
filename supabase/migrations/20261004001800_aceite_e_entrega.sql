@@ -1,7 +1,8 @@
 -- Loja online, parte 3: a loja aceita ou recusa o pedido online, e o entregador
 -- sai para a entrega e conclui com o código do cliente (4 últimos números do celular).
 
-alter type public.restaurant_role add value if not exists 'entregador';
+-- O papel 'entregador' é criado na migration anterior (20261004001750): valor novo de enum
+-- só pode ser usado depois de gravado, e a regra pode_entregar já usa ele.
 
 alter table public.orders
   add column courier_id uuid references auth.users (id) on delete set null,
