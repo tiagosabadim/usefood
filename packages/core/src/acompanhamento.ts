@@ -6,23 +6,39 @@ export interface Etapa {
   estado: 'feito' | 'atual' | 'futuro';
 }
 
-/** Linha do tempo que o cliente vê, conforme o tipo (entrega ou retirada) e a situação. */
+const ETAPAS_DA_ENTREGA = [
+  'Aguardando o restaurante aceitar',
+  'Pedido aceito',
+  'Em preparação',
+  'Pronto',
+  'Pedido a caminho',
+  'Pedido entregue',
+];
+const ETAPAS_DA_RETIRADA = [
+  'Aguardando o restaurante aceitar',
+  'Pedido aceito',
+  'Em preparação',
+  'Pronto para retirar',
+  'Retirado',
+];
+
+/**
+ * Linha do tempo que o cliente vê. "Pedido aceito" fica feito assim que a loja aceita
+ * (a situação passa a "em preparo", e a etapa atual é "Em preparação").
+ */
 export function etapasDoPedido(
   tipo: 'delivery' | 'retirada' | string,
   situacao: SituacaoDoPedido,
 ): Etapa[] {
-  const rotulos =
-    tipo === 'delivery'
-      ? ['Pedido enviado', 'Em preparo', 'Saiu para entrega', 'Entregue']
-      : ['Pedido enviado', 'Em preparo', 'Pronto para retirar', 'Retirado'];
+  const entrega = tipo === 'delivery';
+  const rotulos = entrega ? ETAPAS_DA_ENTREGA : ETAPAS_DA_RETIRADA;
   const posicao: Record<SituacaoDoPedido, number> = {
     aberto: 0,
     aguardando: 0,
-    em_preparo: 1,
-    // Na entrega, "pronto" ainda espera o entregador sair
-    pronto: tipo === 'delivery' ? 1 : 2,
-    em_entrega: 2,
-    concluido: 4,
+    em_preparo: 2,
+    pronto: 3,
+    em_entrega: entrega ? 4 : 3,
+    concluido: rotulos.length,
     cancelado: -1,
   };
   const atual = posicao[situacao];
@@ -32,23 +48,23 @@ export function etapasDoPedido(
   }));
 }
 
-/** Frase principal da página de acompanhamento. */
+/** Frase principal do acompanhamento e do card no topo da loja. */
 export function fraseDoPedido(tipo: string, situacao: SituacaoDoPedido): string {
   switch (situacao) {
     case 'aberto':
     case 'aguardando':
-      return 'Esperando a loja aceitar o pedido';
+      return 'Aguardando o restaurante aceitar';
     case 'em_preparo':
-      return 'A loja aceitou e está preparando';
+      return 'Pedido aceito · em preparação';
     case 'pronto':
       return tipo === 'delivery'
-        ? 'Pronto, esperando o entregador'
+        ? 'Pronto · aguardando o entregador'
         : 'Pronto! Pode retirar na loja';
     case 'em_entrega':
-      return 'Saiu para entrega';
+      return 'Pedido a caminho';
     case 'concluido':
-      return tipo === 'delivery' ? 'Entregue. Bom apetite!' : 'Retirado. Bom apetite!';
+      return tipo === 'delivery' ? 'Pedido entregue. Bom apetite!' : 'Retirado. Bom apetite!';
     case 'cancelado':
-      return 'Pedido não aceito pela loja';
+      return 'Pedido não aceito pelo restaurante';
   }
 }

@@ -1,6 +1,6 @@
 import { useAppContext } from '@usefood/app';
-import { fraseDoPedido, type SituacaoDoPedido } from '@usefood/core';
-import { Icon } from '@usefood/ui';
+import { etapasDoPedido, fraseDoPedido, type SituacaoDoPedido } from '@usefood/core';
+import { cn, Icon } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { lerConta, pedidosRecentes } from '../guardado';
 import { navegar } from '../rotas';
@@ -56,11 +56,27 @@ export function PedidoEmAndamento({ lojaSlug, base }: { lojaSlug: string; base: 
           <span className="flex size-10 shrink-0 items-center justify-center rounded-pill bg-brand-ink/15">
             <Icon name={p.situacao === 'em_entrega' ? 'moto' : 'pedidos'} size={22} />
           </span>
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="text-caption opacity-90">
-              Pedido #{String(p.numero).padStart(3, '0')}
+          <span className="flex min-w-0 flex-1 flex-col gap-2">
+            <span className="flex flex-col">
+              <span className="text-caption opacity-90">
+                Pedido #{String(p.numero).padStart(3, '0')}
+              </span>
+              <span className="text-body-strong">{fraseDoPedido(p.tipo, p.situacao)}</span>
             </span>
-            <span className="text-body-strong">{fraseDoPedido(p.tipo, p.situacao)}</span>
+            {/* Todo o processo: cada traço é uma etapa (aceite, preparo, pronto, entrega) */}
+            <span aria-hidden="true" className="flex gap-1">
+              {etapasDoPedido(p.tipo, p.situacao).map((e) => (
+                <span
+                  key={e.rotulo}
+                  className={cn(
+                    'h-1.5 flex-1 rounded-pill',
+                    e.estado === 'feito' && 'bg-brand-ink',
+                    e.estado === 'atual' && 'bg-brand-ink/70 motion-safe:animate-pulse',
+                    e.estado === 'futuro' && 'bg-brand-ink/25',
+                  )}
+                />
+              ))}
+            </span>
           </span>
           <span className="text-label underline">Acompanhar</span>
         </button>

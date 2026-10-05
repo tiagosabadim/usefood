@@ -173,23 +173,23 @@ export function ListaDeEntregas({
     <div className="flex flex-col gap-4">
       <SegmentedControl
         label="Entregas"
-        className="self-stretch sm:self-start [&>button]:flex-1"
+        className="flex-wrap self-stretch sm:self-start [&>button]:flex-1"
         options={[
-          { value: 'prontos', label: prontos.length ? `Prontos (${prontos.length})` : 'Prontos' },
+          {
+            value: 'prontos',
+            label: prontos.length
+              ? `Aguardando retirada (${prontos.length})`
+              : 'Aguardando retirada',
+          },
           {
             value: 'saiu',
-            label:
-              modo === 'entregador'
-                ? saiu.length
-                  ? `Comigo (${saiu.length})`
-                  : 'Comigo'
-                : saiu.length
-                  ? `Em entrega (${saiu.length})`
-                  : 'Em entrega',
+            label: saiu.length ? `Pedido a caminho (${saiu.length})` : 'Pedido a caminho',
           },
           {
             value: 'entregues',
-            label: entregues.length ? `Entregues (${entregues.length})` : 'Entregues',
+            label: entregues.length
+              ? `Pedidos entregues (${entregues.length})`
+              : 'Pedidos entregues',
           },
         ]}
         value={aba}
@@ -201,7 +201,7 @@ export function ListaDeEntregas({
       {aba === 'prontos' &&
         (prontos.length === 0 ? (
           <p className="text-body text-ink-muted">
-            Nenhum pedido de entrega pronto.{' '}
+            Nenhum pedido aguardando retirada.{' '}
             {modo === 'entregador'
               ? 'O celular vibra quando a cozinha terminar um.'
               : 'Eles aparecem aqui quando a cozinha toca em Pronto.'}
