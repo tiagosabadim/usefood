@@ -1,13 +1,13 @@
 import { useAppContext } from '@usefood/app';
 import {
   adicionarItem,
-  DIAS_DA_SEMANA,
   formatarPreco,
+  type ItemCarrinho,
   itemSimples,
   quantidadeDoProduto,
   quantidadeTotal,
+  resumoDoHorario,
   subtotalCentavos,
-  type ItemCarrinho,
 } from '@usefood/core';
 import type { AppSupabaseClient } from '@usefood/db';
 import {
@@ -18,16 +18,7 @@ import {
   type Cardapio,
   type ProdutoDoCardapio,
 } from '@usefood/pedidos';
-import {
-  Button,
-  CartList,
-  Chip,
-  Icon,
-  ProductTile,
-  Sheet,
-  StatusPill,
-  type IconName,
-} from '@usefood/ui';
+import { Button, CartList, Chip, Icon, ProductTile, Sheet, type IconName } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { gravarSacola, lerSacola } from '../guardado';
 import { navegar } from '../rotas';
@@ -35,18 +26,17 @@ import { Checkout } from './checkout';
 import { PedidoEmAndamento } from './pedido-em-andamento';
 import { buscarLoja, whatsapp, type Horario, type LojaPublica } from './dados';
 
-const hora = (t: string) => t.slice(0, 5);
-
-function horarioDeHoje(horarios: Horario[]): string {
-  const hoje = new Date().getDay();
-  const doDia = horarios.filter((h) => h.weekday === hoje);
-  return doDia.length
-    ? `Hoje ${doDia.map((h) => `${hora(h.opens)}–${hora(h.closes)}`).join(' e ')}`
-    : `${DIAS_DA_SEMANA[hoje]}: fechado`;
+interface CardDaLoja {
+  icone: IconName;
+  titulo: string;
+  valor: string;
+  /** Título em verde (aberto) ou apagado (fechado). */
+  tom?: 'sucesso' | 'apagado';
 }
 
-/** Os 3 cards do topo: tempo, entrega e pedido mínimo. */
-function cardsDaLoja(loja: LojaPublica): { icone: IconName; titulo: string; valor: string }[] {
+/** Cards do topo: horário (aberto ou fechado), tempo, entrega e pedido mínimo. */
+function cardsDaLoja(loja: LojaPublica, horarios: Horario[], aberta: boolean): CardDaLoja[] {
+  const horario = resumoDoHorario(horarios, aberta, new Date());
   const entrega = !loja.accepts_delivery
     ? 'Só retirada'
     : loja.delivery_fee_mode === 'gratis'
@@ -57,6 +47,12 @@ function cardsDaLoja(loja: LojaPublica): { icone: IconName; titulo: string; valo
           ? 'Pelo bairro'
           : 'Pela distância';
   return [
+    {
+      icone: 'calendario',
+      titulo: horario.titulo,
+      valor: horario.detalhe,
+      tom: aberta ? 'sucesso' : 'apagado',
+    },
     {
       icone: 'relogio',
       titulo: 'Tempo',
@@ -182,7 +178,7 @@ function LojaPronta({
           em Loja online no painel.
         </p>
       )}
-      <div className="relative aspect-[5/2] w-full overflow-hidden bg-surface-strong sm:rounded-b-lg">
+      <div className="relative aspect-[2/1] w-full overflow-hidden bg-surface-strong sm:rounded-b-lg">
         {loja.cover_path && (
           <img src={foto(loja.cover_path)!} alt="" className="size-full object-cover" />
         )}
@@ -196,7 +192,7 @@ function LojaPronta({
         </button>
       </div>
       <header className="flex flex-col gap-3 px-5">
-        <div className="-mt-10 flex size-20 items-center justify-center overflow-hidden rounded-lg border-4 border-canvas bg-surface-strong">
+        <div className="relative z-10 -mt-12 flex size-24 items-center justify-center overflow-hidden rounded-lg border-4 border-canvas bg-surface-strong">
           {loja.logo_path ? (
             <img
               src={foto(loja.logo_path)!}
@@ -213,39 +209,48 @@ function LojaPronta({
           <h1 className="font-display text-title-screen text-ink">{loja.name}</h1>
           {loja.description && <p className="text-body text-ink-muted">{loja.description}</p>}
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-caption text-ink-muted">
-          <StatusPill tone={aberta ? 'sucesso' : 'neutro'}>
-            {aberta ? 'Aberto' : 'Fechado'}
-          </StatusPill>
-          <span>{horarioDeHoje(horarios)}</span>
-        </div>
-        <ul className="grid grid-cols-3 gap-2">
-          {cardsDaLoja(loja).map((c) => (
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          {cardsDaLoja(loja, horarios, aberta).map((c) => (
             <li
-              key={c.titulo}
+              key={c.icone}
               className="flex flex-col items-start gap-2 rounded-lg border border-line bg-surface p-3"
             >
               <span className="flex size-9 items-center justify-center rounded-pill bg-brand-soft text-brand-text">
                 <Icon name={c.icone} size={20} />
               </span>
               <span className="flex flex-col">
-                <span className="text-caption text-ink-muted">{c.titulo}</span>
+                <span
+                  className={
+                    c.tom === 'sucesso'
+                      ? 'text-label text-success'
+                      : c.tom === 'apagado'
+                        ? 'text-label text-ink-muted'
+                        : 'text-caption text-ink-muted'
+                  }
+                >
+                  {c.titulo}
+                </span>
                 <span className="text-label text-ink">{c.valor}</span>
               </span>
             </li>
           ))}
+          {loja.phone && (
+            <li className="col-span-2 sm:col-span-1">
+              <a
+                href={whatsapp(loja.phone, `Oi, ${loja.name}! Vim pela loja online.`)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-full min-h-target-pdv items-center gap-3 rounded-lg bg-brand p-3 text-brand-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:flex-col sm:items-start"
+              >
+                <span className="flex size-9 items-center justify-center rounded-pill bg-brand-ink/15">
+                  <Icon name="conversa" size={20} />
+                </span>
+                <span className="text-label">Falar com a loja</span>
+              </a>
+            </li>
+          )}
         </ul>
         <PedidoEmAndamento lojaSlug={loja.slug} base={base} />
-        {loja.phone && (
-          <a
-            className="self-start text-label text-brand-text underline"
-            href={whatsapp(loja.phone)}
-            target="_blank"
-            rel="noreferrer"
-          >
-            WhatsApp da loja
-          </a>
-        )}
       </header>
 
       <nav

@@ -16,6 +16,8 @@ const CAMINHOS = {
   relogio: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2',
   moto: 'M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM8 17h8M16 17l-1.5-6H11M14 8h2.5l1.5 3M4 17l1.5-4H11v4',
   sacola: 'M6 8h12l-1 12H7zM9 8a3 3 0 0 1 6 0',
+  calendario: 'M5 5h14v15H5zM5 10h14M9 3v4M15 3v4',
+  conversa: 'M4 5h16v11H10l-6 4zM8 10h.01M12 10h.01M16 10h.01',
 } as const;
 
 export type IconName = keyof typeof CAMINHOS | 'estrela';

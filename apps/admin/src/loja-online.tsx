@@ -790,8 +790,8 @@ const FORMATOS = {
   },
   capa: {
     coluna: 'cover_path',
-    proporcao: 2.5,
-    tamanho: { largura: 1500, altura: 600 },
+    proporcao: 2,
+    tamanho: { largura: 1500, altura: 750 },
     rotulo: 'Capa',
     vazio: 'capa da loja',
   },
