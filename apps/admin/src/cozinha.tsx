@@ -37,16 +37,23 @@ interface PedidoNaCozinha {
 const TODAS = 'todas';
 const JANELA_MS = 12 * 3_600_000;
 
-/** Tela da cozinha (KDS): pedidos em preparo por praça, com tempo de espera, e os prontos para entregar. */
+/**
+ * Tela da cozinha (KDS): pedidos em preparo por praça, com tempo de espera, e os prontos para entregar.
+ * Tela cheia para o ponto separado na cozinha; `encaixada` para aparecer dentro do PDV.
+ */
 export function TelaDaCozinha({
   supabase,
   loja,
   onVoltar,
+  encaixada = false,
 }: {
   supabase: AppSupabaseClient;
   loja: { id: string; name: string };
-  onVoltar: () => void;
+  onVoltar?: () => void;
+  /** Dentro do PDV: sem voltar, sem ocupar a tela toda, prontos embaixo (ou ao lado em telas largas). */
+  encaixada?: boolean;
 }) {
+  const Corpo = encaixada ? 'section' : 'main';
   const chavePraca = `usefood.cozinha.praca.${loja.id}`;
   const [pracas, setPracas] = useState<{ id: string; name: string }[]>([]);
   const [praca, setPraca] = useState<string>(() => {
@@ -171,16 +178,28 @@ export function TelaDaCozinha({
     praca === TODAS ? 'Todas as praças' : (pracas.find((p) => p.id === praca)?.name ?? 'Praça');
 
   return (
-    <div className="flex h-dvh flex-col bg-canvas text-ink">
-      <header className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3">
-        <button
-          type="button"
-          onClick={onVoltar}
-          aria-label={`Sair da tela da cozinha e voltar para ${loja.name}`}
-          className="flex size-11 items-center justify-center rounded-md text-ink-muted hover:bg-surface"
-        >
-          <Icon name="voltar" />
-        </button>
+    <div
+      className={
+        encaixada ? 'flex flex-col gap-4 text-ink' : 'flex h-dvh flex-col bg-canvas text-ink'
+      }
+    >
+      <header
+        className={
+          encaixada
+            ? 'flex flex-wrap items-center gap-3'
+            : 'flex flex-wrap items-center gap-3 border-b border-line px-4 py-3'
+        }
+      >
+        {!encaixada && onVoltar && (
+          <button
+            type="button"
+            onClick={onVoltar}
+            aria-label={`Sair da tela da cozinha e voltar para ${loja.name}`}
+            className="flex size-11 items-center justify-center rounded-md text-ink-muted hover:bg-surface"
+          >
+            <Icon name="voltar" />
+          </button>
+        )}
         <div className="mr-auto flex flex-col">
           <h1 className="font-display text-title-section">{nomeDaPraca}</h1>
           <span className="text-caption text-ink-muted">
@@ -208,10 +227,19 @@ export function TelaDaCozinha({
         </span>
       </header>
 
-      {erro && <Alert className="mx-4 mt-3">{erro}</Alert>}
+      {erro && <Alert className={encaixada ? '' : 'mx-4 mt-3'}>{erro}</Alert>}
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <main className="min-h-0 overflow-y-auto p-4">
+      <div
+        className={
+          encaixada
+            ? 'grid grid-cols-1 items-start gap-4 2xl:grid-cols-[minmax(0,1fr)_300px]'
+            : 'grid min-h-0 flex-1 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px]'
+        }
+      >
+        <Corpo
+          aria-label="Pedidos em preparo"
+          className={encaixada ? 'min-w-0' : 'min-h-0 overflow-y-auto p-4'}
+        >
           {pedidos === null ? (
             <p className="text-body text-ink-muted">Carregando os pedidos…</p>
           ) : emPreparo.length === 0 ? (
@@ -266,11 +294,15 @@ export function TelaDaCozinha({
               })}
             </div>
           )}
-        </main>
+        </Corpo>
 
         <aside
           aria-label="Prontos para entregar"
-          className="flex min-h-0 flex-col border-t border-line bg-surface xl:border-t-0 xl:border-l"
+          className={
+            encaixada
+              ? 'flex flex-col rounded-lg border border-line bg-surface'
+              : 'flex min-h-0 flex-col border-t border-line bg-surface xl:border-t-0 xl:border-l'
+          }
         >
           <h2 className="px-4 pt-4 font-display text-title-card">Prontos para entregar</h2>
           {prontos.length === 0 ? (

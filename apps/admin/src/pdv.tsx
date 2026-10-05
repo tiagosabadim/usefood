@@ -28,6 +28,7 @@ import {
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Cobranca, ContaPaga, type Conta, type PagamentoFeito } from './cobranca';
 import { ContasAbertas } from './contas-abertas';
+import { TelaDaCozinha } from './cozinha';
 import { PedidosOnline } from './pedidos-online';
 import {
   carregarCardapio,
@@ -78,7 +79,6 @@ export function Pdv({
   avisos,
   modoInicial = 'cardapio',
   euId,
-  onCozinha,
 }: {
   supabase: AppSupabaseClient;
   loja: { id: string; name: string };
@@ -91,8 +91,6 @@ export function Pdv({
   modoInicial?: 'cardapio' | 'salao';
   /** Quem está usando (para despachar entregas). */
   euId: string;
-  /** Menu rápido: abre a tela da cozinha. */
-  onCozinha?: () => void;
 }) {
   const [carregando, setCarregando] = useState(true);
   const [falhou, setFalhou] = useState(false);
@@ -107,7 +105,10 @@ export function Pdv({
   const [dados, setDados] = useState<DadosDoPedido>(DADOS_INICIAIS);
   const tipo = dados.tipo;
   const atendimento = useAtendimento(supabase, loja.id);
-  const [modo, setModo] = useState<'cardapio' | 'salao' | 'entregas' | 'online'>(modoInicial);
+  const [modo, setModo] = useState<'cardapio' | 'salao' | 'entregas' | 'online' | 'cozinha'>(
+    modoInicial,
+  );
+  const [emPreparo, setEmPreparo] = useState(0);
   const [esperandoOnline, setEsperandoOnline] = useState(0);
   const [entregasProntas, setEntregasProntas] = useState(0);
 
@@ -115,7 +116,7 @@ export function Pdv({
   useEffect(() => {
     let ativo = true;
     const contar = async () => {
-      const [online, entregas] = await Promise.all([
+      const [online, entregas, preparo] = await Promise.all([
         supabase
           .from('orders')
           .select('id', { count: 'exact', head: true })
@@ -127,10 +128,17 @@ export function Pdv({
           .eq('restaurant_id', loja.id)
           .eq('type', 'delivery')
           .eq('status', 'pronto'),
+        supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('restaurant_id', loja.id)
+          .eq('status', 'em_preparo')
+          .gte('created_at', new Date(Date.now() - 12 * 3_600_000).toISOString()),
       ]);
       if (!ativo) return;
       setEsperandoOnline(online.count ?? 0);
       setEntregasProntas(entregas.count ?? 0);
+      setEmPreparo(preparo.count ?? 0);
     };
     void contar();
     const canal = supabase
@@ -321,9 +329,13 @@ export function Pdv({
               onClick: () => setModo('online'),
               contador: esperandoOnline,
             },
-            ...(onCozinha
-              ? [{ id: 'cozinha', rotulo: 'Cozinha', icone: 'cozinha', onClick: onCozinha }]
-              : []),
+            {
+              id: 'cozinha',
+              rotulo: 'Cozinha',
+              icone: 'cozinha',
+              onClick: () => setModo('cozinha'),
+              contador: emPreparo,
+            },
           ] as {
             id: string;
             rotulo: string;
@@ -369,6 +381,7 @@ export function Pdv({
             <ListaDeEntregas supabase={supabase} lojaId={loja.id} euId={euId} modo="loja" />
           </section>
         )}
+        {modo === 'cozinha' && <TelaDaCozinha supabase={supabase} loja={loja} encaixada />}
         {modo === 'online' && (
           <section aria-label="Pedidos online" className="flex flex-col gap-4">
             <h1 className="font-display text-title-screen text-ink">Pedidos online</h1>

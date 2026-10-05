@@ -87,6 +87,7 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - Barra lateral do PDV virou **menu rápido**: Painel (volta ao início), **Vender** (cardápio), **Salão**, **Entregas** (prontas para sair, com contador), **Online** (pedidos esperando a loja, com contador) e **Cozinha**. Trocam o meio da tela sem sair do PDV; o pedido em montagem à direita continua.
 - Categorias do cardápio em abas (Chip) acima dos produtos, junto com a busca.
 - Entregas usa `ListaDeEntregas` no modo loja; Online usa `PedidosOnline` com `emLinha` (a faixa amarela continua no topo).
+- **Cozinha dentro do PDV**: `TelaDaCozinha` com `encaixada` (sem voltar, sem tela cheia, prontos embaixo ou ao lado em telas largas), com contador de pedidos em preparo no menu. A tela cheia da cozinha continua no painel (Operação → Tela da cozinha) para quem tem um ponto separado na cozinha.
 
 ## Clientes da loja
 
