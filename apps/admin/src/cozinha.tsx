@@ -293,7 +293,7 @@ export function TelaDaCozinha({
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
                     {p.type === 'delivery' ? (
                       <span className="flex items-center text-body text-ink-muted">
-                        Esperando o entregador
+                        Pronto para entrega · despache em Entregas
                       </span>
                     ) : (
                       <Button

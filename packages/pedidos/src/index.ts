@@ -10,6 +10,7 @@ export {
   type OpcoesDoProduto,
   type ProdutoDoCardapio,
 } from './cardapio';
+export { ListaDeEntregas } from './entregas';
 export { urlDaFoto } from './foto';
 export { TipoEIdentificacao, useAtendimento } from './identificacao';
 export { MontarItem } from './montar-item';

@@ -23,6 +23,7 @@ import { TelaDaCozinha } from './cozinha';
 import { Impressao } from './impressao';
 import { LojaOnline } from './loja-online';
 import { Numeros } from './numeros';
+import { ListaDeEntregas } from '@usefood/pedidos';
 import { Pdv } from './pdv';
 import { Tela, Titulo } from './tela';
 
@@ -54,7 +55,8 @@ type TelaDoPainel =
   | 'configuracoes'
   | 'equipe'
   | 'loja-online'
-  | 'numeros';
+  | 'numeros'
+  | 'entregas';
 
 export function AreaDoRestaurante({
   supabase,
@@ -172,6 +174,13 @@ export function AreaDoRestaurante({
           ? [
               { id: 'pdv', label: 'PDV', icon: 'pdv' as const, onClick: ir('pdv') },
               { id: 'salao', label: 'Salão', icon: 'mesa' as const, onClick: ir('salao') },
+              {
+                id: 'entregas',
+                label: 'Entregas',
+                icon: 'moto' as const,
+                onClick: ir('entregas'),
+                active: tela === 'entregas',
+              },
             ]
           : []),
         { id: 'cozinha', label: 'Tela da cozinha', icon: 'cozinha', onClick: ir('cozinha') },
@@ -312,6 +321,29 @@ export function AreaDoRestaurante({
         />
       );
     }
+    if (tela === 'entregas') {
+      return (
+        <Tela larga>
+          <Button
+            variant="ghost"
+            className="self-start px-0 lg:hidden"
+            onClick={() => setTela('inicio')}
+          >
+            ← {atual.loja.name}
+          </Button>
+          <Titulo
+            titulo="Entregas"
+            texto="Pedidos de delivery prontos e a caminho. Sem entregador no app, despache e confirme por aqui."
+          />
+          <ListaDeEntregas
+            supabase={supabase}
+            lojaId={atual.loja.id}
+            euId={session.user.id}
+            modo="loja"
+          />
+        </Tela>
+      );
+    }
     if (tela === 'numeros') {
       return (
         <Tela larga>
@@ -353,6 +385,14 @@ export function AreaDoRestaurante({
       texto: 'Mesas livres e ocupadas, com valor e tempo.',
       icone: 'mesa',
       onClick: ir('salao'),
+      mostrar: podeVender,
+    },
+    {
+      id: 'entregas',
+      titulo: 'Entregas',
+      texto: 'Delivery pronto para sair e a caminho.',
+      icone: 'moto',
+      onClick: ir('entregas'),
       mostrar: podeVender,
     },
     {
@@ -428,7 +468,7 @@ export function AreaDoRestaurante({
       </span>
     </button>
   );
-  const operacao = ['pdv', 'salao', 'cozinha', 'chamada'];
+  const operacao = ['pdv', 'salao', 'entregas', 'cozinha', 'chamada'];
 
   return menu(
     <Tela larga>
@@ -476,6 +516,15 @@ export function AreaDoRestaurante({
             {podeVender && (
               <Button variant="secondary" className="h-target-pdv" onClick={() => setTela('salao')}>
                 Salão
+              </Button>
+            )}
+            {podeVender && (
+              <Button
+                variant="secondary"
+                className="h-target-pdv"
+                onClick={() => setTela('entregas')}
+              >
+                Entregas
               </Button>
             )}
             <Button

@@ -128,7 +128,8 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 
 - PDV: faixa amarela **pedidos online esperando a loja**, com bipe (`PedidosOnline`). **Aceitar** (`aceitar_pedido`, caixa, gerente ou dono) manda para a cozinha e para a impressora; **Recusar** (`recusar_pedido`) exige o motivo, que o cliente vê, e cancela a conta.
 - Função nova na equipe: **Entregador** (`restaurant_role` `entregador`). Em `/garcom`, com o PIN dele, aparece **Entregas**: Prontos (com quanto cobrar e o troco) → **Saí para entrega** (`sair_para_entrega`) → Comigo (mapa, ligar, código) → **Confirmar entrega** (`confirmar_entrega`, só com os 4 últimos números do celular do cliente; pedido de PDV sem celular conclui sem código).
-- Tela da cozinha: pedido de entrega pronto mostra "Esperando o entregador" no lugar de Entregue.
+- Tela da cozinha: pedido de entrega pronto mostra "Pronto para entrega · despache em Entregas" no lugar de Entregue.
+- **Entregas no painel** (Operação, para dono, gerente e caixa): a mesma lista do app do entregador (`ListaDeEntregas`, em `@usefood/pedidos`) no modo loja: Prontos → **Saiu para entrega**; Em entrega (de todos) → **Confirmar entrega**, com o código opcional. Serve para quem não tem entregador no app (motoboy terceirizado ou o próprio dono). O entregador no app continua precisando do código.
 - O dinheiro recebido na porta entra no caixa quando o entregador volta (Contas abertas no PDV).
 - Testes em `supabase/tests/aceite_e_entrega.test.sql`.
 

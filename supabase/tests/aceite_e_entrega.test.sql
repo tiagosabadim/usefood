@@ -1,7 +1,7 @@
 -- Aceite do pedido online e entrega com código.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(13);
 
 insert into auth.users (id, email) values
   ('00000000-0000-4000-8000-0000000000d7', 'caixa@entrega.teste'),
@@ -58,6 +58,25 @@ select is(public.acompanhar_pedido((select token from p)) ->> 'situacao', 'em_en
 select throws_ok(format($$ select public.confirmar_entrega(%L, '0000') $$, (select entrega from ids)), 'P0001', null, 'código errado não conclui');
 select is(public.confirmar_entrega((select entrega from ids), '4321'), 'concluido'::public.order_status, 'código certo conclui a entrega');
 select isnt((select delivered_at from public.orders where id = (select entrega from ids)), null, 'hora da entrega registrada');
+
+-- Sem entregador no app: o caixa despacha e confirma sem o código
+reset role;
+create temp table p4 on commit drop as
+select * from public.fazer_pedido_online('3d000000-0000-4000-8000-000000000001', 'delivery',
+  '[{"product_id": "5d000000-0000-4000-8000-000000000001", "quantidade": 1}]', 'Eva', '17922223333', 'pix', null,
+  '{"rua": "Rua C", "numero": "9", "bairro": "Centro", "cidade": "X"}');
+grant select on p4 to authenticated;
+set local role authenticated;
+set local request.jwt.claims = '{"sub": "00000000-0000-4000-8000-0000000000d7", "role": "authenticated"}';
+create temp table id4 on commit drop as select id from public.orders where tracking_token = (select token from p4);
+select public.aceitar_pedido((select id from id4));
+select public.marcar_pronto((select id from id4), null);
+select public.sair_para_entrega((select id from id4));
+set local request.jwt.claims = '{"sub": "00000000-0000-4000-8000-0000000000d8", "role": "authenticated"}';
+select throws_ok(format($$ select public.confirmar_entrega(%L) $$, (select id from id4)), 'P0001', null,
+  'entregador sem código não conclui');
+set local request.jwt.claims = '{"sub": "00000000-0000-4000-8000-0000000000d7", "role": "authenticated"}';
+select is(public.confirmar_entrega((select id from id4)), 'concluido'::public.order_status, 'caixa confirma sem o código');
 
 select * from finish();
 rollback;
