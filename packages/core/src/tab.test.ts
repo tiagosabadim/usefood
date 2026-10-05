@@ -54,6 +54,19 @@ describe('identificacaoPara', () => {
 
 describe('parametrosDoPedido', () => {
   const senha = { chamarPor: 'senha', balcao: 'cliente_busca' } as const;
+  const entrega = {
+    ...DADOS_INICIAIS,
+    tipo: 'delivery' as const,
+    identificador: 'Maria',
+    celular: '(17) 99123-4567',
+    taxaEntrega: '5',
+    endereco: { ...DADOS_INICIAIS.endereco, rua: 'Rua A', numero: '10', bairro: 'Centro' },
+  };
+
+  it('delivery sem endereço avisa o que falta', () => {
+    const p = parametrosDoPedido({ ...entrega, endereco: DADOS_INICIAIS.endereco }, senha);
+    expect(p).toEqual({ ok: false, motivo: 'Para entregar, preencha rua, número e bairro.' });
+  });
   const nome = { chamarPor: 'nome', balcao: 'cliente_busca' } as const;
 
   it('balcão com senha não pede nada', () => {
@@ -75,24 +88,21 @@ describe('parametrosDoPedido', () => {
   });
 
   it('delivery leva a forma de pagamento e o troco', () => {
-    const p = parametrosDoPedido(
-      { tipo: 'delivery', identificador: 'Maria', previsto: 'dinheiro', trocoPara: '100' },
-      senha,
-    );
+    const p = parametrosDoPedido({ ...entrega, previsto: 'dinheiro', trocoPara: '100' }, senha);
     expect(p.ok && [p.p_pagamento_previsto, p.p_troco_para_cents]).toEqual(['dinheiro', 10000]);
+    expect(p.ok && p.p_endereco?.bairro).toBe('Centro');
+    expect(p.ok && p.p_taxa_entrega_cents).toBe(500);
+    expect(p.ok && p.p_celular).toBe('17991234567');
   });
 
   it('troco inválido é avisado', () => {
-    const p = parametrosDoPedido(
-      { tipo: 'delivery', identificador: 'Maria', previsto: 'dinheiro', trocoPara: 'abc' },
-      senha,
-    );
+    const p = parametrosDoPedido({ ...entrega, previsto: 'dinheiro', trocoPara: 'abc' }, senha);
     expect(p.ok).toBe(false);
   });
 
   it('mesa não leva forma de pagamento prevista', () => {
     const p = parametrosDoPedido(
-      { tipo: 'mesa', identificador: '5', previsto: 'pix', trocoPara: '' },
+      { ...DADOS_INICIAIS, tipo: 'mesa', identificador: '5', previsto: 'pix' },
       senha,
     );
     expect(p.ok && p.p_pagamento_previsto).toBeNull();

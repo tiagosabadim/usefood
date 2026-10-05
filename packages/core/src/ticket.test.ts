@@ -152,3 +152,54 @@ describe('para viagem no ticket', () => {
     expect(inverte).toBeGreaterThan(0);
   });
 });
+
+describe('bloco de entrega no ticket', () => {
+  const delivery: TicketPayload = {
+    ...pedido,
+    pedido_tipo: 'delivery',
+    identificador_tipo: 'nome',
+    identificador: 'Rui',
+    entrega: {
+      nome: 'Rui',
+      telefone: '17987651234',
+      endereco: {
+        rua: 'Av. Brasil',
+        numero: '300',
+        bairro: 'Vila Nova',
+        referencia: 'portão azul',
+      },
+      pagamento: 'dinheiro',
+      troco_para: 10000,
+      total: 5700,
+      pago: 0,
+      taxa: 700,
+    },
+  };
+  const textos = (p: TicketPayload) =>
+    linhasDoTicket(p, 48).flatMap((l) => (l.tipo === 'texto' ? [l.texto] : []));
+
+  it('endereço, referência e telefone para o entregador', () => {
+    const t = textos(delivery);
+    expect(t).toContain('Av. Brasil, 300');
+    expect(t).toContain('Bairro: Vila Nova');
+    expect(t).toContain('Ref.: portão azul');
+    expect(t).toContain('Tel: (17) 98765-1234');
+  });
+
+  it('quanto cobrar e o troco', () => {
+    const t = textos(delivery);
+    // A quebra de linha já troca o espaço especial do R$ por espaço comum
+    expect(t).toContain('COBRAR R$ 57,00 - DINHEIRO');
+    expect(t).toContain('Troco para R$ 100,00');
+  });
+
+  it('pago antes: avisa', () => {
+    expect(textos({ ...delivery, entrega: { ...delivery.entrega!, pago: 5700 } })).toContain(
+      'JA PAGO',
+    );
+  });
+
+  it('o espaço do R$ sai como espaço na impressora', () => {
+    expect(codificar('R$\u00a01', 'cp850')).toEqual([0x52, 0x24, 0x20, 0x31]);
+  });
+});

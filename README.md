@@ -82,6 +82,11 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Delivery pelo PDV e ticket de entrega
+
+- No PDV e na comanda, o tipo **Delivery** pede celular, endereço (CEP com busca, rua, número, complemento, bairro, cidade, referência) e taxa de entrega; a taxa vem sugerida pela configuração da loja (`calcular_entrega`) e a equipe pode mudar. `criar_pedido` recebe `p_celular`, `p_endereco` e `p_taxa_entrega_cents` e exige rua, número e bairro no delivery.
+- O ticket da cozinha de delivery traz, no topo, o bloco de entrega: nome, telefone, endereço com bairro e referência e **COBRAR R$ X - forma** (com o troco) ou **JA PAGO**. Na retirada, nome e telefone. Vale para pedidos do PDV e para os online (impressos no aceite). Precisa do programa de impressão atualizado.
+
 ## Aceite e entrega (loja online, parte 3)
 
 - PDV: faixa amarela **pedidos online esperando a loja**, com bipe (`PedidosOnline`). **Aceitar** (`aceitar_pedido`, caixa, gerente ou dono) manda para a cozinha e para a impressora; **Recusar** (`recusar_pedido`) exige o motivo, que o cliente vê, e cancela a conta.

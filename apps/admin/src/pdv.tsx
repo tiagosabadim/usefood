@@ -180,6 +180,9 @@ export function Pdv({
       })),
       p_pagamento_previsto: parametros.p_pagamento_previsto,
       p_troco_para_cents: parametros.p_troco_para_cents,
+      p_celular: parametros.p_celular,
+      p_endereco: parametros.p_endereco,
+      p_taxa_entrega_cents: parametros.p_taxa_entrega_cents,
     });
     const linha = data?.[0];
     if (error || !linha) {
@@ -357,7 +360,7 @@ export function Pdv({
 
       <aside
         aria-label="Pedido e contas"
-        className="flex flex-col border-t border-line bg-surface lg:border-t-0 lg:border-l"
+        className="flex flex-col border-t border-line bg-surface lg:overflow-y-auto lg:border-t-0 lg:border-l"
       >
         {(painel.tela === 'pedido' || painel.tela === 'contas') && (
           <div className="border-b border-line p-4">
@@ -419,7 +422,12 @@ export function Pdv({
         {painel.tela === 'pedido' && (
           <>
             <div className="flex flex-col gap-3 border-b border-line p-5">
-              <TipoEIdentificacao dados={dados} onChange={setDados} atendimento={atendimento} />
+              <TipoEIdentificacao
+                dados={dados}
+                onChange={setDados}
+                atendimento={atendimento}
+                entrega={{ supabase, lojaId: loja.id, subtotalCentavos: subtotal }}
+              />
             </div>
 
             <div className="flex flex-1 flex-col px-5 lg:overflow-y-auto">

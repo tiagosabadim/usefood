@@ -1,3 +1,6 @@
+import { formatarTelefone } from './contato';
+import { formatarPreco } from './money';
+
 /** O que o banco manda para imprimir (print_jobs.payload). */
 export interface TicketPayload {
   tipo: 'pedido' | 'reimpressao' | 'teste';
@@ -10,6 +13,24 @@ export interface TicketPayload {
   identificador?: string;
   criado_em?: string;
   observacao?: string | null;
+  /** Delivery e retirada: para quem entrega achar o cliente e saber quanto cobrar. */
+  entrega?: {
+    nome: string | null;
+    telefone: string | null;
+    endereco: {
+      rua?: string;
+      numero?: string;
+      complemento?: string;
+      bairro?: string;
+      cidade?: string;
+      referencia?: string;
+    } | null;
+    pagamento: string | null;
+    troco_para: number | null;
+    total: number | null;
+    pago: number | null;
+    taxa: number | null;
+  } | null;
   itens: {
     quantidade: number;
     nome: string;
@@ -32,6 +53,46 @@ export type Linha =
     }
   | { tipo: 'separador' }
   | { tipo: 'espaco' };
+
+const PAGAMENTO_NO_TICKET: Record<string, string> = {
+  dinheiro: 'DINHEIRO',
+  pix: 'PIX',
+  credito: 'CREDITO',
+  debito: 'DEBITO',
+};
+
+/** Bloco de entrega no topo do ticket: nome, telefone, endereço e quanto cobrar. */
+function blocoDaEntrega(
+  p: TicketPayload,
+  texto: (
+    t: string,
+    estilo?: 'normal' | 'negrito' | 'grande',
+    centro?: boolean,
+    invertido?: boolean,
+  ) => void,
+  linhas: Linha[],
+) {
+  const e = p.entrega!;
+  linhas.push({ tipo: 'separador' });
+  if (e.nome) texto(e.nome, 'negrito');
+  if (e.telefone) texto(`Tel: ${formatarTelefone(e.telefone)}`);
+  if (p.pedido_tipo !== 'delivery') return;
+  const a = e.endereco ?? {};
+  texto(`${a.rua ?? ''}, ${a.numero ?? ''}`, 'negrito');
+  if (a.complemento) texto(a.complemento);
+  texto(`Bairro: ${a.bairro ?? ''}${a.cidade ? ` - ${a.cidade}` : ''}`, 'negrito');
+  if (a.referencia) texto(`Ref.: ${a.referencia}`);
+  const falta = (e.total ?? 0) - (e.pago ?? 0);
+  if (falta > 0) {
+    const forma = e.pagamento
+      ? ` - ${PAGAMENTO_NO_TICKET[e.pagamento] ?? e.pagamento.toUpperCase()}`
+      : '';
+    texto(`COBRAR ${formatarPreco(falta)}${forma}`, 'negrito', false, true);
+    if (e.troco_para) texto(`Troco para ${formatarPreco(e.troco_para)}`, 'negrito');
+  } else {
+    texto('JA PAGO', 'negrito', false, true);
+  }
+}
 
 const TIPO_DO_PEDIDO = {
   balcao: 'Balcão',
@@ -115,6 +176,7 @@ export function linhasDoTicket(p: TicketPayload, colunas: 32 | 48): Linha[] {
     linhas.push({ tipo: 'espaco' });
     texto(' TEM ITEM PARA VIAGEM ', 'negrito', true, true);
   }
+  if (p.entrega) blocoDaEntrega(p, texto, linhas);
   linhas.push({ tipo: 'separador' });
 
   for (const item of p.itens) {
@@ -198,6 +260,8 @@ const CP850: Record<string, number> = {
   '×': 0x9e,
 };
 const TROCAS: Record<string, string> = {
+  // espaço que não quebra (vem do R$ formatado) vira espaço comum
+  '\u00a0': ' ',
   '–': '-',
   '—': '-',
   '“': '"',

@@ -49,7 +49,8 @@ select * from public.criar_pedido('36000000-0000-4000-8000-000000000001', 'balca
 select isnt((select conta_id from b2), (select conta_id from b1), 'cada pedido de balcão tem a sua conta');
 create temp table d1 on commit drop as
 select * from public.criar_pedido('36000000-0000-4000-8000-000000000001', 'delivery', 'nome', 'Maria',
-  '[{"product_id": "56000000-0000-4000-8000-000000000002", "quantidade": 1}]', null, 'dinheiro', 5000);
+  '[{"product_id": "56000000-0000-4000-8000-000000000002", "quantidade": 1}]', null, 'dinheiro', 5000,
+  null, '{"rua": "Rua C", "numero": "1", "bairro": "Centro"}');
 select is(
   (select change_for_cents from public.tabs where id = (select conta_id from d1)), 5000,
   'delivery guarda a forma prevista e o troco para 50,00');

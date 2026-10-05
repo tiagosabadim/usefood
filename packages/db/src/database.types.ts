@@ -1654,6 +1654,9 @@ export type Database = {
           p_restaurant_id: string
           p_tipo: Database["public"]["Enums"]["order_type"]
           p_troco_para_cents?: number | null
+          p_celular?: string | null
+          p_endereco?: Json | null
+          p_taxa_entrega_cents?: number | null
         }
         Returns: {
           conta_id: string

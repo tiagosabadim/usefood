@@ -108,6 +108,9 @@ export function Lancar({
       p_identificador: parametros.p_identificador,
       p_pagamento_previsto: parametros.p_pagamento_previsto,
       p_troco_para_cents: parametros.p_troco_para_cents,
+      p_celular: parametros.p_celular,
+      p_endereco: parametros.p_endereco,
+      p_taxa_entrega_cents: parametros.p_taxa_entrega_cents,
       p_observacao: modo.tipo === 'livre' ? (modo.observacao ?? null) : null,
       p_itens: carrinho.map((i) => ({
         product_id: i.productId,
@@ -220,7 +223,12 @@ export function Lancar({
         >
           {modo.tipo === 'livre' && (
             <section className="flex flex-col gap-3 border-b border-line pb-5">
-              <TipoEIdentificacao dados={dados} onChange={setDados} atendimento={atendimento} />
+              <TipoEIdentificacao
+                dados={dados}
+                onChange={setDados}
+                atendimento={atendimento}
+                entrega={{ supabase, lojaId: lojaId, subtotalCentavos: subtotalCentavos(carrinho) }}
+              />
               {modo.observacao && (
                 <p className="text-caption text-ink-muted">Anotação no ticket: {modo.observacao}</p>
               )}

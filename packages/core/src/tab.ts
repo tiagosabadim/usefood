@@ -1,3 +1,4 @@
+import { lerTelefone, soNumeros } from './contato';
 import { lerPreco } from './money';
 
 export type TipoIdentificador = 'senha' | 'nome' | 'mesa' | 'comanda';
@@ -65,11 +66,35 @@ export const rotuloDoPapel = (papel: Papel) => PAPEIS[papel];
 export type MetodoPagamento = 'dinheiro' | 'pix' | 'credito' | 'debito' | 'vale_refeicao' | 'outro';
 
 /** O que a pessoa escolheu antes de lançar: tipo, identificação e, no delivery e na retirada, como vai pagar. */
+export interface EnderecoDeEntrega {
+  cep: string;
+  rua: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
+  cidade: string;
+  referencia: string;
+}
+
+export const ENDERECO_VAZIO: EnderecoDeEntrega = {
+  cep: '',
+  rua: '',
+  numero: '',
+  complemento: '',
+  bairro: '',
+  cidade: '',
+  referencia: '',
+};
+
 export interface DadosDoPedido {
   tipo: TipoPedido;
   identificador: string;
   previsto: MetodoPagamento | null;
   trocoPara: string;
+  /** Delivery: celular (para o código de entrega e para o entregador ligar), endereço e taxa. */
+  celular: string;
+  endereco: EnderecoDeEntrega;
+  taxaEntrega: string;
 }
 
 export const DADOS_INICIAIS: DadosDoPedido = {
@@ -77,6 +102,9 @@ export const DADOS_INICIAIS: DadosDoPedido = {
   identificador: '',
   previsto: null,
   trocoPara: '',
+  celular: '',
+  endereco: ENDERECO_VAZIO,
+  taxaEntrega: '',
 };
 
 export type ParametrosDoPedido =
@@ -88,6 +116,9 @@ export type ParametrosDoPedido =
       p_identificador: string | null;
       p_pagamento_previsto: MetodoPagamento | null;
       p_troco_para_cents: number | null;
+      p_celular: string | null;
+      p_endereco: Record<string, string> | null;
+      p_taxa_entrega_cents: number | null;
     }
   | { ok: false; motivo: string };
 
@@ -112,6 +143,29 @@ export function parametrosDoPedido(
     troco = lerPreco(dados.trocoPara);
     if (troco === null) return { ok: false, motivo: 'Confira o troco, por exemplo 100,00.' };
   }
+  const celular = dados.celular.trim() ? lerTelefone(dados.celular) : null;
+  if (dados.celular.trim() && !celular)
+    return { ok: false, motivo: 'Confira o celular: DDD e número.' };
+
+  let endereco: Record<string, string> | null = null;
+  let taxa: number | null = null;
+  if (dados.tipo === 'delivery') {
+    const e = dados.endereco;
+    if (!e.rua.trim() || !e.numero.trim() || !e.bairro.trim()) {
+      return { ok: false, motivo: 'Para entregar, preencha rua, número e bairro.' };
+    }
+    endereco = {
+      cep: soNumeros(e.cep),
+      rua: e.rua.trim(),
+      numero: e.numero.trim(),
+      complemento: e.complemento.trim(),
+      bairro: e.bairro.trim(),
+      cidade: e.cidade.trim(),
+      referencia: e.referencia.trim(),
+    };
+    taxa = dados.taxaEntrega.trim() ? lerPreco(dados.taxaEntrega) : 0;
+    if (taxa === null) return { ok: false, motivo: 'Confira a taxa de entrega, por exemplo 5,00.' };
+  }
   return {
     ok: true,
     identificacao,
@@ -120,5 +174,8 @@ export function parametrosDoPedido(
     p_identificador: identificacao.campo ? valor : null,
     p_pagamento_previsto: previsto,
     p_troco_para_cents: troco,
+    p_celular: celular,
+    p_endereco: endereco,
+    p_taxa_entrega_cents: taxa,
   };
 }
