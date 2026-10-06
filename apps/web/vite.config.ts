@@ -14,6 +14,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: resolve(import.meta.dirname, 'index.html'),
+        inicio: resolve(import.meta.dirname, 'inicio/index.html'),
         restaurantes: resolve(import.meta.dirname, 'restaurantes/index.html'),
         franquia: resolve(import.meta.dirname, 'franquia/index.html'),
       },

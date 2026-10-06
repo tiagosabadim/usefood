@@ -13,6 +13,8 @@ export default defineConfig(
       '**/node_modules/**',
       'packages/db/src/database.types.ts',
       'supabase/**',
+      'netlify/**',
+      'scripts/otimizar-fotos.mjs',
     ],
   },
   js.configs.recommended,

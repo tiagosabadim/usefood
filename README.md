@@ -89,6 +89,15 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - A escolha fica no aparelho (`usePreferenciaDeTema`, `@usefood/app`) e é aplicada logo ao abrir (`aplicarPreferenciaDeTema` no bootstrap), com `data-theme` na raiz.
 - Tela da cozinha em tela cheia e painel de chamada continuam sempre escuros e devolvem a escolha da pessoa ao sair.
 
+## Site da marca (página inicial e restaurantes)
+
+- **Página inicial** (`apps/web/inicio/index.html`, hub: pedir, restaurante, levar para a cidade) e **/restaurantes**, desenhadas no canvas e feitas em HTML pronto. No domínio da marca, `/` entrega `/inicio/` pela função do Netlify `netlify/edge-functions/inicio.js`; nos domínios das lojas, `/` continua sendo a loja.
+- **Cabeçalho** transparente sobre a foto da abertura, branco ao rolar; no celular, menu no botão ☰. Rodapé estruturado (marca, para você, para negócios, contato; faixa com razão social, CNPJ, termos e privacidade): os dados entre colchetes ainda faltam.
+- **Fotos**: coloque os arquivos do GPT em `apps/web/fotos/` com o código no nome (lista em `apps/web/fotos/LEIA-ME.md`). No build, `scripts/otimizar-fotos.mjs` (sharp) gera WebP em `public/fotos/` (horizontais até 1920 px, verticais até 1080 px). As fotos carregam perto da tela (`data-foto`, `data-foto-celular`); sem o arquivo, o lugar fica escuro.
+- **Animação** (GSAP, SplitText, ScrollTrigger e Lenis, ~52 KB, carregados à parte em `src/landing/efeitos.ts`): o título da abertura sobe palavra por palavra (o momento principal), títulos de seção entram linha a linha, fotos grandes com parallax lento, rolagem macia. Nada disso para quem pede menos movimento; se o GSAP demorar, a abertura aparece parada em até 3 s.
+- Formulário da página inicial escolhe o perfil (restaurante ou cidade) e envia o tipo certo (`restaurante` ou `franquia`) para `enviar_lead`.
+- Primeiro carregamento da página inicial: ~18 KB comprimidos (HTML, CSS e JS).
+
 ## Landing pages imersivas (estáticas)
 
 - `/restaurantes` e `/franquia` são **HTML pronto** (`apps/web/restaurantes/index.html`, `apps/web/franquia/index.html`), entradas extras do Vite: todo o texto já no arquivo (SEO), sem React. CSS (Tailwind só com as classes dessas páginas, `source(none)`) e um JavaScript de ~3 KB (`apps/web/src/landing/main.ts`): entrada ao rolar, parallax por `transform`, "do pedido à porta" com o celular parado e a etapa mudando com a rolagem, barras que crescem, sombra no topo e o formulário (`enviar_lead` direto na API, com a origem da campanha). Tudo parado para quem pede menos movimento no aparelho.

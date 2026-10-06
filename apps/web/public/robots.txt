@@ -3,5 +3,6 @@ Allow: /
 Disallow: /pdv/
 Disallow: /garcom/
 Disallow: /console/
+Disallow: /inicio/
 
 Sitemap: https://usefood.netlify.app/sitemap.xml

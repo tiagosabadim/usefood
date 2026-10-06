@@ -1,4 +1,5 @@
 import './landing.css';
+import { iniciarPaginasNovas } from './paginas-novas';
 
 const reduzir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -145,3 +146,5 @@ document.querySelectorAll<HTMLFormElement>('form[data-lead]').forEach((form) => 
 document
   .querySelectorAll('[data-ano]')
   .forEach((el) => (el.textContent = String(new Date().getFullYear())));
+
+iniciarPaginasNovas();

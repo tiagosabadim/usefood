@@ -14,3 +14,6 @@ coverage
 # Supabase CLI
 supabase/.temp
 supabase/.branches
+
+# Fotos convertidas no build (as originais ficam em apps/web/fotos)
+apps/web/public/fotos/

@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>usefood · O delivery da sua cidade</title>
+    <meta
+      name="description"
+      content="Os restaurantes que você já conhece, no celular de todo mundo. Para quem quer pedir, para restaurantes e para quem quer levar o USE! para a sua cidade."
+    />
+    <link rel="canonical" href="https://usefood.netlify.app/" />
+    <meta name="theme-color" content="#121212" />
+    <meta name="color-scheme" content="only light" />
+    <link rel="icon" type="image/png" href="/marca/favicon.png" />
+    <link rel="apple-touch-icon" href="/marca/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="usefood" />
+    <meta property="og:title" content="usefood · O delivery da sua cidade" />
+    <meta
+      property="og:description"
+      content="Os restaurantes que você já conhece, no celular de todo mundo. Para quem quer pedir, para restaurantes e para quem quer levar o USE! para a sua cidade."
+    />
+    <meta property="og:url" content="https://usefood.netlify.app/" />
+    <meta property="og:image" content="https://usefood.netlify.app/marca/og-restaurantes.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preload" href="/marca/figtree.woff2" as="font" type="font/woff2" crossorigin />
+    <script>
+      matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        document.documentElement.classList.add('animar');
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "name": "usefood",
+            "url": "https://usefood.netlify.app/",
+            "logo": "https://usefood.netlify.app/marca/logo.webp",
+            "sameAs": ["https://www.instagram.com/usefood"]
+          },
+          {
+            "@type": "WebSite",
+            "name": "usefood",
+            "url": "https://usefood.netlify.app/",
+            "inLanguage": "pt-BR"
+          }
+        ]
+      }
+    </script>
+    <script type="module" src="/src/landing/main.ts"></script>
+  </head>
+  <body class="bg-canvas text-ink">
+    <a
+      href="#conteudo"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-md focus:bg-brand focus:px-4 focus:py-2 focus:text-brand-ink"
+      >Pular para o conteúdo</a
+    >
+
+    <header data-cabecalho class="cabecalho">
+      <div
+        class="mx-auto flex h-full w-full max-w-6xl items-center justify-between gap-4 px-5 lg:px-8"
+      >
+        <a href="/" aria-label="usefood, início" class="flex"
+          ><img
+            src="/marca/logo.webp"
+            alt="USE! FOOD"
+            width="95"
+            height="44"
+            class="logo h-11 w-auto"
+        /></a>
+        <nav aria-label="Principal" class="flex items-center gap-4">
+          <div class="hidden items-center gap-6 md:flex">
+            <a href="/restaurantes" class="link text-label font-semibold">Para restaurantes</a
+            ><a href="/franquia" class="link text-label font-semibold">Franquia e parceiros</a>
+          </div>
+          <a
+            href="#caminhos"
+            class="inline-flex h-11 items-center rounded-pill bg-brand px-5 text-label font-extrabold text-brand-ink transition hover:brightness-110"
+            >Quero pedir</a
+          >
+          <button
+            type="button"
+            data-menu
+            aria-expanded="false"
+            aria-controls="menu-celular"
+            aria-label="Abrir menu"
+            class="link inline-flex size-11 items-center justify-center rounded-pill md:hidden"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+        </nav>
+      </div>
+      <nav
+        id="menu-celular"
+        data-menu-painel
+        hidden
+        aria-label="Menu"
+        class="tema-escuro flex flex-col bg-canvas px-5 pb-6 md:hidden"
+      >
+        <a
+          href="/restaurantes"
+          class="border-b border-line py-4 text-title-section font-extrabold text-ink"
+          >Para restaurantes</a
+        ><a
+          href="/franquia"
+          class="border-b border-line py-4 text-title-section font-extrabold text-ink"
+          >Franquia e parceiros</a
+        >
+      </nav>
+    </header>
+
+    <main id="conteudo">
+      <section
+        data-abertura
+        class="abertura tema-escuro relative overflow-hidden bg-canvas text-ink"
+      >
+        <div class="absolute inset-0" aria-hidden="true">
+          <div class="absolute inset-y-0 right-0 w-full overflow-hidden md:w-[62%]">
+            <div
+              data-foto="a1-horizontal"
+              data-foto-celular="a1-vertical"
+              data-foto-agora
+              data-paralaxe-foto
+              class="foto absolute -inset-y-[8%] inset-x-0"
+            ></div>
+          </div>
+          <div
+            class="absolute inset-0 bg-[linear-gradient(0deg,#121212_32%,rgb(18_18_18/0.55)_68%,rgb(18_18_18/0.35)_100%)] md:bg-[linear-gradient(90deg,#121212_38%,rgb(18_18_18/0.6)_62%,rgb(18_18_18/0)_100%)]"
+          ></div>
+        </div>
+        <div
+          class="relative mx-auto flex min-h-[88svh] w-full max-w-6xl flex-col justify-end gap-7 px-5 pt-36 pb-20 md:justify-center lg:px-8"
+        >
+          <p
+            data-entra
+            class="inline-flex w-fit items-center gap-2 rounded-pill border border-line px-3.5 py-1.5 text-caption font-bold text-ink-muted"
+          >
+            <span class="size-2 rounded-pill bg-accent"></span>O delivery da sua cidade
+          </p>
+          <h1
+            class="max-w-3xl text-[clamp(4rem,11vw,9.25rem)] leading-[0.92] font-black tracking-[-0.05em]"
+          >
+            Deu fome<span class="text-accent">?</span>
+          </h1>
+          <p data-entra class="max-w-lg text-[1.25rem] leading-relaxed text-ink-muted">
+            Os restaurantes que você já conhece, no celular de todo mundo. Feito com quem é daqui.
+          </p>
+          <div data-entra class="flex flex-wrap gap-3">
+            <a
+              href="#caminhos"
+              class="inline-flex h-14 items-center rounded-pill px-7 text-body font-extrabold transition bg-brand text-brand-ink hover:brightness-110"
+              >Escolha seu caminho</a
+            >
+            <a
+              href="/restaurantes"
+              class="inline-flex h-14 items-center rounded-pill px-7 text-body font-extrabold transition border border-line-strong text-ink hover:bg-surface"
+              >Tenho um restaurante</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="caminhos"
+        class="mx-auto flex w-full max-w-6xl scroll-mt-20 flex-col gap-12 px-5 pt-28 pb-24 lg:px-8"
+      >
+        <div class="flex max-w-2xl flex-col gap-4">
+          <h2
+            data-titulo
+            class="text-[clamp(2.25rem,5vw,3.75rem)] leading-none font-black tracking-[-0.04em]"
+          >
+            Escolha seu caminho
+          </h2>
+          <span class="block h-1.5 w-16 rounded-pill bg-accent"></span>
+          <p class="text-[1.125rem] text-ink-muted">
+            Cada um tem um jeito de fazer parte do USE!. Qual é o seu?
+          </p>
+        </div>
+        <div class="grid gap-5 md:grid-cols-3">
+          <article class="flex flex-col overflow-hidden rounded-[1.75rem] bg-surface">
+            <div data-foto="a2" class="foto aspect-[4/5]"></div>
+            <div class="flex flex-1 flex-col gap-2.5 p-6">
+              <h3 class="text-[1.5rem] leading-tight font-black tracking-[-0.02em]">Quero pedir</h3>
+              <p class="text-body text-ink-muted">
+                Do restaurante da esquina às pizzarias que todo mundo ama, sem sair de casa.
+              </p>
+              <span class="mt-auto pt-2 text-body font-extrabold text-ink-muted"
+                >Em breve na sua cidade</span
+              >
+            </div>
+          </article>
+          <article class="flex flex-col overflow-hidden rounded-[1.75rem] bg-surface">
+            <div data-foto="a3" class="foto aspect-[4/5]"></div>
+            <div class="flex flex-1 flex-col gap-2.5 p-6">
+              <h3 class="text-[1.5rem] leading-tight font-black tracking-[-0.02em]">
+                Tenho um restaurante
+              </h3>
+              <p class="text-body text-ink-muted">
+                PDV, cardápio online e delivery próprio. E os clientes ficam sendo seus.
+              </p>
+              <a
+                href="/restaurantes"
+                class="mt-auto pt-2 text-body font-extrabold text-brand-text hover:underline"
+                >Quero vender pelo USE!</a
+              >
+            </div>
+          </article>
+          <article class="flex flex-col overflow-hidden rounded-[1.75rem] bg-surface">
+            <div data-foto="a4" class="foto aspect-[4/5]"></div>
+            <div class="flex flex-1 flex-col gap-2.5 p-6">
+              <h3 class="text-[1.5rem] leading-tight font-black tracking-[-0.02em]">
+                Quero levar para minha cidade
+              </h3>
+              <p class="text-body text-ink-muted">
+                Seja franqueado ou parceiro e conecte os restaurantes da sua região.
+              </p>
+              <a
+                href="/franquia"
+                class="mt-auto pt-2 text-body font-extrabold text-brand-text hover:underline"
+                >Quero empreender</a
+              >
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="bg-surface">
+        <div class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-28 lg:px-8">
+          <p
+            data-titulo
+            class="max-w-5xl text-[clamp(2.25rem,5.5vw,4.5rem)] leading-[1.02] font-black tracking-[-0.045em]"
+          >
+            Do restaurante da esquina para o
+            <span class="text-brand-text">celular de todo mundo.</span>
+          </p>
+          <span class="block h-1.5 w-16 rounded-pill bg-accent"></span>
+        </div>
+      </section>
+
+      <section class="tema-escuro relative overflow-hidden bg-canvas text-ink">
+        <div class="absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div
+            data-foto="c1-horizontal"
+            data-foto-celular="c1-vertical"
+            data-paralaxe-foto
+            class="foto absolute -inset-y-[8%] inset-x-0"
+          ></div>
+        </div>
+        <div class="absolute inset-0 bg-[rgb(18_18_18/0.72)]" aria-hidden="true"></div>
+        <div class="relative mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-28 lg:px-8">
+          <h2
+            data-titulo
+            class="max-w-3xl text-[clamp(2.25rem,5vw,3.75rem)] leading-none font-black tracking-[-0.04em]"
+          >
+            Quando o USE! chega na cidade<span class="text-accent">.</span>
+          </h2>
+          <ol class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <li
+              class="flex flex-col gap-3.5 rounded-[1.75rem] border border-[rgb(255_255_255/0.08)] bg-[rgb(28_28_28/0.78)] p-7 backdrop-blur-md"
+            >
+              <span class="text-[3.5rem] leading-none font-black text-brand-text">01</span
+              ><span class="text-title-section leading-snug font-extrabold"
+                >Os restaurantes vendem pela internet com o próprio endereço</span
+              >
+            </li>
+            <li
+              class="flex flex-col gap-3.5 rounded-[1.75rem] border border-[rgb(255_255_255/0.08)] bg-[rgb(28_28_28/0.78)] p-7 backdrop-blur-md"
+            >
+              <span class="text-[3.5rem] leading-none font-black text-brand-text">02</span
+              ><span class="text-title-section leading-snug font-extrabold"
+                >Os clientes ficam com quem é daqui, não com um app de fora</span
+              >
+            </li>
+            <li
+              class="flex flex-col gap-3.5 rounded-[1.75rem] border border-[rgb(255_255_255/0.08)] bg-[rgb(28_28_28/0.78)] p-7 backdrop-blur-md"
+            >
+              <span class="text-[3.5rem] leading-none font-black text-brand-text">03</span
+              ><span class="text-title-section leading-snug font-extrabold"
+                >Surgem oportunidades para empreendedores da própria cidade</span
+              >
+            </li>
+            <li
+              class="flex flex-col gap-3.5 rounded-[1.75rem] border border-[rgb(255_255_255/0.08)] bg-[rgb(28_28_28/0.78)] p-7 backdrop-blur-md"
+            >
+              <span class="text-[3.5rem] leading-none font-black text-brand-text">04</span
+              ><span class="text-title-section leading-snug font-extrabold"
+                >A tecnologia deixa de ser coisa só das capitais</span
+              >
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section aria-labelledby="t-instagram" class="pt-24 pb-6">
+        <div
+          class="mx-auto flex w-full max-w-6xl flex-wrap items-end justify-between gap-5 px-5 lg:px-8"
+        >
+          <div class="flex flex-col gap-3.5">
+            <h2
+              id="t-instagram"
+              data-titulo
+              class="text-[clamp(2rem,4.5vw,3.25rem)] leading-none font-black tracking-[-0.04em]"
+            >
+              Acompanhe no Instagram
+            </h2>
+            <span class="block h-1.5 w-16 rounded-pill bg-accent"></span>
+          </div>
+          <a
+            href="https://www.instagram.com/usefood"
+            class="inline-flex h-13 items-center gap-2.5 rounded-pill bg-ink px-5.5 text-body font-extrabold text-canvas transition hover:brightness-125"
+            ><svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM17.5 6.5h.01"
+              /></svg
+            >Seguir @usefood</a
+          >
+        </div>
+        <ul
+          class="fileira mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2"
+          aria-label="Posts recentes do Instagram"
+        >
+          <li
+            class="aspect-[4/5] w-[14.75rem] shrink-0 snap-start overflow-hidden rounded-[1.375rem]"
+          >
+            <a
+              href="https://www.instagram.com/usefood"
+              aria-label="Post 1 no Instagram do USE!"
+              class="block size-full"
+              ><span data-foto="ig-1" class="foto block size-full"></span
+            ></a>
+          </li>
+          <li
+            class="aspect-[4/5] w-[14.75rem] shrink-0 snap-start overflow-hidden rounded-[1.375rem]"
+          >
+            <a
+              href="https://www.instagram.com/usefood"
+              aria-label="Post 2 no Instagram do USE!"
+              class="block size-full"
+              ><span data-foto="ig-2" class="foto block size-full"></span
+            ></a>
+          </li>
+          <li
+            class="aspect-[4/5] w-[14.75rem] shrink-0 snap-start overflow-hidden rounded-[1.375rem]"
+          >
+            <a
+              href="https://www.instagram.com/usefood"
+              aria-label="Post 3 no Instagram do USE!"
+              class="block size-full"
+              ><span data-foto="ig-3" class="foto block size-full"></span
+            ></a>
+          </li>
+          <li
+            class="aspect-[4/5] w-[14.75rem] shrink-0 snap-start overflow-hidden rounded-[1.375rem]"
+          >
+            <a
+              href="https://www.instagram.com/usefood"
+              aria-label="Post 4 no Instagram do USE!"
+              class="block size-full"
+              ><span data-foto="ig-4" class="foto block size-full"></span
+            ></a>
+          </li>
+          <li
+            class="aspect-[4/5] w-[14.75rem] shrink-0 snap-start overflow-hidden rounded-[1.375rem]"
+          >
+            <a
+              href="https://www.instagram.com/usefood"
+              aria-label="Post 5 no Instagram do USE!"
+              class="block size-full"
+              ><span data-foto="ig-5" class="foto block size-full"></span
+            ></a>
+          </li>
+          <li
+            class="aspect-[4/5] w-[14.75rem] shrink-0 snap-start overflow-hidden rounded-[1.375rem]"
+          >
+            <a
+              href="https://www.instagram.com/usefood"
+              aria-label="Post 6 no Instagram do USE!"
+              class="block size-full"
+              ><span data-foto="ig-6" class="foto block size-full"></span
+            ></a>
+          </li>
+          <li
+            class="aspect-[4/5] w-[14.75rem] shrink-0 snap-start overflow-hidden rounded-[1.375rem]"
+          >
+            <a
+              href="https://www.instagram.com/usefood"
+              aria-label="Post 7 no Instagram do USE!"
+              class="block size-full"
+              ><span data-foto="ig-7" class="foto block size-full"></span
+            ></a>
+          </li>
+          <li
+            class="aspect-[4/5] w-[14.75rem] shrink-0 snap-start overflow-hidden rounded-[1.375rem]"
+          >
+            <a
+              href="https://www.instagram.com/usefood"
+              aria-label="Post 8 no Instagram do USE!"
+              class="block size-full"
+              ><span data-foto="ig-8" class="foto block size-full"></span
+            ></a>
+          </li>
+        </ul>
+      </section>
+
+      <section
+        id="contato"
+        class="mx-auto flex w-full max-w-6xl scroll-mt-20 flex-wrap gap-6 px-5 pt-28 pb-6 lg:px-8"
+      >
+        <div
+          class="tema-escuro flex flex-[1_1_20rem] flex-col gap-4.5 rounded-[1.75rem] bg-canvas p-10 text-ink"
+        >
+          <h2
+            data-titulo
+            class="text-[clamp(2.25rem,4.5vw,3.25rem)] leading-none font-black tracking-[-0.04em]"
+          >
+            Vamos <span class="text-brand-text">conversar?</span>
+          </h2>
+          <p class="text-[1.0625rem] text-ink-muted">
+            Conte quem você é e a sua cidade. A gente chama você no WhatsApp.
+          </p>
+          <ul class="flex flex-col gap-2 text-body">
+            <li>✓ Resposta pelo WhatsApp</li>
+            <li>✓ Demonstração com o seu cardápio</li>
+            <li>✓ Sem compromisso</li>
+          </ul>
+        </div>
+        <form
+          data-lead="restaurante"
+          data-perfil="restaurante"
+          data-botao="Quero conversar"
+          novalidate
+          aria-label="Fale com o USE!"
+          class="flex flex-[1_1_35rem] flex-col gap-5 rounded-[1.75rem] bg-surface p-6 lg:p-8"
+        >
+          <div
+            role="group"
+            aria-label="Quem é você"
+            class="flex flex-wrap gap-2 rounded-pill bg-surface-strong p-1.5"
+          >
+            <button
+              type="button"
+              data-escolher-perfil="restaurante"
+              aria-pressed="true"
+              class="h-12 flex-[1_1_12rem] rounded-pill text-label font-extrabold text-ink-muted transition aria-pressed:bg-ink aria-pressed:text-canvas"
+            >
+              Tenho um restaurante
+            </button>
+            <button
+              type="button"
+              data-escolher-perfil="cidade"
+              aria-pressed="false"
+              class="h-12 flex-[1_1_12rem] rounded-pill text-label font-extrabold text-ink-muted transition aria-pressed:bg-ink aria-pressed:text-canvas"
+            >
+              Quero levar para minha cidade
+            </button>
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="flex flex-col gap-2 text-label font-bold"
+              >Seu nome<input
+                name="nome"
+                required
+                minlength="2"
+                maxlength="80"
+                autocomplete="name"
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
+            /></label>
+            <label class="flex flex-col gap-2 text-label font-bold"
+              >WhatsApp com DDD<input
+                name="celular"
+                required
+                inputmode="tel"
+                autocomplete="tel"
+                placeholder="(17) 99123-4567"
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
+            /></label>
+            <label data-so="restaurante" class="flex flex-col gap-2 text-label font-bold"
+              >Nome do restaurante<input
+                name="negocio"
+                required
+                maxlength="80"
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
+            /></label>
+            <label data-so="cidade" class="flex flex-col gap-2 text-label font-bold"
+              >Como quer participar<select
+                name="segmento"
+                required
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
+              >
+                <option value="">Escolha</option>
+                <option>Franqueado</option>
+                <option>Parceiro comercial</option>
+                <option>Agência</option>
+                <option>Ainda não sei</option>
+              </select></label
+            >
+            <label class="flex flex-col gap-2 text-label font-bold"
+              >E-mail (opcional)<input
+                name="email"
+                type="email"
+                autocomplete="email"
+                maxlength="120"
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
+            /></label>
+            <label class="flex flex-col gap-2 text-label font-bold"
+              >Cidade<input
+                name="cidade"
+                required
+                maxlength="80"
+                autocomplete="address-level2"
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
+            /></label>
+            <label class="flex flex-col gap-2 text-label font-bold"
+              >Estado<select
+                name="uf"
+                required
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
+              >
+                <option>AC</option>
+                <option>AL</option>
+                <option>AM</option>
+                <option>AP</option>
+                <option>BA</option>
+                <option>CE</option>
+                <option>DF</option>
+                <option>ES</option>
+                <option>GO</option>
+                <option>MA</option>
+                <option>MG</option>
+                <option>MS</option>
+                <option>MT</option>
+                <option>PA</option>
+                <option>PB</option>
+                <option>PE</option>
+                <option>PI</option>
+                <option>PR</option>
+                <option>RJ</option>
+                <option>RN</option>
+                <option>RO</option>
+                <option>RR</option>
+                <option>RS</option>
+                <option>SC</option>
+                <option>SE</option>
+                <option selected>SP</option>
+                <option>TO</option>
+              </select></label
+            >
+          </div>
+          <label class="flex items-start gap-3 text-body"
+            ><input
+              name="aceite"
+              type="checkbox"
+              required
+              class="mt-1 size-5 shrink-0 accent-[var(--uf-brand)]"
+            /><span
+              >Aceito ser contatado pela equipe usefood pelo WhatsApp, telefone ou e-mail, conforme
+              a
+              <a href="#rodape" class="font-bold text-brand-text">política de privacidade</a>.</span
+            ></label
+          >
+          <p data-aviso role="alert" class="text-body text-danger"></p>
+          <button
+            type="submit"
+            class="h-14 rounded-pill bg-brand text-body font-black text-brand-ink transition hover:brightness-110 disabled:opacity-60"
+          >
+            Quero conversar
+          </button>
+        </form>
+      </section>
+
+      <section class="mx-auto flex w-full max-w-6xl flex-col gap-9 px-5 py-30 lg:px-8">
+        <p
+          data-titulo
+          class="max-w-5xl text-[clamp(2.75rem,7vw,6rem)] leading-[0.95] font-black tracking-[-0.05em]"
+        >
+          Deu fome<span class="text-accent">?</span><br /><span class="text-brand-text"
+            >Sua cidade tem.</span
+          >
+        </p>
+        <span class="block h-1.5 w-16 rounded-pill bg-accent"></span>
+        <div class="flex flex-wrap gap-3">
+          <a
+            href="#caminhos"
+            class="inline-flex h-14 items-center rounded-pill px-7 text-body font-extrabold transition bg-brand text-brand-ink hover:brightness-110"
+            >Quero pedir</a
+          >
+          <a
+            href="/restaurantes"
+            class="inline-flex h-14 items-center rounded-pill px-7 text-body font-extrabold transition bg-ink text-canvas hover:brightness-125"
+            >Quero vender</a
+          >
+          <a
+            href="#contato"
+            class="inline-flex h-14 items-center rounded-pill px-7 text-body font-extrabold transition border border-line-strong text-ink hover:bg-surface"
+            >Quero empreender</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer id="rodape" class="tema-escuro bg-canvas text-ink-muted">
+      <div
+        class="mx-auto grid w-full max-w-6xl gap-10 px-5 pt-20 pb-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-8"
+      >
+        <div class="flex flex-col gap-5">
+          <a href="/" aria-label="usefood, início" class="flex"
+            ><img
+              src="/marca/logo.webp"
+              alt="USE! FOOD"
+              width="104"
+              height="48"
+              loading="lazy"
+              class="h-12 w-auto [filter:invert(1)_hue-rotate(180deg)] mix-blend-screen"
+          /></a>
+          <p class="text-body">
+            O delivery da sua cidade. Restaurantes, lanches, pizzas, sorvetes e muito mais.
+          </p>
+          <div class="flex gap-2.5">
+            <a
+              href="https://www.instagram.com/usefood"
+              aria-label="Instagram do USE!"
+              class="inline-flex size-11 items-center justify-center rounded-pill border border-line text-ink hover:bg-surface"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM17.5 6.5h.01"
+                /></svg
+            ></a>
+            <a
+              href="#rodape"
+              aria-label="WhatsApp do USE!"
+              class="inline-flex size-11 items-center justify-center rounded-pill border border-line text-ink hover:bg-surface"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 20l1.3-4A8 8 0 1 1 8 18.7L4 20zM9 9.5c0 3 2.5 5.5 5.5 5.5l1.5-1.5-2-1-1 1c-1-.5-2-1.5-2.5-2.5l1-1-1-2L9 9.5z"
+                /></svg
+            ></a>
+          </div>
+        </div>
+        <nav aria-label="Para você" class="flex flex-col gap-3">
+          <h2 class="mb-1 text-caption font-extrabold text-ink">Para você</h2>
+          <a href="#rodape" class="text-body text-ink-muted hover:text-ink"
+            >Restaurantes da cidade (em breve)</a
+          ><a href="/#caminhos" class="text-body text-ink-muted hover:text-ink">Como funciona</a>
+        </nav>
+        <nav aria-label="Para negócios" class="flex flex-col gap-3">
+          <h2 class="mb-1 text-caption font-extrabold text-ink">Para negócios</h2>
+          <a href="/restaurantes" class="text-body text-ink-muted hover:text-ink"
+            >Para restaurantes</a
+          ><a href="/franquia" class="text-body text-ink-muted hover:text-ink"
+            >Franquia e parceiros</a
+          ><a href="/pdv" class="text-body text-ink-muted hover:text-ink">Entrar no painel</a>
+        </nav>
+        <nav aria-label="Fale com a gente" class="flex flex-col gap-3">
+          <h2 class="mb-1 text-caption font-extrabold text-ink">Fale com a gente</h2>
+          <span class="text-body">WhatsApp [NÚMERO]</span
+          ><span class="text-body">[E-MAIL DE CONTATO]</span
+          ><span class="text-body">[CIDADE-SEDE]/[UF]</span>
+        </nav>
+      </div>
+      <div class="border-t border-line">
+        <div
+          class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-6 text-caption lg:px-8"
+        >
+          <span>© <span data-ano>2026</span> usefood · [RAZÃO SOCIAL] · CNPJ [CNPJ]</span>
+          <div class="flex flex-wrap gap-5">
+            <a href="#rodape" class="hover:text-ink">Termos de uso</a
+            ><a href="#rodape" class="hover:text-ink">Política de privacidade</a
+            ><a href="#conteudo" class="font-bold text-brand-text">Voltar ao topo ↑</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
