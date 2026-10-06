@@ -10,6 +10,8 @@ No build, elas viram WebP leve em `public/fotos/` sozinhas. Foto que ainda não 
 | `A3.png`                                | Cartão "Tenho um restaurante"                                   |
 | `A4.png`                                | Cartão "Quero levar para minha cidade"                          |
 | `C1-horizontal.png` e `C1-vertical.png` | Fundo de "Quando o USE! chega na cidade"                        |
+| `C2.png`                                | Franquia: "Para quem é" (empreendedor da cidade)                |
+| `C3.png`                                | Franquia: fundo de "O que você leva para a cidade"              |
 | `B1-horizontal.png` e `B1-vertical.png` | Abertura da landing de restaurantes                             |
 | `B2.png`                                | Cozinha em ação                                                 |
 | `B3.png`                                | Notebook no balcão (PDV)                                        |

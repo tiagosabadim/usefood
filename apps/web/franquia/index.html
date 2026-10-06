@@ -16,10 +16,13 @@
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pt_BR" />
     <meta property="og:site_name" content="usefood" />
-    <meta property="og:title" content="Leve o USE! para a sua cidade · Franquia e parceiros" />
+    <meta
+      property="og:title"
+      content="Franquia e parceiros usefood · Leve o USE! para a sua cidade"
+    />
     <meta
       property="og:description"
-      content="Seja franqueado ou parceiro e conecte os restaurantes da sua região a um delivery da própria cidade."
+      content="Estamos procurando franqueados e parceiros para levar o USE! para cidades pequenas e médias e conectar os restaurantes a um delivery da própria cidade."
     />
     <meta property="og:url" content="https://usefood.netlify.app/franquia" />
     <meta property="og:image" content="https://usefood.netlify.app/marca/og-franquia.jpg" />
@@ -27,6 +30,10 @@
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="preload" href="/marca/figtree.woff2" as="font" type="font/woff2" crossorigin />
+    <script>
+      matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        document.documentElement.classList.add('animar');
+    </script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -63,6 +70,14 @@
                   "@type": "Answer",
                   "text": "Sim. O foco do USE! são cidades pequenas e médias, onde os restaurantes ainda não têm um delivery da própria cidade."
                 }
+              },
+              {
+                "@type": "Question",
+                "name": "Quem faz as entregas?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Cada restaurante cuida das próprias entregas, como já acontece nas cidades pequenas. O sistema organiza a saída, o código de confirmação e o aviso de entregue."
+                }
               }
             ]
           }
@@ -74,124 +89,127 @@
   <body class="bg-canvas text-ink">
     <a
       href="#conteudo"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-brand focus:px-4 focus:py-2 focus:text-brand-ink"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-md focus:bg-brand focus:px-4 focus:py-2 focus:text-brand-ink"
       >Pular para o conteúdo</a
     >
 
-    <header data-topo class="sticky top-0 z-40 bg-surface/95 backdrop-blur transition-shadow">
+    <header data-cabecalho class="cabecalho">
       <div
-        class="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-5 lg:h-20 lg:px-8"
+        class="mx-auto flex h-full w-full max-w-6xl items-center justify-between gap-4 px-5 lg:px-8"
       >
-        <a href="/" aria-label="usefood, início"
+        <a href="/" aria-label="usefood, início" class="flex"
           ><img
             src="/marca/logo.webp"
             alt="USE! FOOD"
-            width="104"
-            height="48"
-            class="h-10 w-auto lg:h-12"
+            width="95"
+            height="44"
+            class="logo h-11 w-auto"
         /></a>
-        <nav
-          aria-label="Seções"
-          class="hidden items-center gap-7 text-label text-ink-muted md:flex"
-        >
-          <a href="#para-quem" class="hover:text-ink">Para quem é</a>
-          <a href="#como-funciona" class="hover:text-ink">Como funciona</a>
-          <a href="#perguntas" class="hover:text-ink">Perguntas</a>
-          <a href="/restaurantes" class="hover:text-ink">Para restaurantes</a>
+        <nav aria-label="Principal" class="flex items-center gap-4">
+          <div class="hidden items-center gap-6 md:flex">
+            <a href="#para-quem" class="link text-label font-semibold">Para quem é</a
+            ><a href="#como-funciona" class="link text-label font-semibold">Como funciona</a
+            ><a href="/restaurantes" class="link text-label font-semibold">Para restaurantes</a>
+          </div>
+          <a
+            href="#quero"
+            class="inline-flex h-11 items-center rounded-pill bg-brand px-5 text-label font-extrabold text-brand-ink transition hover:brightness-110"
+            >Quero ser parceiro</a
+          >
+          <button
+            type="button"
+            data-menu
+            aria-expanded="false"
+            aria-controls="menu-celular"
+            aria-label="Abrir menu"
+            class="link inline-flex size-11 items-center justify-center rounded-pill md:hidden"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
         </nav>
-        <a
-          href="#quero"
-          class="inline-flex h-11 items-center rounded-pill bg-brand px-5 text-label font-bold text-brand-ink transition hover:brightness-95"
-          >Quero ser parceiro</a
-        >
       </div>
+      <nav
+        id="menu-celular"
+        data-menu-painel
+        hidden
+        aria-label="Menu"
+        class="tema-escuro flex flex-col bg-canvas px-5 pb-6 md:hidden"
+      >
+        <a
+          href="#para-quem"
+          class="border-b border-line py-4 text-title-section font-extrabold text-ink"
+          >Para quem é</a
+        ><a
+          href="#como-funciona"
+          class="border-b border-line py-4 text-title-section font-extrabold text-ink"
+          >Como funciona</a
+        ><a
+          href="/restaurantes"
+          class="border-b border-line py-4 text-title-section font-extrabold text-ink"
+          >Para restaurantes</a
+        >
+      </nav>
     </header>
 
     <main id="conteudo">
-      <section class="relative overflow-hidden tema-escuro bg-canvas text-ink">
-        <div
-          class="mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pt-10 pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pt-20 lg:pb-28"
-        >
-          <div class="flex flex-col gap-6">
-            <span
-              class="revelar inline-flex w-fit items-center gap-2 rounded-pill border border-line px-3 py-1.5 text-micro tracking-wide text-ink-muted uppercase"
-              ><span class="size-2 rounded-pill bg-accent"></span> Franquia e parceiros</span
-            >
-            <h1 class="titulo-hero revelar" style="--atraso: 80ms">
-              Leve o USE! para a <span class="text-brand-text">sua cidade.</span>
-            </h1>
-            <p
-              class="revelar max-w-xl text-[1.0625rem] leading-relaxed text-ink-muted"
-              style="--atraso: 160ms"
-            >
-              Estamos procurando franqueados e parceiros para conectar os restaurantes de cidades
-              pequenas e médias a um delivery da própria cidade.
-            </p>
-            <div class="revelar flex flex-wrap gap-3" style="--atraso: 240ms">
-              <a
-                href="#quero"
-                class="inline-flex h-14 items-center rounded-pill bg-brand px-7 text-body font-bold text-brand-ink transition hover:brightness-95"
-                >Quero ser parceiro</a
-              >
-              <a
-                href="#como-funciona"
-                class="inline-flex h-14 items-center rounded-pill border border-line-strong px-7 text-body font-semibold text-canvas transition hover:bg-surface"
-                >Como funciona</a
-              >
-            </div>
+      <section
+        data-abertura
+        class="abertura tema-escuro relative overflow-hidden bg-canvas text-ink"
+      >
+        <div class="absolute inset-0" aria-hidden="true">
+          <div class="absolute inset-0 overflow-hidden">
+            <div
+              data-foto="c1-horizontal"
+              data-foto-celular="c1-vertical"
+              data-foto-agora
+              data-paralaxe-foto
+              class="foto absolute -inset-y-[8%] inset-x-0"
+            ></div>
           </div>
-          <div class="relative mx-auto aspect-square w-full max-w-[440px]" aria-hidden="true">
-            <div class="brilho absolute inset-10"></div>
-            <div
-              data-paralaxe="0.08"
-              class="absolute inset-0 rounded-[2.5rem] border border-line bg-[radial-gradient(circle_at_center,rgb(255_255_255/0.06)_1px,transparent_1px)] bg-[length:22px_22px]"
+          <div
+            class="absolute inset-0 bg-[linear-gradient(0deg,#121212_30%,rgb(18_18_18/0.55)_70%,rgb(18_18_18/0.35)_100%)] md:bg-[linear-gradient(90deg,#121212_30%,rgb(18_18_18/0.55)_60%,rgb(18_18_18/0.15)_100%)]"
+          ></div>
+        </div>
+        <div
+          class="relative mx-auto flex min-h-[88svh] w-full max-w-6xl flex-col justify-end gap-7 px-5 pt-36 pb-20 md:justify-center lg:px-8"
+        >
+          <p
+            data-entra
+            class="inline-flex w-fit items-center gap-2 rounded-pill border border-line px-3.5 py-1.5 text-caption font-bold text-ink-muted"
+          >
+            <span class="size-2 rounded-pill bg-accent"></span>Franquia e parceiros
+          </p>
+          <h1
+            class="max-w-4xl text-[clamp(3rem,8vw,6.5rem)] leading-[0.95] font-black tracking-[-0.05em]"
+          >
+            Leve o USE! para a <span class="text-brand-text">sua cidade.</span>
+          </h1>
+          <p data-entra class="max-w-xl text-[1.1875rem] leading-relaxed text-ink-muted">
+            Estamos procurando franqueados e parceiros para conectar os restaurantes de cidades
+            pequenas e médias a um delivery da própria cidade.
+          </p>
+          <div data-entra class="flex flex-wrap gap-3">
+            <a
+              href="#quero"
+              class="inline-flex h-14 items-center rounded-pill px-7 text-body font-extrabold transition bg-brand text-brand-ink hover:brightness-110"
+              >Quero ser parceiro</a
+            ><a
+              href="#como-funciona"
+              class="inline-flex h-14 items-center rounded-pill px-7 text-body font-extrabold transition border border-line-strong text-ink hover:bg-surface"
+              >Como funciona</a
             >
-              <span
-                class="pulso absolute size-3 rounded-pill bg-accent"
-                style="left: 18%; top: 30%; --atraso: 0ms"
-              ></span
-              ><span
-                class="pulso absolute size-3 rounded-pill bg-accent"
-                style="left: 34%; top: 58%; --atraso: 300ms"
-              ></span
-              ><span
-                class="pulso absolute size-3 rounded-pill bg-accent"
-                style="left: 52%; top: 24%; --atraso: 600ms"
-              ></span
-              ><span
-                class="pulso absolute size-3 rounded-pill bg-accent"
-                style="left: 66%; top: 66%; --atraso: 900ms"
-              ></span
-              ><span
-                class="pulso absolute size-3 rounded-pill bg-accent"
-                style="left: 78%; top: 38%; --atraso: 1200ms"
-              ></span
-              ><span
-                class="pulso absolute size-3 rounded-pill bg-accent"
-                style="left: 44%; top: 78%; --atraso: 1500ms"
-              ></span
-              ><span
-                class="pulso absolute size-3 rounded-pill bg-accent"
-                style="left: 24%; top: 70%; --atraso: 1800ms"
-              ></span
-              ><span
-                class="pulso absolute size-3 rounded-pill bg-accent"
-                style="left: 86%; top: 74%; --atraso: 2100ms"
-              ></span>
-            </div>
-            <div
-              data-paralaxe="-0.12"
-              class="absolute top-[12%] left-[6%] rounded-lg bg-surface px-4 py-3 text-ink shadow-xl"
-            >
-              <p class="text-[10px] font-bold text-brand-text uppercase">Sua cidade</p>
-              <p class="text-[15px] font-black">Restaurantes no delivery</p>
-            </div>
-            <div
-              data-paralaxe="-0.2"
-              class="absolute right-[4%] bottom-[10%] rounded-lg bg-brand px-4 py-3 text-brand-ink shadow-xl"
-            >
-              <p class="text-[15px] font-black">Deu fome? USE!</p>
-            </div>
           </div>
         </div>
       </section>
@@ -218,186 +236,213 @@
 
       <section
         id="para-quem"
-        class="mx-auto w-full max-w-6xl scroll-mt-20 px-5 py-20 lg:px-8 lg:py-28"
+        class="mx-auto grid w-full max-w-6xl scroll-mt-20 items-center gap-12 px-5 py-28 lg:grid-cols-[1.1fr_0.9fr] lg:px-8"
       >
-        <div class="flex max-w-2xl flex-col gap-4">
-          <h2 class="titulo-secao revelar">Para quem é</h2>
-          <span class="revelar block h-1.5 w-16 rounded-pill bg-accent"></span>
-          <p class="revelar text-[1.0625rem] text-ink-muted">
-            Para quem conhece o comércio da cidade e quer construir algo local, com uma plataforma
-            completa por trás.
-          </p>
+        <div class="flex flex-col gap-8">
+          <div class="flex flex-col gap-4">
+            <h2
+              data-titulo
+              class="text-[clamp(2.25rem,5vw,3.75rem)] leading-none font-black tracking-[-0.04em]"
+            >
+              Para quem é
+            </h2>
+            <span class="block h-1.5 w-16 rounded-pill bg-accent"></span>
+            <p class="text-[1.125rem] text-ink-muted">
+              Para quem conhece o comércio da cidade e quer construir algo local, com uma plataforma
+              completa por trás.
+            </p>
+          </div>
+          <ul class="flex flex-col gap-6">
+            <li class="flex gap-4">
+              <span
+                class="flex size-12 shrink-0 items-center justify-center rounded-pill bg-brand-soft text-brand-text"
+                ><svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"
+                  /></svg
+              ></span>
+              <div class="flex flex-col gap-1">
+                <h3 class="text-title-section font-black">Empreendedores locais</h3>
+                <p class="text-body text-ink-muted">
+                  Quem quer um negócio na própria cidade, perto dos restaurantes.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span
+                class="flex size-12 shrink-0 items-center justify-center rounded-pill bg-brand-soft text-brand-text"
+                ><svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 12l9-9h8v8l-9 9zM15 8h.01" /></svg
+              ></span>
+              <div class="flex flex-col gap-1">
+                <h3 class="text-title-section font-black">Agências e consultores</h3>
+                <p class="text-body text-ink-muted">
+                  Quem já atende comércios e quer oferecer delivery próprio a eles.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span
+                class="flex size-12 shrink-0 items-center justify-center rounded-pill bg-brand-soft text-brand-text"
+                ><svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 9l2-5h12l2 5M4 9v11h16V9M4 9h16M9 20v-6h6v6" /></svg
+              ></span>
+              <div class="flex flex-col gap-1">
+                <h3 class="text-title-section font-black">Donos de restaurante</h3>
+                <p class="text-body text-ink-muted">
+                  Quem já é do ramo e quer liderar o delivery da região.
+                </p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span
+                class="flex size-12 shrink-0 items-center justify-center rounded-pill bg-brand-soft text-brand-text"
+                ><svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M9 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM3 20c1-3.5 3.5-5 6-5s5 1.5 6 5M16 5a3 3 0 0 1 0 6M18 15c1.5.7 2.5 2.3 3 5"
+                  /></svg
+              ></span>
+              <div class="flex flex-col gap-1">
+                <h3 class="text-title-section font-black">Equipes comerciais</h3>
+                <p class="text-body text-ink-muted">
+                  Quem sabe vender e acompanhar clientes de perto.
+                </p>
+              </div>
+            </li>
+          </ul>
         </div>
-        <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <article
-            class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
-            style="--atraso: 0ms"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="text-brand-text"
-              aria-hidden="true"
-            >
-              <path
-                d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"
-              />
-            </svg>
-            <h3 class="text-body font-black">Empreendedores locais</h3>
-            <p class="text-caption text-ink-muted">
-              Quem quer um negócio na própria cidade, perto dos restaurantes.
-            </p>
-          </article>
-          <article
-            class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
-            style="--atraso: 60ms"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="text-brand-text"
-              aria-hidden="true"
-            >
-              <path d="M3 12l9-9h8v8l-9 9zM15 8h.01" />
-            </svg>
-            <h3 class="text-body font-black">Agências e consultores</h3>
-            <p class="text-caption text-ink-muted">
-              Quem já atende comércios e quer oferecer delivery próprio a eles.
-            </p>
-          </article>
-          <article
-            class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
-            style="--atraso: 120ms"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="text-brand-text"
-              aria-hidden="true"
-            >
-              <path d="M4 9l2-5h12l2 5M4 9v11h16V9M4 9h16M9 20v-6h6v6" />
-            </svg>
-            <h3 class="text-body font-black">Donos de restaurante</h3>
-            <p class="text-caption text-ink-muted">
-              Quem já é do ramo e quer liderar o delivery da região.
-            </p>
-          </article>
-          <article
-            class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
-            style="--atraso: 180ms"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="text-brand-text"
-              aria-hidden="true"
-            >
-              <path
-                d="M9 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM3 20c1-3.5 3.5-5 6-5s5 1.5 6 5M16 5a3 3 0 0 1 0 6M18 15c1.5.7 2.5 2.3 3 5"
-              />
-            </svg>
-            <h3 class="text-body font-black">Equipes comerciais</h3>
-            <p class="text-caption text-ink-muted">
-              Quem sabe vender e acompanhar clientes de perto.
-            </p>
-          </article>
+        <div class="relative aspect-[4/5] overflow-hidden rounded-[1.75rem]" aria-hidden="true">
+          <div
+            data-foto="c2"
+            data-paralaxe-foto
+            class="foto absolute -inset-y-[8%] inset-x-0"
+          ></div>
         </div>
       </section>
 
-      <section class="tema-escuro bg-canvas text-ink">
-        <div class="mx-auto w-full max-w-6xl px-5 py-20 lg:px-8 lg:py-28">
-          <h2 class="titulo-secao revelar max-w-2xl">
+      <section class="tema-escuro relative overflow-hidden bg-canvas text-ink">
+        <div class="absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div
+            data-foto="c3"
+            data-paralaxe-foto
+            class="foto absolute -inset-y-[8%] inset-x-0"
+          ></div>
+        </div>
+        <div class="absolute inset-0 bg-[rgb(18_18_18/0.74)]" aria-hidden="true"></div>
+        <div class="relative mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-28 lg:px-8">
+          <h2
+            data-titulo
+            class="max-w-3xl text-[clamp(2.25rem,5vw,3.75rem)] leading-none font-black tracking-[-0.04em]"
+          >
             O que você leva <span class="text-brand-text">para a cidade</span>
           </h2>
-          <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <article class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6">
-              <b class="text-title-section">Sistema completo</b
-              ><span class="text-body text-ink-muted"
-                >PDV, mesas, cozinha, impressão, loja online e entregas para cada restaurante.</span
-              >
-            </article>
-            <article
-              class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
-              style="--atraso: 60ms"
+          <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <li
+              class="flex flex-col gap-3 rounded-[1.75rem] border border-[rgb(255_255_255/0.08)] bg-[rgb(28_28_28/0.78)] p-7 backdrop-blur-md"
             >
-              <b class="text-title-section">Clientes do restaurante</b
-              ><span class="text-body text-ink-muted"
-                >Um diferencial que os apps grandes não entregam: a lista de clientes é do
-                restaurante.</span
-              >
-            </article>
-            <article
-              class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
-              style="--atraso: 120ms"
+              <h3 class="text-title-section font-black">Sistema completo</h3>
+              <p class="text-body text-ink-muted">
+                PDV, mesas, cozinha, impressão, loja online e entregas para cada restaurante.
+              </p>
+            </li>
+            <li
+              class="flex flex-col gap-3 rounded-[1.75rem] border border-[rgb(255_255_255/0.08)] bg-[rgb(28_28_28/0.78)] p-7 backdrop-blur-md"
             >
-              <b class="text-title-section">Delivery local</b
-              ><span class="text-body text-ink-muted"
-                >Entrega com código de confirmação e acompanhamento do pedido pelo cliente.</span
-              >
-            </article>
-            <article
-              class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
-              style="--atraso: 180ms"
+              <h3 class="text-title-section font-black">Clientes do restaurante</h3>
+              <p class="text-body text-ink-muted">
+                Um diferencial que os apps grandes não entregam: a lista de clientes é do
+                restaurante.
+              </p>
+            </li>
+            <li
+              class="flex flex-col gap-3 rounded-[1.75rem] border border-[rgb(255_255_255/0.08)] bg-[rgb(28_28_28/0.78)] p-7 backdrop-blur-md"
             >
-              <b class="text-title-section">Números</b
-              ><span class="text-body text-ink-muted"
-                >Cada restaurante acompanha vendas e clientes, e você acompanha a cidade.</span
-              >
-            </article>
-          </div>
+              <h3 class="text-title-section font-black">Delivery local</h3>
+              <p class="text-body text-ink-muted">
+                Entrega feita pelo próprio restaurante, com código de confirmação e acompanhamento
+                do pedido.
+              </p>
+            </li>
+            <li
+              class="flex flex-col gap-3 rounded-[1.75rem] border border-[rgb(255_255_255/0.08)] bg-[rgb(28_28_28/0.78)] p-7 backdrop-blur-md"
+            >
+              <h3 class="text-title-section font-black">Números</h3>
+              <p class="text-body text-ink-muted">
+                Cada restaurante acompanha vendas e clientes, e você acompanha a cidade.
+              </p>
+            </li>
+          </ul>
         </div>
       </section>
 
       <section
         id="como-funciona"
-        class="mx-auto w-full max-w-6xl scroll-mt-20 px-5 py-20 lg:px-8 lg:py-24"
+        class="mx-auto flex w-full max-w-6xl scroll-mt-20 flex-col gap-10 px-5 py-28 lg:px-8"
       >
-        <h2 class="titulo-secao revelar">Como funciona a conversa</h2>
-        <ol class="mt-10 grid gap-4 lg:grid-cols-3">
-          <li class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6">
-            <span class="text-[3rem] leading-none font-black text-brand-text">1</span
+        <div class="flex flex-col gap-4">
+          <h2
+            data-titulo
+            class="text-[clamp(2.25rem,5vw,3.75rem)] leading-none font-black tracking-[-0.04em]"
+          >
+            Como funciona a conversa
+          </h2>
+          <span class="block h-1.5 w-16 rounded-pill bg-accent"></span>
+        </div>
+        <ol class="grid gap-5 lg:grid-cols-3">
+          <li class="flex flex-col gap-3 rounded-[1.75rem] bg-surface p-7">
+            <span class="text-[3.5rem] leading-none font-black text-brand-text">1</span
             ><b class="text-title-section">Contato</b
             ><span class="text-body text-ink-muted">Você conta sobre você e a sua cidade.</span>
           </li>
-          <li
-            class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
-            style="--atraso: 80ms"
-          >
-            <span class="text-[3rem] leading-none font-black text-brand-text">2</span
+          <li class="flex flex-col gap-3 rounded-[1.75rem] bg-surface p-7">
+            <span class="text-[3.5rem] leading-none font-black text-brand-text">2</span
             ><b class="text-title-section">A cidade</b
             ><span class="text-body text-ink-muted"
               >Entendemos os restaurantes e o potencial da região.</span
             >
           </li>
-          <li
-            class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
-            style="--atraso: 160ms"
-          >
-            <span class="text-[3rem] leading-none font-black text-brand-text">3</span
+          <li class="flex flex-col gap-3 rounded-[1.75rem] bg-surface p-7">
+            <span class="text-[3.5rem] leading-none font-black text-brand-text">3</span
             ><b class="text-title-section">O modelo</b
             ><span class="text-body text-ink-muted"
               >Apresentamos as condições de franquia ou de parceria.</span
@@ -408,13 +453,18 @@
 
       <section
         id="quero"
-        class="mx-auto grid w-full max-w-6xl scroll-mt-20 gap-8 px-5 pb-20 lg:grid-cols-[0.85fr_1.15fr] lg:px-8 lg:pb-28"
+        class="mx-auto flex w-full max-w-6xl scroll-mt-20 flex-wrap gap-6 px-5 pb-28 lg:px-8"
       >
         <div
-          class="revelar flex flex-col gap-5 rounded-[1.75rem] tema-escuro bg-canvas p-7 text-ink lg:p-10"
+          class="tema-escuro flex flex-[1_1_20rem] flex-col gap-4.5 rounded-[1.75rem] bg-canvas p-10 text-ink"
         >
-          <h2 class="titulo-secao">Vamos <span class="text-brand-text">conversar?</span></h2>
-          <p class="text-body text-ink-muted">
+          <h2
+            data-titulo
+            class="text-[clamp(2.25rem,4.5vw,3.25rem)] leading-none font-black tracking-[-0.04em]"
+          >
+            Vamos <span class="text-brand-text">conversar?</span>
+          </h2>
+          <p class="text-[1.0625rem] text-ink-muted">
             Conte um pouco sobre você e a sua cidade. Nossa equipe chama você no WhatsApp para
             apresentar o modelo.
           </p>
@@ -422,51 +472,63 @@
         <form
           data-lead="franquia"
           data-botao="Quero ser parceiro"
-          class="revelar flex flex-col gap-4 rounded-[1.75rem] bg-surface p-6 lg:p-8"
-          style="--atraso: 80ms"
           novalidate
+          aria-label="Quero ser parceiro"
+          class="flex flex-[1_1_35rem] flex-col gap-5 rounded-[1.75rem] bg-surface p-6 lg:p-8"
         >
           <div class="grid gap-4 sm:grid-cols-2">
-            <label class="flex flex-col gap-2 text-label"
+            <label class="flex flex-col gap-2 text-label font-bold"
               >Seu nome<input
                 name="nome"
                 required
                 minlength="2"
                 maxlength="80"
                 autocomplete="name"
-                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
             /></label>
-            <label class="flex flex-col gap-2 text-label"
+            <label class="flex flex-col gap-2 text-label font-bold"
               >WhatsApp com DDD<input
                 name="celular"
                 required
                 inputmode="tel"
                 autocomplete="tel"
                 placeholder="(17) 99123-4567"
-                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
             /></label>
-            <label class="flex flex-col gap-2 text-label"
+            <label class="flex flex-col gap-2 text-label font-bold"
+              >Como quer participar<select
+                name="segmento"
+                required
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
+              >
+                <option value="">Escolha</option>
+                <option>Franqueado</option>
+                <option>Parceiro comercial</option>
+                <option>Agência</option>
+                <option>Ainda não sei</option>
+              </select></label
+            >
+            <label class="flex flex-col gap-2 text-label font-bold"
               >E-mail (opcional)<input
                 name="email"
                 type="email"
                 autocomplete="email"
                 maxlength="120"
-                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
             /></label>
-            <label class="flex flex-col gap-2 text-label"
+            <label class="flex flex-col gap-2 text-label font-bold"
               >Cidade<input
                 name="cidade"
                 required
                 maxlength="80"
                 autocomplete="address-level2"
-                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
             /></label>
-            <label class="flex flex-col gap-2 text-label"
-              >Estado
-              <select
+            <label class="flex flex-col gap-2 text-label font-bold"
+              >Estado<select
                 name="uf"
                 required
-                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+                class="h-12 rounded-md border border-line-strong bg-surface px-4 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
               >
                 <option>AC</option>
                 <option>AL</option>
@@ -495,28 +557,14 @@
                 <option>SE</option>
                 <option selected>SP</option>
                 <option>TO</option>
-              </select>
-            </label>
-            <label class="flex flex-col gap-2 text-label"
-              >Como quer participar
-              <select
-                name="segmento"
-                required
-                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
-              >
-                <option value="">Escolha</option>
-                <option>Franqueado</option>
-                <option>Parceiro comercial</option>
-                <option>Agência</option>
-                <option>Ainda não sei</option>
-              </select>
-            </label>
-            <label class="flex flex-col gap-2 text-label sm:col-span-2"
+              </select></label
+            >
+            <label class="flex flex-col gap-2 text-label font-bold sm:col-span-2"
               >Conte um pouco sobre você (opcional)<textarea
                 name="mensagem"
                 maxlength="1000"
                 rows="3"
-                class="rounded-md border border-line-strong bg-canvas px-4 py-3 text-body focus-visible:outline-2 focus-visible:outline-brand"
+                class="rounded-md border border-line-strong bg-surface px-4 py-3 text-body font-normal text-ink focus-visible:outline-2 focus-visible:outline-brand"
               ></textarea>
             </label>
           </div>
@@ -527,14 +575,15 @@
               required
               class="mt-1 size-5 shrink-0 accent-[var(--uf-brand)]"
             /><span
-              >Aceito ser contatado pela equipe usefood pelo WhatsApp, telefone ou e-mail sobre este
-              interesse.</span
+              >Aceito ser contatado pela equipe usefood pelo WhatsApp, telefone ou e-mail, conforme
+              a
+              <a href="#rodape" class="font-bold text-brand-text">política de privacidade</a>.</span
             ></label
           >
           <p data-aviso role="alert" class="text-body text-danger"></p>
           <button
             type="submit"
-            class="h-14 rounded-pill bg-brand text-body font-black text-brand-ink transition hover:brightness-95 disabled:opacity-60"
+            class="h-14 rounded-pill bg-brand text-body font-black text-brand-ink transition hover:brightness-110 disabled:opacity-60"
           >
             Quero ser parceiro
           </button>
@@ -542,75 +591,87 @@
       </section>
 
       <section class="bg-surface">
-        <div class="mx-auto w-full max-w-3xl px-5 py-20 lg:py-24">
-          <h2 class="titulo-secao revelar">Perguntas frequentes</h2>
-          <div class="mt-8 flex flex-col divide-y divide-line">
-            <details class="revelar py-5">
-              <summary
-                class="flex items-center justify-between gap-4 text-title-section font-black"
+        <div class="mx-auto flex w-full max-w-3xl flex-col px-5 py-24">
+          <h2
+            data-titulo
+            class="mb-6 text-[clamp(2.25rem,5vw,3.5rem)] leading-none font-black tracking-[-0.04em]"
+          >
+            Perguntas frequentes
+          </h2>
+          <details class="border-b border-line py-5">
+            <summary
+              class="flex cursor-pointer items-center justify-between gap-4 text-title-section font-black"
+            >
+              Preciso entender de tecnologia?<span
+                class="mais text-[1.75rem] text-brand-text transition"
+                >+</span
               >
-                Preciso entender de tecnologia?<span
-                  class="mais text-[1.75rem] text-brand-text transition"
-                  >+</span
-                >
-              </summary>
-              <p class="mt-3 text-body text-ink-muted">
-                Não. A plataforma já está pronta; o parceiro cuida do relacionamento com os
-                restaurantes da cidade.
-              </p>
-            </details>
-            <details class="revelar py-5">
-              <summary
-                class="flex items-center justify-between gap-4 text-title-section font-black"
+            </summary>
+            <p class="mt-3 text-body text-ink-muted">
+              Não. A plataforma já está pronta; o parceiro cuida do relacionamento com os
+              restaurantes da cidade.
+            </p>
+          </details>
+          <details class="border-b border-line py-5">
+            <summary
+              class="flex cursor-pointer items-center justify-between gap-4 text-title-section font-black"
+            >
+              Quanto preciso investir?<span class="mais text-[1.75rem] text-brand-text transition"
+                >+</span
               >
-                Quanto preciso investir?<span class="mais text-[1.75rem] text-brand-text transition"
-                  >+</span
-                >
-              </summary>
-              <p class="mt-3 text-body text-ink-muted">
-                As condições dependem do modelo (franqueado ou parceiro) e da cidade. Apresentamos
-                tudo na conversa.
-              </p>
-            </details>
-            <details class="revelar py-5">
-              <summary
-                class="flex items-center justify-between gap-4 text-title-section font-black"
+            </summary>
+            <p class="mt-3 text-body text-ink-muted">
+              As condições dependem do modelo (franqueado ou parceiro) e da cidade. Apresentamos
+              tudo na conversa.
+            </p>
+          </details>
+          <details class="border-b border-line py-5">
+            <summary
+              class="flex cursor-pointer items-center justify-between gap-4 text-title-section font-black"
+            >
+              Minha cidade é pequena. Serve?<span
+                class="mais text-[1.75rem] text-brand-text transition"
+                >+</span
               >
-                Minha cidade é pequena. Serve?<span
-                  class="mais text-[1.75rem] text-brand-text transition"
-                  >+</span
-                >
-              </summary>
-              <p class="mt-3 text-body text-ink-muted">
-                Sim. O foco do USE! são cidades pequenas e médias, onde os restaurantes ainda não
-                têm um delivery da própria cidade.
-              </p>
-            </details>
-          </div>
+            </summary>
+            <p class="mt-3 text-body text-ink-muted">
+              Sim. O foco do USE! são cidades pequenas e médias, onde os restaurantes ainda não têm
+              um delivery da própria cidade.
+            </p>
+          </details>
+          <details class="border-b border-line py-5">
+            <summary
+              class="flex cursor-pointer items-center justify-between gap-4 text-title-section font-black"
+            >
+              Quem faz as entregas?<span class="mais text-[1.75rem] text-brand-text transition"
+                >+</span
+              >
+            </summary>
+            <p class="mt-3 text-body text-ink-muted">
+              Cada restaurante cuida das próprias entregas, como já acontece nas cidades pequenas. O
+              sistema organiza a saída, o código de confirmação e o aviso de entregue.
+            </p>
+          </details>
         </div>
       </section>
 
       <section class="bg-brand text-brand-ink">
         <div
-          class="mx-auto flex w-full max-w-6xl flex-col items-start gap-6 px-5 py-16 lg:flex-row lg:items-center lg:justify-between lg:px-8"
+          class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-8 px-5 py-20 lg:px-8"
         >
-          <div class="rounded-[1.5rem] bg-surface p-5 shadow-xl">
-            <img
-              src="/marca/slogan.webp"
-              alt="Deu fome, USE!"
-              width="445"
-              height="232"
-              loading="lazy"
-              class="h-24 w-auto lg:h-32"
-            />
-          </div>
-          <div class="flex flex-col gap-4 lg:items-end">
-            <p class="max-w-md text-title-section font-black lg:text-right">
-              A sua cidade merece um delivery da própria cidade.
+          <p
+            data-titulo
+            class="flex-[1_1_35rem] text-[clamp(2.5rem,5.5vw,4.5rem)] leading-[0.98] font-black tracking-[-0.045em]"
+          >
+            A sua cidade merece um delivery da própria cidade.
+          </p>
+          <div class="flex max-w-sm flex-col gap-4.5">
+            <p class="text-[1.125rem] leading-relaxed">
+              Uma conversa pelo WhatsApp para entender a sua cidade e apresentar o modelo.
             </p>
             <a
               href="#quero"
-              class="inline-flex h-14 items-center rounded-pill bg-ink px-7 text-body font-black text-canvas transition hover:brightness-110"
+              class="inline-flex h-14 items-center rounded-pill px-7 text-body font-extrabold transition w-fit bg-ink text-canvas hover:brightness-125"
               >Quero ser parceiro</a
             >
           </div>
@@ -618,29 +679,96 @@
       </section>
     </main>
 
-    <footer class="bg-canvas">
+    <footer id="rodape" class="tema-escuro bg-canvas text-ink-muted">
       <div
-        class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-12 lg:flex-row lg:items-center lg:justify-between lg:px-8"
+        class="mx-auto grid w-full max-w-6xl gap-10 px-5 pt-20 pb-12 sm:grid-cols-2 lg:grid-cols-4 lg:px-8"
       >
-        <div class="rounded-lg bg-surface p-3">
-          <img
-            src="/marca/logo.webp"
-            alt="USE! FOOD"
-            width="104"
-            height="48"
-            loading="lazy"
-            class="h-10 w-auto"
-          />
+        <div class="flex flex-col gap-5">
+          <a href="/" aria-label="usefood, início" class="flex"
+            ><img
+              src="/marca/logo.webp"
+              alt="USE! FOOD"
+              width="104"
+              height="48"
+              loading="lazy"
+              class="h-12 w-auto [filter:invert(1)_hue-rotate(180deg)] mix-blend-screen"
+          /></a>
+          <p class="text-body">
+            O delivery da sua cidade. Restaurantes, lanches, pizzas, sorvetes e muito mais.
+          </p>
+          <div class="flex gap-2.5">
+            <a
+              href="https://www.instagram.com/usefood"
+              aria-label="Instagram do USE!"
+              class="inline-flex size-11 items-center justify-center rounded-pill border border-line text-ink hover:bg-surface"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM17.5 6.5h.01"
+                /></svg
+            ></a>
+            <a
+              href="#rodape"
+              aria-label="WhatsApp do USE!"
+              class="inline-flex size-11 items-center justify-center rounded-pill border border-line text-ink hover:bg-surface"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 20l1.3-4A8 8 0 1 1 8 18.7L4 20zM9 9.5c0 3 2.5 5.5 5.5 5.5l1.5-1.5-2-1-1 1c-1-.5-2-1.5-2.5-2.5l1-1-1-2L9 9.5z"
+                /></svg
+            ></a>
+          </div>
         </div>
-        <nav aria-label="Rodapé" class="flex flex-wrap gap-6 text-label text-ink-muted">
-          <a href="/" class="hover:text-ink">Início</a
-          ><a href="/restaurantes" class="hover:text-ink">Para restaurantes</a
-          ><a href="/pdv" class="hover:text-ink">Entrar no painel</a>
+        <nav aria-label="Para você" class="flex flex-col gap-3">
+          <h2 class="mb-1 text-caption font-extrabold text-ink">Para você</h2>
+          <a href="#rodape" class="text-body text-ink-muted hover:text-ink"
+            >Restaurantes da cidade (em breve)</a
+          ><a href="/#caminhos" class="text-body text-ink-muted hover:text-ink">Como funciona</a>
         </nav>
-        <p class="text-caption text-ink-muted">
-          © <span data-ano>2026</span> usefood. Restaurantes, lanches, pizzas, sorvetes e muito
-          mais.
-        </p>
+        <nav aria-label="Para negócios" class="flex flex-col gap-3">
+          <h2 class="mb-1 text-caption font-extrabold text-ink">Para negócios</h2>
+          <a href="/restaurantes" class="text-body text-ink-muted hover:text-ink"
+            >Para restaurantes</a
+          ><a href="/franquia" class="text-body text-ink-muted hover:text-ink"
+            >Franquia e parceiros</a
+          ><a href="/pdv" class="text-body text-ink-muted hover:text-ink">Entrar no painel</a>
+        </nav>
+        <nav aria-label="Fale com a gente" class="flex flex-col gap-3">
+          <h2 class="mb-1 text-caption font-extrabold text-ink">Fale com a gente</h2>
+          <span class="text-body">WhatsApp [NÚMERO]</span
+          ><span class="text-body">[E-MAIL DE CONTATO]</span
+          ><span class="text-body">[CIDADE-SEDE]/[UF]</span>
+        </nav>
+      </div>
+      <div class="border-t border-line">
+        <div
+          class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-6 text-caption lg:px-8"
+        >
+          <span>© <span data-ano>2026</span> usefood · [RAZÃO SOCIAL] · CNPJ [CNPJ]</span>
+          <div class="flex flex-wrap gap-5">
+            <a href="#rodape" class="hover:text-ink">Termos de uso</a
+            ><a href="#rodape" class="hover:text-ink">Política de privacidade</a
+            ><a href="#conteudo" class="font-bold text-brand-text">Voltar ao topo ↑</a>
+          </div>
+        </div>
       </div>
     </footer>
   </body>
