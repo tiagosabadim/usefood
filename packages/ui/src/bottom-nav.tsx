@@ -12,9 +12,12 @@ export interface BottomNavItem {
 export function BottomNav({
   items,
   label = 'Navegação principal',
+  onNavigate,
 }: {
   items: readonly BottomNavItem[];
   label?: string;
+  /** Navegação do próprio app (sem recarregar a página). */
+  onNavigate?: (href: string) => void;
 }) {
   return (
     <nav
@@ -27,6 +30,11 @@ export function BottomNav({
           key={item.href}
           href={item.href}
           aria-current={item.current ? 'page' : undefined}
+          onClick={(e) => {
+            if (!onNavigate || e.metaKey || e.ctrlKey) return;
+            e.preventDefault();
+            onNavigate(item.href);
+          }}
           className={cn(
             'flex min-h-target-min flex-col items-center justify-center gap-1 rounded-md text-micro no-underline',
             'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',

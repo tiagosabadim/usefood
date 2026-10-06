@@ -1,49 +1,40 @@
-import { Icon, cn } from '@usefood/ui';
+import { BottomNav } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { navegar } from '../rotas';
 
-/** Barra de baixo do app: Restaurantes e Pedidos. */
-export function BarraDoApp({
-  ativo,
-  cidade,
-}: {
-  ativo: 'restaurantes' | 'pedidos';
-  cidade: string | null;
-}) {
-  const item = (
-    id: 'restaurantes' | 'pedidos',
-    rotulo: string,
-    icone: 'inicio' | 'pedidos',
-    destino: string,
-  ) => (
-    <button
-      type="button"
-      onClick={() => navegar(destino)}
-      aria-current={ativo === id ? 'page' : undefined}
-      className={cn(
-        'flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-micro font-bold',
-        ativo === id ? 'text-brand-text' : 'text-ink-muted',
-      )}
-    >
-      <Icon name={icone} size={22} />
-      {rotulo}
-    </button>
-  );
+type Aba = 'inicio' | 'pedidos' | 'favoritos';
+
+/** Barra de baixo do app (BottomNav do design system): Início, Pedidos e Favoritos. */
+export function BarraDoApp({ ativo, cidade }: { ativo: Aba; cidade: string | null }) {
   return (
-    <nav
-      aria-label="App"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]"
-    >
-      <div className="mx-auto flex w-full max-w-3xl">
-        {item(
-          'restaurantes',
-          'Restaurantes',
-          'inicio',
-          cidade ? `/delivery/${cidade}` : '/delivery',
-        )}
-        {item('pedidos', 'Pedidos', 'pedidos', '/delivery/conta')}
+    <div className="fixed inset-x-0 bottom-0 z-40">
+      <div className="mx-auto w-full max-w-3xl">
+        <BottomNav
+          label="App"
+          onNavigate={(href) => navegar(href)}
+          items={[
+            {
+              label: 'Início',
+              icon: 'inicio',
+              href: cidade ? `/delivery/${cidade}` : '/delivery',
+              current: ativo === 'inicio',
+            },
+            {
+              label: 'Pedidos',
+              icon: 'pedidos',
+              href: '/delivery/conta',
+              current: ativo === 'pedidos',
+            },
+            {
+              label: 'Favoritos',
+              icon: 'coracao',
+              href: '/delivery/favoritos',
+              current: ativo === 'favoritos',
+            },
+          ]}
+        />
       </div>
-    </nav>
+    </div>
   );
 }
 
@@ -52,7 +43,7 @@ interface EventoDeInstalar extends Event {
 }
 
 /** "Instalar app" aparece quando o navegador permite (Android e computador). */
-export function BotaoInstalar() {
+export function useInstalar(): (() => void) | null {
   const [evento, setEvento] = useState<EventoDeInstalar | null>(null);
   useEffect(() => {
     const guardar = (e: Event) => {
@@ -62,17 +53,10 @@ export function BotaoInstalar() {
     window.addEventListener('beforeinstallprompt', guardar);
     return () => window.removeEventListener('beforeinstallprompt', guardar);
   }, []);
-  if (!evento) return null;
-  return (
-    <button
-      type="button"
-      onClick={() => {
+  return evento
+    ? () => {
         void evento.prompt();
         setEvento(null);
-      }}
-      className="inline-flex h-10 items-center gap-2 rounded-pill border border-line-strong px-4 text-label font-bold text-ink"
-    >
-      <Icon name="mais" size={18} /> Instalar app
-    </button>
-  );
+      }
+    : null;
 }

@@ -1,6 +1,7 @@
 import { useAppContext } from '@usefood/app';
 import { Acompanhar } from './loja/acompanhar';
 import { EscolherCidade } from './vitrine/cidades';
+import { Favoritos } from './vitrine/favoritos';
 import { Vitrine } from './vitrine/vitrine';
 import { InicioDaMarca } from './marca/paginas';
 import { MinhaConta } from './loja/conta';
@@ -36,6 +37,7 @@ export function App() {
   if (slug === 'delivery') {
     if (!a) return <EscolherCidade />;
     if (a === 'conta') return <MinhaConta base="/delivery" />;
+    if (a === 'favoritos') return <Favoritos />;
     return <Vitrine cidade={a.toLowerCase()} />;
   }
   if (slug) {

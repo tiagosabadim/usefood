@@ -14,6 +14,8 @@ export interface StoreCardProps {
   /** Quando fechada: "Abre às 18h". */
   closedLabel?: string;
   photoUrl?: string;
+  /** Navegação do próprio app (sem recarregar a página). */
+  onNavigate?: (href: string) => void;
 }
 
 /** Loja na vitrine: foto no topo, nome, nota e como chega. A loja inteira é o link. */
@@ -26,10 +28,16 @@ export function StoreCard({
   open,
   closedLabel = 'Fechada',
   photoUrl,
+  onNavigate,
 }: StoreCardProps) {
   return (
     <a
       href={href}
+      onClick={(e) => {
+        if (!onNavigate || e.metaKey || e.ctrlKey) return;
+        e.preventDefault();
+        onNavigate(href);
+      }}
       className="flex flex-col overflow-hidden rounded-lg border border-line bg-surface text-ink no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
       <div className="relative flex h-32 items-end justify-between bg-surface-strong p-3">
