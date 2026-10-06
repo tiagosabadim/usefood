@@ -3,6 +3,7 @@ import { createSupabaseClient, type AppSupabaseClient } from '@usefood/db';
 import { StrictMode, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { LimiteDeErro } from './limite-de-erro';
+import { aplicarPreferenciaDeTema, lerPreferenciaDeTema } from './tema';
 import { AppContextProvider, type AppName } from './app-context';
 
 export interface BootstrapOptions {
@@ -43,6 +44,7 @@ export async function bootstrap({
   element,
   rootId = 'root',
 }: BootstrapOptions): Promise<void> {
+  aplicarPreferenciaDeTema(lerPreferenciaDeTema());
   const env = import.meta.env;
   const environment = env.VITE_APP_ENV ?? 'development';
 

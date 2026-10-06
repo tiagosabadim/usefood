@@ -82,6 +82,12 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Modo escuro (aparência)
+
+- Todos os tokens têm versão clara e escura. A pessoa escolhe **Claro**, **Escuro** ou **Auto** (padrão, segue o aparelho) no `ThemeSwitcher` (`@usefood/ui`): rodapé do menu lateral do painel e do console, Início do painel no celular e Minha conta da loja online.
+- A escolha fica no aparelho (`usePreferenciaDeTema`, `@usefood/app`) e é aplicada logo ao abrir (`aplicarPreferenciaDeTema` no bootstrap), com `data-theme` na raiz.
+- Tela da cozinha em tela cheia e painel de chamada continuam sempre escuros e devolvem a escolha da pessoa ao sair.
+
 ## Páginas da marca e leads
 
 - `apps/web` no domínio da marca: **/** (início "Deu fome?", com os caminhos restaurante e franquia; fica no lugar da vitrine até o bloco 3), **/restaurantes** (landing para captar restaurantes) e **/franquia** (também **/parceiros**). Endereços reservados: nenhuma loja usa.

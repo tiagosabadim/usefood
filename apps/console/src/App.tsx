@@ -1,5 +1,12 @@
-import { Login, StatusScreen, Tela, useAppContext, useSession } from '@usefood/app';
-import { AppShell, Button } from '@usefood/ui';
+import {
+  Login,
+  StatusScreen,
+  Tela,
+  useAppContext,
+  usePreferenciaDeTema,
+  useSession,
+} from '@usefood/app';
+import { AppShell, Button, ThemeSwitcher } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { Leads } from './leads';
 import { Lojas } from './lojas';
@@ -26,6 +33,7 @@ function ComSessao({
   const sessao = useSession(supabase);
   const [admin, setAdmin] = useState<boolean | undefined>(undefined);
   const [area, setArea] = useState<'lojas' | 'leads'>('lojas');
+  const [tema, setTema] = usePreferenciaDeTema();
 
   useEffect(() => {
     if (!sessao) return;
@@ -91,6 +99,7 @@ function ComSessao({
       ]}
       footer={
         <div className="flex flex-col gap-2">
+          <ThemeSwitcher value={tema} onChange={setTema} />
           <span className="truncate text-caption text-ink-muted">{sessao.user.email}</span>
           <Button
             variant="ghost"

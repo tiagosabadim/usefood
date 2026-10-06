@@ -1,4 +1,4 @@
-import { useAppContext } from '@usefood/app';
+import { useAppContext, usePreferenciaDeTema } from '@usefood/app';
 import type { AppSupabaseClient, Enums, Session } from '@usefood/db';
 import {
   Alert,
@@ -9,6 +9,7 @@ import {
   type NavGroup,
   Panel,
   SelectField,
+  ThemeSwitcher,
 } from '@usefood/ui';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Cardapio } from './cardapio';
@@ -68,6 +69,7 @@ export function AreaDoRestaurante({
   session: Session;
 }) {
   const { brand } = useAppContext();
+  const [tema, setTema] = usePreferenciaDeTema();
   const [estado, setEstado] = useState<Estado>({ tipo: 'carregando' });
   const [versao, setVersao] = useState(0);
   const [selecionada, setSelecionada] = useState(0);
@@ -278,6 +280,7 @@ export function AreaDoRestaurante({
               }}
             />
           )}
+          <ThemeSwitcher value={tema} onChange={setTema} />
           <span className="truncate text-caption text-ink-muted">{session.user.email}</span>
           <Button
             variant="ghost"
@@ -652,6 +655,7 @@ export function AreaDoRestaurante({
           </section>
         )}
 
+        <ThemeSwitcher value={tema} onChange={setTema} className="self-start" />
         <footer className="flex items-center justify-between gap-4 border-t border-line pt-5">
           <span className="min-w-0 truncate text-caption text-ink-muted">{session.user.email}</span>
           <Button variant="secondary" onClick={() => void supabase.auth.signOut()}>

@@ -4,3 +4,9 @@ export { StatusScreen } from './status-screen';
 export { Login } from './login';
 export { Colunas, SO_NO_CELULAR, Tela, Titulo } from './tela';
 export { useSession } from './use-session';
+export {
+  aplicarPreferenciaDeTema,
+  lerPreferenciaDeTema,
+  usePreferenciaDeTema,
+  type PreferenciaDeTema,
+} from './tema';

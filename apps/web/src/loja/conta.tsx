@@ -1,6 +1,6 @@
-import { useAppContext } from '@usefood/app';
+import { useAppContext, usePreferenciaDeTema } from '@usefood/app';
 import { formatarTelefone, fraseDoPedido, lerTelefone, type SituacaoDoPedido } from '@usefood/core';
-import { Alert, Button, Icon, Panel, TextField } from '@usefood/ui';
+import { Alert, Button, Icon, Panel, TextField, ThemeSwitcher } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { ENDERECO_EM_BRANCO, gravarConta, lerConta, novoId, type Conta } from '../guardado';
 import { navegar } from '../rotas';
@@ -14,6 +14,7 @@ import {
 /** Minha conta: dados, endereços com nome e pedidos. Fica neste aparelho. */
 export function MinhaConta({ base }: { base: string }) {
   const { supabase } = useAppContext();
+  const [tema, setTema] = usePreferenciaDeTema();
   const [conta, setConta] = useState<Conta>(() => lerConta());
   const [dados, setDados] = useState({
     nome: conta.nome,
@@ -168,6 +169,10 @@ export function MinhaConta({ base }: { base: string }) {
             </Button>
           </>
         )}
+      </Panel>
+
+      <Panel title="Aparência">
+        <ThemeSwitcher value={tema} onChange={setTema} label="Tema do app" className="self-start" />
       </Panel>
 
       <Panel title="Meus pedidos">
