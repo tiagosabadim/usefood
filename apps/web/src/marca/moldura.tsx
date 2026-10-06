@@ -1,19 +1,28 @@
 import { useAppContext } from '@usefood/app';
 import { Button } from '@usefood/ui';
 import { useEffect, type ReactNode } from 'react';
+
+/** Páginas da marca têm visual fixo: não seguem o modo escuro do aparelho nem a escolha da pessoa. */
+function useVisualFixo() {
+  useEffect(() => {
+    const raiz = document.documentElement;
+    const antes = raiz.dataset.theme;
+    raiz.dataset.theme = 'light';
+    return () => {
+      if (antes) raiz.dataset.theme = antes;
+      else delete raiz.dataset.theme;
+    };
+  }, []);
+}
 import { navegar } from '../rotas';
 
 /**
  * Marca escrita. O guia proíbe recriar o logo com fonte: quando chegarem os arquivos originais
  * (USE! e USE! FOOD), a imagem entra aqui, num lugar só.
  */
-export function Marca({ claro = false }: { claro?: boolean }) {
+export function Marca() {
   const { brand } = useAppContext();
-  return (
-    <span className={`font-display text-wordmark ${claro ? 'text-canvas' : 'text-ink'}`}>
-      {brand}
-    </span>
-  );
+  return <span className="font-display text-wordmark text-ink">{brand}</span>;
 }
 
 /** Título e descrição da página (aba do navegador e buscadores). */
@@ -32,6 +41,7 @@ export function useSeo(titulo: string, descricao: string) {
 
 /** Topo e rodapé das páginas da marca (início, restaurantes e franquia). */
 export function MolduraDaMarca({ children }: { children: ReactNode }) {
+  useVisualFixo();
   const link = (rota: string, texto: string) => (
     <a
       href={rota}
@@ -39,14 +49,14 @@ export function MolduraDaMarca({ children }: { children: ReactNode }) {
         e.preventDefault();
         navegar(rota);
       }}
-      className="text-label text-canvas/80 hover:text-canvas"
+      className="text-label text-ink-muted hover:text-ink"
     >
       {texto}
     </a>
   );
   return (
     <div className="flex min-h-dvh flex-col bg-canvas">
-      <header className="bg-ink">
+      <header className="tema-escuro bg-canvas">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4 lg:px-8">
           <a
             href="/"
@@ -56,7 +66,7 @@ export function MolduraDaMarca({ children }: { children: ReactNode }) {
               navegar('/');
             }}
           >
-            <Marca claro />
+            <Marca />
           </a>
           <nav aria-label="Páginas" className="flex flex-wrap items-center gap-5">
             {link('/restaurantes', 'Para restaurantes')}
@@ -70,10 +80,10 @@ export function MolduraDaMarca({ children }: { children: ReactNode }) {
         </div>
       </header>
       <div className="flex-1">{children}</div>
-      <footer className="bg-ink text-canvas">
+      <footer className="tema-escuro bg-canvas text-ink">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-10 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <Marca claro />
-          <p className="text-caption text-canvas/70">
+          <Marca />
+          <p className="text-caption text-ink-muted">
             Restaurantes, lanches, pizzas, sorvetes e muito mais. © {new Date().getFullYear()}{' '}
             usefood.
           </p>
@@ -86,7 +96,7 @@ export function MolduraDaMarca({ children }: { children: ReactNode }) {
 /** Faixa escura do topo das páginas, com o laranja só nos destaques (texto grande). */
 export function Destaque({ children }: { children: ReactNode }) {
   return (
-    <section className="bg-ink text-canvas">
+    <section className="tema-escuro bg-canvas text-ink">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 pt-12 pb-16 lg:px-8 lg:pt-20 lg:pb-24">
         {children}
       </div>

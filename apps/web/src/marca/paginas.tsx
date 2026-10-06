@@ -11,10 +11,10 @@ export function InicioDaMarca() {
     <MolduraDaMarca>
       <Destaque>
         <h1 className="font-display text-[clamp(2.5rem,7vw,4.5rem)] leading-[1.05] font-black tracking-tight">
-          Deu fome<span className="text-brand">?</span>
+          Deu fome<span className="text-brand-text">?</span>
         </h1>
         <Traco />
-        <p className="max-w-xl text-body text-canvas/80">
+        <p className="max-w-xl text-body text-ink-muted">
           Restaurantes, lanches, pizzas, sorvetes e muito mais. O delivery da sua cidade está
           chegando.
         </p>

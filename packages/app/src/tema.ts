@@ -21,10 +21,19 @@ export function aplicarPreferenciaDeTema(p: PreferenciaDeTema): void {
   else raiz.dataset.theme = p === 'claro' ? 'light' : 'dark';
 }
 
-/** Preferência de aparência guardada neste aparelho, para todas as telas. */
-export function usePreferenciaDeTema(): [PreferenciaDeTema, (p: PreferenciaDeTema) => void] {
+/** Tema que está na tela: a escolha da pessoa ou, sem escolha, o do aparelho. */
+export function temaEfetivo(p: PreferenciaDeTema): 'claro' | 'escuro' {
+  if (p !== 'sistema') return p;
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+}
+
+/**
+ * Tema guardado neste aparelho, para todas as telas. Devolve o tema que está na tela
+ * (claro ou escuro) e a função para trocar: o botão de sol e lua.
+ */
+export function usePreferenciaDeTema(): ['claro' | 'escuro', (p: 'claro' | 'escuro') => void] {
   const [preferencia, setPreferencia] = useState<PreferenciaDeTema>(lerPreferenciaDeTema);
-  const mudar = (p: PreferenciaDeTema) => {
+  const mudar = (p: 'claro' | 'escuro') => {
     try {
       localStorage.setItem(CHAVE, p);
     } catch {
@@ -33,5 +42,5 @@ export function usePreferenciaDeTema(): [PreferenciaDeTema, (p: PreferenciaDeTem
     aplicarPreferenciaDeTema(p);
     setPreferencia(p);
   };
-  return [preferencia, mudar];
+  return [temaEfetivo(preferencia), mudar];
 }

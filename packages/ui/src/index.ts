@@ -27,4 +27,4 @@ export { StatusPill, type StatusTone } from './status-pill';
 export { StoreCard, type StoreCardProps } from './store-card';
 export { Switch, type SwitchProps } from './switch';
 export { TextField, type TextFieldProps } from './text-field';
-export { ThemeSwitcher, type ThemePreference, type ThemeSwitcherProps } from './theme-switcher';
+export { ThemeToggle, type ThemeToggleProps } from './theme-toggle';

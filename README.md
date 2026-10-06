@@ -84,7 +84,8 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 
 ## Modo escuro (aparência)
 
-- Todos os tokens têm versão clara e escura. A pessoa escolhe **Claro**, **Escuro** ou **Auto** (padrão, segue o aparelho) no `ThemeSwitcher` (`@usefood/ui`): rodapé do menu lateral do painel e do console, Início do painel no celular e Minha conta da loja online.
+- Todos os tokens têm versão clara e escura. Botão **ThemeToggle** (sol e lua, `@usefood/ui`): na primeira vez segue o aparelho; depois do toque vale a escolha. Fica no rodapé do menu lateral do painel e do console, no Início do painel no celular e na Minha conta da loja online.
+- Landing pages e o início da marca têm **visual fixo** (`data-theme="light"` e `color-scheme: only light`): não mudam com o aparelho, o navegador ou o botão.
 - A escolha fica no aparelho (`usePreferenciaDeTema`, `@usefood/app`) e é aplicada logo ao abrir (`aplicarPreferenciaDeTema` no bootstrap), com `data-theme` na raiz.
 - Tela da cozinha em tela cheia e painel de chamada continuam sempre escuros e devolvem a escolha da pessoa ao sair.
 
@@ -107,10 +108,10 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 
 ## Marca USE! (design system)
 
-- Tokens em `packages/ui/tokens/usefood.tokens.json` (gera `theme.css` com `pnpm tokens`): laranja **#FE5401** (`brand`) com texto **preto** por cima (`brand-ink`, 6,5:1), cartões brancos (`surface`) sobre **#F6F6F6** (`canvas`); escuro em preto **#0A0A0A**. Laranja como texto no claro usa `brand-text` (#B33A00). Nunca texto branco sobre o laranja.
-- Uma família, **Figtree** (400 a 900): títulos em 800 a 900 com letras mais juntas. A Unbounded saiu.
-- Logo: só os arquivos originais (USE! e USE! FOOD); não recriar com fonte. Com o slogan, só o USE!.
-- A loja de cada restaurante vai usar as cores do próprio restaurante (próxima etapa).
+- Tokens em `packages/ui/tokens/usefood.tokens.json` (gera `theme.css` com `pnpm tokens`). Laranja do guia **#FE5401** é o `accent` (só traços, pontos, ícones grandes e brilhos; nunca com texto em cima). Botões e áreas grandes usam `brand`, um laranja mais profundo (#C93C00 claro, #D24100 escuro) com texto **branco** (`brand-ink`). Laranja como texto: `brand-text` (#A83600 claro, #FFAB80 escuro). Fundo #F6F6F6 com cartões brancos; escuro em #121212 (sem preto puro).
+- **Contraste checado automaticamente**: `packages/core/src/contraste.test.ts` confere todas as combinações de texto e fundo nos dois temas com WCAG (4,5) e APCA (Lc 60); botões e bordas com WCAG 3. Texto preto sobre o laranja vivo passa na WCAG mas falha no APCA (o olho cansa): por isso o laranja de ação é outro.
+- **Temas por seção**: `.tema-escuro` e `.tema-claro` (gerados com o tema) para faixas escuras numa página clara e mockups claros dentro delas. Use no lugar de `bg-ink text-canvas`.
+- Uma família, **Figtree** (400 a 900): títulos em 800 a 900. Logo: só os arquivos originais; não recriar com fonte.
 
 ## Tempo real e proteção contra tela branca
 

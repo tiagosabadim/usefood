@@ -1,6 +1,6 @@
 import { useAppContext, usePreferenciaDeTema } from '@usefood/app';
 import { formatarTelefone, fraseDoPedido, lerTelefone, type SituacaoDoPedido } from '@usefood/core';
-import { Alert, Button, Icon, Panel, TextField, ThemeSwitcher } from '@usefood/ui';
+import { Alert, Button, Icon, Panel, TextField, ThemeToggle } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { ENDERECO_EM_BRANCO, gravarConta, lerConta, novoId, type Conta } from '../guardado';
 import { navegar } from '../rotas';
@@ -172,7 +172,7 @@ export function MinhaConta({ base }: { base: string }) {
       </Panel>
 
       <Panel title="Aparência">
-        <ThemeSwitcher value={tema} onChange={setTema} label="Tema do app" className="self-start" />
+        <ThemeToggle value={tema} onChange={setTema} />
       </Panel>
 
       <Panel title="Meus pedidos">

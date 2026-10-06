@@ -62,6 +62,24 @@ ${cor(escuro)}
     color-scheme: dark;
   }
 
+  /*
+   * Tema por seção (ex.: faixa escura numa página clara, ou um mockup claro dentro dela).
+   * As --color-* são declaradas de novo aqui para valerem as cores da seção.
+   */
+  .tema-escuro {
+${cor(escuro)}
+${t.color.tokens.map((c) => `    --color-${c.name}: var(--uf-${c.name});`).join('\n')}
+    color-scheme: dark;
+    color: var(--uf-ink);
+  }
+
+  .tema-claro {
+${cor(claro)}
+${t.color.tokens.map((c) => `    --color-${c.name}: var(--uf-${c.name});`).join('\n')}
+    color-scheme: light;
+    color: var(--uf-ink);
+  }
+
   body {
     background: var(--uf-canvas);
     color: var(--uf-ink);

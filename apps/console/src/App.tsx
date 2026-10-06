@@ -6,7 +6,7 @@ import {
   usePreferenciaDeTema,
   useSession,
 } from '@usefood/app';
-import { AppShell, Button, ThemeSwitcher } from '@usefood/ui';
+import { AppShell, Button, ThemeToggle } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { Leads } from './leads';
 import { Lojas } from './lojas';
@@ -99,7 +99,7 @@ function ComSessao({
       ]}
       footer={
         <div className="flex flex-col gap-2">
-          <ThemeSwitcher value={tema} onChange={setTema} />
+          <ThemeToggle value={tema} onChange={setTema} />
           <span className="truncate text-caption text-ink-muted">{sessao.user.email}</span>
           <Button
             variant="ghost"
