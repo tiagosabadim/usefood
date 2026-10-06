@@ -1,6 +1,7 @@
 import { Login, StatusScreen, Tela, useAppContext, useSession } from '@usefood/app';
 import { AppShell, Button } from '@usefood/ui';
 import { useEffect, useState } from 'react';
+import { Leads } from './leads';
 import { Lojas } from './lojas';
 
 /** Console da plataforma: só a equipe usefood (administradores da plataforma) entra. */
@@ -24,6 +25,7 @@ function ComSessao({
 }) {
   const sessao = useSession(supabase);
   const [admin, setAdmin] = useState<boolean | undefined>(undefined);
+  const [area, setArea] = useState<'lojas' | 'leads'>('lojas');
 
   useEffect(() => {
     if (!sessao) return;
@@ -67,7 +69,20 @@ function ComSessao({
       groups={[
         {
           items: [
-            { id: 'lojas', label: 'Lojas', icon: 'loja', active: true },
+            {
+              id: 'lojas',
+              label: 'Lojas',
+              icon: 'loja',
+              active: area === 'lojas',
+              onClick: () => setArea('lojas'),
+            },
+            {
+              id: 'leads',
+              label: 'Leads',
+              icon: 'conversa',
+              active: area === 'leads',
+              onClick: () => setArea('leads'),
+            },
             { id: 'numeros', label: 'Números', icon: 'grafico', soon: true },
             { id: 'marcas', label: 'Marcas', icon: 'marca', soon: true },
             { id: 'dominios', label: 'Domínios', icon: 'globo', soon: true },
@@ -87,7 +102,22 @@ function ComSessao({
         </div>
       }
     >
-      <Lojas supabase={supabase} email={sessao.user.email ?? ''} />
+      {area === 'leads' ? (
+        <Tela larga>
+          <div className="flex gap-2 lg:hidden">
+            <Button variant="secondary" onClick={() => setArea('lojas')}>
+              Ver lojas
+            </Button>
+          </div>
+          <Leads supabase={supabase} />
+        </Tela>
+      ) : (
+        <Lojas
+          supabase={supabase}
+          email={sessao.user.email ?? ''}
+          onLeads={() => setArea('leads')}
+        />
+      )}
     </AppShell>
   );
 }

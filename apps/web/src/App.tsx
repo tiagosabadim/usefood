@@ -1,5 +1,6 @@
-import { StatusScreen, useAppContext } from '@usefood/app';
+import { useAppContext } from '@usefood/app';
 import { Acompanhar } from './loja/acompanhar';
+import { InicioDaMarca, LandingFranquia, LandingRestaurantes } from './marca/paginas';
 import { MinhaConta } from './loja/conta';
 import { Loja } from './loja/loja';
 import { useCaminho } from './rotas';
@@ -23,6 +24,9 @@ export function App() {
   }
 
   const [slug, a, token] = partes;
+  // Páginas da marca (endereços reservados, nenhuma loja usa)
+  if (slug === 'restaurantes') return <LandingRestaurantes />;
+  if (slug === 'franquia' || slug === 'parceiros') return <LandingFranquia />;
   if (slug) {
     const loja = slug.toLowerCase();
     if (a === 'pedido' && token && TOKEN.test(token))
@@ -31,10 +35,5 @@ export function App() {
     return <Loja slug={loja} base={`/${loja}`} />;
   }
 
-  return (
-    <StatusScreen
-      title="Vitrine usefood"
-      description="As lojas da sua cidade em um só lugar. A vitrine chega no bloco 3; cada loja já tem o seu endereço."
-    />
-  );
+  return <InicioDaMarca />;
 }

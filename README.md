@@ -82,6 +82,15 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Páginas da marca e leads
+
+- `apps/web` no domínio da marca: **/** (início "Deu fome?", com os caminhos restaurante e franquia; fica no lugar da vitrine até o bloco 3), **/restaurantes** (landing para captar restaurantes) e **/franquia** (também **/parceiros**). Endereços reservados: nenhuma loja usa.
+- Conteúdo só com o que o sistema já faz; sem preço nem condições de franquia (modelo em definição): as páginas convidam para conversa.
+- Formulário (`FormularioDeLead`) → `enviar_lead` (sem login): nome, WhatsApp, cidade/UF, campos de cada página, aceite da LGPD obrigatório, origem da campanha (`utm_*`, página e site anterior); no máximo 3 envios por celular a cada 24 horas.
+- Console → **Leads** (só administradores da plataforma): filtro por tipo e situação (novo, em contato, convertido, descartado), ficha com WhatsApp, situação e anotações, e planilha.
+- O nome da marca nas páginas está num lugar só (`Marca`, em `apps/web/src/marca/moldura.tsx`): os arquivos originais do logo entram ali.
+- Testes em `supabase/tests/leads.test.sql`.
+
 ## Marca USE! (design system)
 
 - Tokens em `packages/ui/tokens/usefood.tokens.json` (gera `theme.css` com `pnpm tokens`): laranja **#FE5401** (`brand`) com texto **preto** por cima (`brand-ink`, 6,5:1), cartões brancos (`surface`) sobre **#F6F6F6** (`canvas`); escuro em preto **#0A0A0A**. Laranja como texto no claro usa `brand-text` (#B33A00). Nunca texto branco sobre o laranja.

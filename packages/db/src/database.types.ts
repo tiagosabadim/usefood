@@ -384,6 +384,66 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          business_name: string | null
+          city: string
+          consent_at: string
+          created_at: string
+          email: string | null
+          id: string
+          kind: Database["public"]["Enums"]["lead_kind"]
+          message: string | null
+          name: string
+          notes: string | null
+          phone: string
+          segment: string | null
+          size: string | null
+          source: Json
+          state: string
+          status: Database["public"]["Enums"]["lead_status"]
+          updated_at: string
+        }
+        Insert: {
+          business_name?: string | null
+          city: string
+          consent_at: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["lead_kind"]
+          message?: string | null
+          name: string
+          notes?: string | null
+          phone: string
+          segment?: string | null
+          size?: string | null
+          source?: Json
+          state: string
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Update: {
+          business_name?: string | null
+          city?: string
+          consent_at?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["lead_kind"]
+          message?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string
+          segment?: string | null
+          size?: string | null
+          source?: Json
+          state?: string
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       memberships: {
         Row: {
           created_at: string
@@ -1747,6 +1807,23 @@ export type Database = {
           user_id: string | null
         }[]
       }
+      enviar_lead: {
+        Args: {
+          p_aceite: boolean
+          p_celular: string
+          p_cidade: string
+          p_email?: string | null
+          p_mensagem?: string | null
+          p_negocio?: string | null
+          p_nome: string
+          p_origem?: Json
+          p_porte?: string | null
+          p_segmento?: string | null
+          p_tipo: Database["public"]["Enums"]["lead_kind"]
+          p_uf: string
+        }
+        Returns: string
+      }
       fazer_pedido_online: {
         Args: {
           p_celular: string
@@ -1898,6 +1975,8 @@ export type Database = {
       }
     }
     Enums: {
+      lead_kind: "restaurante" | "franquia"
+      lead_status: "novo" | "em_contato" | "convertido" | "descartado"
       brand_role: "franqueado" | "suporte"
       brand_status: "rascunho" | "ativa" | "suspensa"
       call_mode: "senha" | "nome"

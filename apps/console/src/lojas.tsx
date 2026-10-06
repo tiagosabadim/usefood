@@ -42,7 +42,15 @@ const quando = (iso: string | null) =>
     : 'nunca';
 
 /** Todas as lojas da plataforma, com números de 30 dias, e o cadastro de loja para um dono. */
-export function Lojas({ supabase, email }: { supabase: AppSupabaseClient; email: string }) {
+export function Lojas({
+  supabase,
+  email,
+  onLeads,
+}: {
+  supabase: AppSupabaseClient;
+  email: string;
+  onLeads?: () => void;
+}) {
   const [lojas, setLojas] = useState<Loja[] | null>(null);
   const [filtro, setFiltro] = useState<(typeof FILTROS)[number]['value']>('todas');
   const [busca, setBusca] = useState('');
@@ -134,6 +142,11 @@ export function Lojas({ supabase, email }: { supabase: AppSupabaseClient; email:
         acoes={
           <>
             <Button onClick={() => setCriando(true)}>Nova loja</Button>
+            {onLeads && (
+              <Button variant="secondary" className="lg:hidden" onClick={onLeads}>
+                Leads
+              </Button>
+            )}
             <Button
               variant="ghost"
               className="lg:hidden"
