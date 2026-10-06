@@ -89,6 +89,13 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - A escolha fica no aparelho (`usePreferenciaDeTema`, `@usefood/app`) e é aplicada logo ao abrir (`aplicarPreferenciaDeTema` no bootstrap), com `data-theme` na raiz.
 - Tela da cozinha em tela cheia e painel de chamada continuam sempre escuros e devolvem a escolha da pessoa ao sair.
 
+## App de delivery (vitrine)
+
+- Banco (`20261006002500_vitrine.sql`, sem login, por marca): `vitrine_cidades(marca)` (cidades com lojas publicadas, com o centro para "usar minha localização"), `vitrine_da_cidade(marca, cidade)` (cartão da loja: aberta agora, quando abre, tempo, menor taxa ou grátis, pedido mínimo, tipo de cozinha; abertas primeiro) e `vitrine_buscar(marca, cidade, termo)` (prato por nome ou descrição, sem acento). Cidade no endereço: `private.slug_da_cidade` ("São José do Rio Preto" + "SP" → `sao-jose-do-rio-preto-sp`).
+- Tipo de cozinha da loja (`restaurants.cuisines`, até 3; rótulos em `COZINHAS`, `@usefood/core`): painel → Loja online → Tipo de cozinha.
+- Decisões: sem login por enquanto (conta no aparelho); sai como app instalável (PWA) e nas lojas (Capacitor, mesmo código); cada restaurante faz as próprias entregas; pagamento na entrega.
+- Testes em `supabase/tests/vitrine.test.sql`.
+
 ## Site da marca (página inicial e restaurantes)
 
 - **Página inicial** (`apps/web/inicio/index.html`, hub: pedir, restaurante, levar para a cidade) e **/restaurantes**, desenhadas no canvas e feitas em HTML pronto. No domínio da marca, `/` entrega `/inicio/` pela função do Netlify `netlify/edge-functions/inicio.js`; nos domínios das lojas, `/` continua sendo a loja.

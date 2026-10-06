@@ -1,16 +1,19 @@
 import {
+  COZINHAS,
   DIAS_DA_SEMANA,
   formatarPreco,
   formatarTelefone,
   lerCep,
   lerPreco,
   lerTelefone,
+  MAXIMO_DE_COZINHAS,
   precoParaCampo,
 } from '@usefood/core';
 import type { AppSupabaseClient, Enums, Tables } from '@usefood/db';
 import {
   Alert,
   Button,
+  Chip,
   ChoiceGrid,
   ImageCropper,
   Panel,
@@ -28,6 +31,7 @@ type Loja = Pick<
   Tables<'restaurants'>,
   | 'slug'
   | 'status'
+  | 'cuisines'
   | 'description'
   | 'phone'
   | 'postal_code'
@@ -53,7 +57,7 @@ type Faixa = Pick<Tables<'delivery_bands'>, 'id' | 'up_to_km' | 'fee_cents'>;
 type Horario = Pick<Tables<'opening_hours'>, 'id' | 'weekday' | 'opens' | 'closes'>;
 
 const CAMPOS =
-  'slug, status, logo_path, cover_path, description, phone, postal_code, street, street_number, complement, district, city, state, accepts_delivery, accepts_pickup, delivery_fee_mode, delivery_radius_km, min_order_cents, free_delivery_above_cents, prep_minutes_min, prep_minutes_max, location';
+  'slug, status, logo_path, cover_path, description, phone, postal_code, street, street_number, complement, district, city, state, accepts_delivery, accepts_pickup, delivery_fee_mode, delivery_radius_km, min_order_cents, free_delivery_above_cents, prep_minutes_min, prep_minutes_max, location, cuisines';
 const DIAS_CURTOS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const hora = (t: string) => t.slice(0, 5);
 
@@ -217,6 +221,14 @@ export function LojaOnline({
               onSalvo={avisar}
               onErro={falhar}
             />
+
+            <TipoDeCozinha
+              supabase={supabase}
+              lojaId={loja.id}
+              dados={dados}
+              onSalvo={avisar}
+              onErro={falhar}
+            />
           </>
         }
         direita={
@@ -249,6 +261,58 @@ interface Acoes {
   lojaId: string;
   onSalvo: (texto: string) => void;
   onErro: (texto: string) => void;
+}
+
+/** Tipo de cozinha: as categorias em que a loja aparece na vitrine do app (até 3). */
+function TipoDeCozinha({ supabase, lojaId, dados, onSalvo, onErro }: Acoes & { dados: Loja }) {
+  const [escolhidas, setEscolhidas] = useState<string[]>(dados.cuisines ?? []);
+  const [salvando, setSalvando] = useState(false);
+
+  async function alternar(valor: string) {
+    const nova = escolhidas.includes(valor)
+      ? escolhidas.filter((c) => c !== valor)
+      : [...escolhidas, valor];
+    if (nova.length > MAXIMO_DE_COZINHAS) return onErro(`Escolha até ${MAXIMO_DE_COZINHAS} tipos.`);
+    setEscolhidas(nova);
+    setSalvando(true);
+    const { error } = await supabase
+      .from('restaurants')
+      .update({ cuisines: nova as Enums<'cuisine_type'>[] })
+      .eq('id', lojaId);
+    setSalvando(false);
+    if (error) {
+      setEscolhidas(escolhidas);
+      return onErro('Não foi possível salvar o tipo de cozinha.');
+    }
+    onSalvo('Tipo de cozinha salvo.');
+  }
+
+  return (
+    <Panel title="Tipo de cozinha">
+      <div className="flex flex-col gap-4">
+        <p className="text-body text-ink-muted">
+          É assim que os clientes encontram a loja nas categorias do app. Escolha até{' '}
+          {MAXIMO_DE_COZINHAS}.
+        </p>
+        <div
+          role="group"
+          aria-label="Tipos de cozinha"
+          aria-busy={salvando}
+          className="flex flex-wrap gap-2"
+        >
+          {COZINHAS.map((c) => (
+            <Chip
+              key={c.valor}
+              selected={escolhidas.includes(c.valor)}
+              onClick={() => void alternar(c.valor)}
+            >
+              {c.rotulo}
+            </Chip>
+          ))}
+        </div>
+      </div>
+    </Panel>
+  );
 }
 
 function DadosDaLoja({ supabase, lojaId, dados, onSalvo, onErro }: Acoes & { dados: Loja }) {

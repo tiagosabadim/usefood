@@ -1289,6 +1289,7 @@ export type Database = {
           counter_dine_in: Database["public"]["Enums"]["counter_service"]
           cover_path: string | null
           created_at: string
+          cuisines: Database["public"]["Enums"]["cuisine_type"][]
           delivery_fee_mode: Database["public"]["Enums"]["delivery_fee_mode"]
           delivery_radius_km: number | null
           description: string | null
@@ -1322,6 +1323,7 @@ export type Database = {
           counter_dine_in?: Database["public"]["Enums"]["counter_service"]
           cover_path?: string | null
           created_at?: string
+          cuisines?: Database["public"]["Enums"]["cuisine_type"][]
           delivery_fee_mode?: Database["public"]["Enums"]["delivery_fee_mode"]
           delivery_radius_km?: number | null
           description?: string | null
@@ -1355,6 +1357,7 @@ export type Database = {
           counter_dine_in?: Database["public"]["Enums"]["counter_service"]
           cover_path?: string | null
           created_at?: string
+          cuisines?: Database["public"]["Enums"]["cuisine_type"][]
           delivery_fee_mode?: Database["public"]["Enums"]["delivery_fee_mode"]
           delivery_radius_km?: number | null
           description?: string | null
@@ -1973,8 +1976,51 @@ export type Database = {
         Args: never
         Returns: boolean
       }
+      vitrine_buscar: {
+        Args: { p_cidade: string; p_marca: string; p_termo: string }
+        Returns: {
+          descricao: string | null
+          foto_path: string | null
+          loja_aberta: boolean
+          loja_nome: string
+          loja_slug: string
+          preco_cents: number
+          produto: string
+          produto_id: string
+        }[]
+      }
+      vitrine_cidades: {
+        Args: { p_marca: string }
+        Returns: { cidade: string; latitude: number | null; lojas: number; longitude: number | null; slug: string; uf: string }[]
+      }
+      vitrine_da_cidade: {
+        Args: { p_cidade: string; p_marca: string }
+        Returns: {
+          abre_as: string | null
+          abre_em_dias: number | null
+          aberta: boolean
+          bairro: string | null
+          capa_path: string | null
+          cozinhas: Database["public"]["Enums"]["cuisine_type"][]
+          descricao: string | null
+          entrega: boolean
+          gratis_acima_cents: number | null
+          latitude: number | null
+          logo_path: string | null
+          longitude: number | null
+          nome: string
+          pedido_minimo_cents: number
+          retirada: boolean
+          slug: string
+          taxa_minima_cents: number | null
+          taxa_modo: Database["public"]["Enums"]["delivery_fee_mode"]
+          tempo_max: number
+          tempo_min: number
+        }[]
+      }
     }
     Enums: {
+      cuisine_type: "lanches" | "pizza" | "brasileira" | "marmita" | "japonesa" | "arabe" | "acai" | "sorvetes" | "doces" | "padaria" | "saudavel" | "porcoes" | "bebidas" | "outros"
       lead_kind: "restaurante" | "franquia"
       lead_status: "novo" | "em_contato" | "convertido" | "descartado"
       brand_role: "franqueado" | "suporte"

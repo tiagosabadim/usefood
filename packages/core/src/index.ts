@@ -6,6 +6,7 @@ export * from './cart';
 export * from './cash';
 export * from './contato';
 export * from './contraste';
+export * from './cozinhas';
 export * from './crop';
 export * from './kitchen';
 export * from './menu';
