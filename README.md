@@ -82,6 +82,13 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - **Entrega**: delivery e/ou retirada; taxa **grátis** (padrão, com raio opcional), **por bairro** (`delivery_districts`, comparado sem acento) ou **por distância** (`delivery_bands`, precisa da localização); pedido mínimo, grátis acima de um valor e tempo de entrega.
 - Testes em `supabase/tests/loja_online.test.sql`.
 
+## Marca USE! (design system)
+
+- Tokens em `packages/ui/tokens/usefood.tokens.json` (gera `theme.css` com `pnpm tokens`): laranja **#FE5401** (`brand`) com texto **preto** por cima (`brand-ink`, 6,5:1), cartões brancos (`surface`) sobre **#F6F6F6** (`canvas`); escuro em preto **#0A0A0A**. Laranja como texto no claro usa `brand-text` (#B33A00). Nunca texto branco sobre o laranja.
+- Uma família, **Figtree** (400 a 900): títulos em 800 a 900 com letras mais juntas. A Unbounded saiu.
+- Logo: só os arquivos originais (USE! e USE! FOOD); não recriar com fonte. Com o slogan, só o USE!.
+- A loja de cada restaurante vai usar as cores do próprio restaurante (próxima etapa).
+
 ## Tempo real e proteção contra tela branca
 
 - Toda escuta em tempo real usa `canalUnico(supabase, nome)` (`@usefood/db`): nome com sufixo único. Duas telas com o mesmo nome (a faixa de pedidos online e a tela Online do PDV, ou a troca rápida de tela) davam erro e deixavam a página em branco.

@@ -2,7 +2,7 @@
   "name": "usefood",
   "version": 1,
   "meta": {
-    "source": "Direção Pop (canvas de direção visual da E02)"
+    "source": "Guia de marca USE! (laranja #FE5401 e preto), 2026"
   },
   "color": {
     "themes": [
@@ -19,90 +19,90 @@
       {
         "name": "canvas",
         "value": {
-          "light": "#ffffff",
-          "dark": "#0b0d1a"
+          "light": "#f6f6f6",
+          "dark": "#0a0a0a"
         },
-        "usage": "Fundo da tela."
+        "usage": "Fundo da tela (cinza #F6F6F6 do guia; preto no escuro)."
       },
       {
         "name": "surface",
         "value": {
-          "light": "#f2f3fa",
-          "dark": "#15182b"
+          "light": "#ffffff",
+          "dark": "#161616"
         },
-        "usage": "Cards, campos, painel do pedido no PDV."
+        "usage": "Cards, campos e painéis: brancos sobre o fundo cinza, como no guia."
       },
       {
         "name": "surface-strong",
         "value": {
-          "light": "#e8eaf7",
-          "dark": "#1e2238"
+          "light": "#ececec",
+          "dark": "#222222"
         },
         "usage": "Área de totais, pill de loja fechada, hover de itens."
       },
       {
         "name": "line",
         "value": {
-          "light": "#e3e5f0",
-          "dark": "#2a2e48"
+          "light": "#e4e4e4",
+          "dark": "#2b2b2b"
         },
         "usage": "Divisórias e contorno de cards. Decorativo: não use como única pista de um controle."
       },
       {
         "name": "line-strong",
         "value": {
-          "light": "#787e98",
-          "dark": "#646a8c"
+          "light": "#757575",
+          "dark": "#707070"
         },
         "usage": "Contorno de campos e controles quando o fundo não os separa (3:1 sobre canvas e surface)."
       },
       {
         "name": "ink",
         "value": {
-          "light": "#0d0f22",
-          "dark": "#f2f3fa"
+          "light": "#0a0a0a",
+          "dark": "#f5f5f5"
         },
         "usage": "Texto principal sobre canvas, surface e surface-strong."
       },
       {
         "name": "ink-muted",
         "value": {
-          "light": "#545a75",
-          "dark": "#a7acc8"
+          "light": "#585858",
+          "dark": "#a9a9a9"
         },
         "usage": "Texto secundário: distância, tempo, detalhes do item. 4.5:1 sobre canvas, surface e surface-strong."
       },
       {
         "name": "brand",
         "value": {
-          "light": "#2f4bff",
-          "dark": "#6b80ff"
+          "light": "#fe5401",
+          "dark": "#fe5401"
         },
-        "usage": "Ação principal, seleção, chip ativo, trilho do PDV. Muda por marca."
+        "usage": "Laranja USE!: botão principal, seleção, destaque. Sempre com texto brand-ink (preto, 6,5:1). Nunca texto branco sobre o laranja (3,2:1)."
       },
       {
         "name": "brand-ink",
         "value": {
-          "light": "#ffffff",
-          "dark": "#0b0d1a"
+          "light": "#000000",
+          "dark": "#000000"
         },
-        "usage": "Texto e ícone sobre brand."
+        "usage": "Texto e ícone sobre brand (preto)."
       },
       {
         "name": "brand-soft",
         "value": {
-          "light": "#e7eaff",
-          "dark": "#1f2752"
+          "light": "#ffe7da",
+          "dark": "#3a1a08"
         },
-        "usage": "Fundo suave de ações de marca, como o botão + no tile do PDV. Muda por marca."
+        "usage": "Fundo leve de seleção (chips, item ativo do menu), com brand-text por cima."
       },
       {
         "name": "brand-text",
         "value": {
-          "light": "#2f4bff",
-          "dark": "#8c9bff"
+          "light": "#b33a00",
+          "dark": "#ff7a3d"
         },
-        "usage": "Links e texto na cor da marca sobre canvas e surface. Muda por marca."
+        "usage": "Laranja escurecido para texto e links sobre canvas, surface e brand-soft (4,5:1 ou mais). O laranja puro (#FE5401) não passa como texto no claro."
       },
       {
         "name": "sun",
@@ -165,7 +165,7 @@
   "type": {
     "fonts": [],
     "families": {
-      "display": "\"Unbounded\", \"Figtree\", system-ui, sans-serif",
+      "display": "\"Figtree\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
       "text": "\"Figtree\", system-ui, -apple-system, \"Segoe UI\", sans-serif"
     },
     "groups": [
@@ -177,17 +177,17 @@
             "name": "wordmark",
             "fontSize": "24px",
             "lineHeight": "28px",
-            "fontWeight": 800,
-            "letterSpacing": "-0.03em",
-            "sample": "usefood",
-            "usage": "Marca no topo da vitrine."
+            "fontWeight": 900,
+            "letterSpacing": "-0.04em",
+            "sample": "USE!",
+            "usage": "Marca escrita (onde não cabe a imagem do logo)."
           },
           {
             "name": "display",
             "fontSize": "30px",
             "lineHeight": "36px",
-            "fontWeight": 800,
-            "letterSpacing": "-0.02em",
+            "fontWeight": 900,
+            "letterSpacing": "-0.03em",
             "sample": "Mesa 12",
             "usage": "Identificador do pedido e total no PDV."
           },
@@ -195,8 +195,8 @@
             "name": "title-screen",
             "fontSize": "24px",
             "lineHeight": "30px",
-            "fontWeight": 700,
-            "letterSpacing": "-0.02em",
+            "fontWeight": 800,
+            "letterSpacing": "-0.03em",
             "sample": "Pastéis",
             "usage": "Título da tela."
           },
@@ -204,8 +204,8 @@
             "name": "title-section",
             "fontSize": "18px",
             "lineHeight": "24px",
-            "fontWeight": 700,
-            "letterSpacing": "-0.01em",
+            "fontWeight": 800,
+            "letterSpacing": "-0.02em",
             "sample": "Abertos perto de você",
             "usage": "Título de seção."
           },
@@ -213,9 +213,10 @@
             "name": "title-card",
             "fontSize": "15px",
             "lineHeight": "20px",
-            "fontWeight": 700,
+            "fontWeight": 800,
             "sample": "Rancho Pastéis",
-            "usage": "Nome da loja no card."
+            "usage": "Nome da loja no card.",
+            "letterSpacing": "-0.01em"
           }
         ]
       },
