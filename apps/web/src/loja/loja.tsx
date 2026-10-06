@@ -32,6 +32,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { gravarSacola, lerSacola } from '../guardado';
 import { navegar } from '../rotas';
+import { voltaParaVitrine } from '../vitrine/vitrine-dados';
 import { Checkout } from './checkout';
 import { buscarLoja, whatsapp, type Horario, type LojaPublica } from './dados';
 import { PedidoEmAndamento } from './pedido-em-andamento';
@@ -117,6 +118,7 @@ function PaginaDaLoja({
   aberta: boolean;
   cardapio: Cardapio;
 }) {
+  const [volta] = useState(() => voltaParaVitrine());
   const [sacola, setSacola] = useState<ItemCarrinho[]>(() => lerSacola(loja.id));
   const [aberto, setAberto] = useState<ProdutoDoCardapio | null>(null);
   const [vendoSacola, setVendoSacola] = useState(false);
@@ -218,6 +220,17 @@ function PaginaDaLoja({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col pb-28 lg:px-8 lg:pb-12">
+      {volta && (
+        <nav aria-label="Voltar" className="px-4 pt-3 lg:px-0">
+          <button
+            type="button"
+            onClick={() => navegar(volta)}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-pill pr-3 text-label font-bold text-ink focus-visible:outline-2 focus-visible:outline-brand"
+          >
+            <Icon name="voltar" size={20} /> Restaurantes
+          </button>
+        </nav>
+      )}
       {loja.status !== 'ativo' && (
         // Só a equipe enxerga loja fora do ar (está logada); o cliente vê "Loja não encontrada"
         <p role="status" className="bg-sun px-5 py-3 text-body text-sun-ink lg:mt-4 lg:rounded-md">

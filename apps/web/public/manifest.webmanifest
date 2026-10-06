@@ -1,0 +1,22 @@
+{
+  "name": "USE! FOOD · O delivery da sua cidade",
+  "short_name": "USE!",
+  "description": "Os restaurantes da sua cidade no celular.",
+  "lang": "pt-BR",
+  "start_url": "/delivery",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "icons": [
+    { "src": "/marca/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/marca/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "/marca/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

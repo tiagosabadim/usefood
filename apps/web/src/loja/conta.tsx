@@ -4,6 +4,8 @@ import { Alert, Button, Icon, Panel, TextField, ThemeToggle } from '@usefood/ui'
 import { useEffect, useState } from 'react';
 import { ENDERECO_EM_BRANCO, gravarConta, lerConta, novoId, type Conta } from '../guardado';
 import { navegar } from '../rotas';
+import { BarraDoApp } from '../vitrine/barra';
+import { cidadeGuardada } from '../vitrine/vitrine-dados';
 import {
   CamposDeEndereco,
   enderecoCompleto,
@@ -185,7 +187,9 @@ export function MinhaConta({ base }: { base: string }) {
                 <button
                   type="button"
                   className="flex w-full items-center gap-3 py-3 text-left"
-                  onClick={() => navegar(`${base}/pedido/${p.token}`)}
+                  onClick={() =>
+                    navegar(`${base === '/delivery' ? `/${p.lojaSlug}` : base}/pedido/${p.token}`)
+                  }
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-body-strong text-ink">
@@ -212,6 +216,7 @@ export function MinhaConta({ base }: { base: string }) {
           </ul>
         )}
       </Panel>
+      {base === '/delivery' && <BarraDoApp ativo="pedidos" cidade={cidadeGuardada()} />}
     </main>
   );
 }

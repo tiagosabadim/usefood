@@ -11,8 +11,9 @@ export function useCaminho(): string {
   return caminho;
 }
 
-export function navegar(caminho: string): void {
-  window.history.pushState(null, '', caminho);
+export function navegar(caminho: string, opcoes: { substituir?: boolean } = {}): void {
+  if (opcoes.substituir) window.history.replaceState(null, '', caminho);
+  else window.history.pushState(null, '', caminho);
   window.dispatchEvent(new PopStateEvent('popstate'));
   window.scrollTo(0, 0);
 }

@@ -1,5 +1,7 @@
 import { useAppContext } from '@usefood/app';
 import { Acompanhar } from './loja/acompanhar';
+import { EscolherCidade } from './vitrine/cidades';
+import { Vitrine } from './vitrine/vitrine';
 import { InicioDaMarca } from './marca/paginas';
 import { MinhaConta } from './loja/conta';
 import { Loja } from './loja/loja';
@@ -29,6 +31,12 @@ export function App() {
   if (slug === 'restaurantes' || slug === 'franquia' || slug === 'parceiros') {
     window.location.replace(slug === 'parceiros' ? '/franquia' : `/${slug}`);
     return null;
+  }
+  // App de delivery: escolher a cidade, vitrine da cidade e pedidos/conta
+  if (slug === 'delivery') {
+    if (!a) return <EscolherCidade />;
+    if (a === 'conta') return <MinhaConta base="/delivery" />;
+    return <Vitrine cidade={a.toLowerCase()} />;
   }
   if (slug) {
     const loja = slug.toLowerCase();

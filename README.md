@@ -95,6 +95,8 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - Tipo de cozinha da loja (`restaurants.cuisines`, até 3; rótulos em `COZINHAS`, `@usefood/core`): painel → Loja online → Tipo de cozinha.
 - Decisões: sem login por enquanto (conta no aparelho); sai como app instalável (PWA) e nas lojas (Capacitor, mesmo código); cada restaurante faz as próprias entregas; pagamento na entrega.
 - Testes em `supabase/tests/vitrine.test.sql`.
+- Telas (`apps/web/src/vitrine`): **/delivery** escolhe a cidade ("usar minha localização" acha a cidade com lojas mais perto, pelo centro das lojas; ou a lista) e lembra no aparelho; **/delivery/<cidade>** é a vitrine (busca de restaurante e prato, categorias que existem na cidade, "Abertos agora" e "Abrem mais tarde" com quando abre); **/delivery/conta** mostra a conta e os pedidos de todas as lojas. Barra de baixo: Restaurantes e Pedidos. A loja mostra "Restaurantes" para voltar quando o cliente veio da vitrine.
+- App instalável: `public/manifest.webmanifest` (abre em /delivery, tela cheia), ícones `public/marca/icone-192.png` e `icone-512.png` (provisórios, do guia) e `public/sw.js` (guarda só os arquivos do app; páginas da internet primeiro; banco e imagens sempre da internet). Botão "Instalar app" quando o navegador permite. Próximo passo: Capacitor para as lojas (Google Play e App Store), com o mesmo código.
 
 ## Site da marca (página inicial e restaurantes)
 

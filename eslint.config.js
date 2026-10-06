@@ -14,6 +14,7 @@ export default defineConfig(
       'packages/db/src/database.types.ts',
       'supabase/**',
       'netlify/**',
+      'apps/web/public/sw.js',
       'scripts/otimizar-fotos.mjs',
     ],
   },
