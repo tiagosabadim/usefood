@@ -1,6 +1,6 @@
 import { useAppContext } from '@usefood/app';
 import { Acompanhar } from './loja/acompanhar';
-import { InicioDaMarca, LandingFranquia, LandingRestaurantes } from './marca/paginas';
+import { InicioDaMarca } from './marca/paginas';
 import { MinhaConta } from './loja/conta';
 import { Loja } from './loja/loja';
 import { useCaminho } from './rotas';
@@ -24,9 +24,12 @@ export function App() {
   }
 
   const [slug, a, token] = partes;
-  // Páginas da marca (endereços reservados, nenhuma loja usa)
-  if (slug === 'restaurantes') return <LandingRestaurantes />;
-  if (slug === 'franquia' || slug === 'parceiros') return <LandingFranquia />;
+  // /restaurantes e /franquia são páginas estáticas (apps/web/restaurantes, apps/web/franquia);
+  // se alguém chegar aqui pelo app, recarrega a página certa
+  if (slug === 'restaurantes' || slug === 'franquia' || slug === 'parceiros') {
+    window.location.replace(slug === 'parceiros' ? '/franquia' : `/${slug}`);
+    return null;
+  }
   if (slug) {
     const loja = slug.toLowerCase();
     if (a === 'pedido' && token && TOKEN.test(token))

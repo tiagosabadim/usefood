@@ -88,9 +88,17 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - A escolha fica no aparelho (`usePreferenciaDeTema`, `@usefood/app`) e é aplicada logo ao abrir (`aplicarPreferenciaDeTema` no bootstrap), com `data-theme` na raiz.
 - Tela da cozinha em tela cheia e painel de chamada continuam sempre escuros e devolvem a escolha da pessoa ao sair.
 
+## Landing pages imersivas (estáticas)
+
+- `/restaurantes` e `/franquia` são **HTML pronto** (`apps/web/restaurantes/index.html`, `apps/web/franquia/index.html`), entradas extras do Vite: todo o texto já no arquivo (SEO), sem React. CSS (Tailwind só com as classes dessas páginas, `source(none)`) e um JavaScript de ~3 KB (`apps/web/src/landing/main.ts`): entrada ao rolar, parallax por `transform`, "do pedido à porta" com o celular parado e a etapa mudando com a rolagem, barras que crescem, sombra no topo e o formulário (`enviar_lead` direto na API, com a origem da campanha). Tudo parado para quem pede menos movimento no aparelho.
+- Mockups do produto (celular com a loja online, notebook com o PDV, acompanhamento do pedido) feitos em HTML e CSS: nítidos em qualquer tela e quase sem peso.
+- SEO: título, descrição, canonical, Open Graph com imagem 1200 × 630 (`public/marca/og-*.jpg`), dados estruturados (Organization, SoftwareApplication, FAQPage), `sitemap.xml` e `robots.txt`. Fonte Figtree servida pelo site (`public/marca/figtree.woff2`, 20 KB, só caracteres do português).
+- Imagens do guia de marca (logo, "Deu fome, USE!", hambúrguer) em WebP, sempre sobre fundo branco (são os desenhos originais, sem recriar). Trocar pelos arquivos vetoriais quando chegarem.
+- Endereços absolutos usam `https://usefood.netlify.app`; trocar pelo domínio definitivo nas duas páginas, no `sitemap.xml` e no `robots.txt`.
+
 ## Páginas da marca e leads
 
-- `apps/web` no domínio da marca: **/** (início "Deu fome?", com os caminhos restaurante e franquia; fica no lugar da vitrine até o bloco 3), **/restaurantes** (landing para captar restaurantes) e **/franquia** (também **/parceiros**). Endereços reservados: nenhuma loja usa.
+- `apps/web` no domínio da marca: **/** (início "Deu fome?", com os caminhos restaurante e franquia; fica no lugar da vitrine até o bloco 3). **/restaurantes** e **/franquia** viraram páginas estáticas (acima); **/parceiros** leva para **/franquia**. Endereços reservados: nenhuma loja usa.
 - Conteúdo só com o que o sistema já faz; sem preço nem condições de franquia (modelo em definição): as páginas convidam para conversa.
 - Formulário (`FormularioDeLead`) → `enviar_lead` (sem login): nome, WhatsApp, cidade/UF, campos de cada página, aceite da LGPD obrigatório, origem da campanha (`utm_*`, página e site anterior); no máximo 3 envios por celular a cada 24 horas.
 - Console → **Leads** (só administradores da plataforma): filtro por tipo e situação (novo, em contato, convertido, descartado), ficha com WhatsApp, situação e anotações, e planilha.

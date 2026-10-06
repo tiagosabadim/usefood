@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /pdv/
+Disallow: /garcom/
+Disallow: /console/
+
+Sitemap: https://usefood.netlify.app/sitemap.xml

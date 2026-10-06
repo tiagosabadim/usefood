@@ -1,0 +1,223 @@
+/* Só as classes das páginas estáticas (sem o resto do app): CSS menor */
+@import 'tailwindcss' source(none);
+@import '@usefood/ui/theme.css';
+
+@source '../../restaurantes/index.html';
+@source '../../franquia/index.html';
+@source './main.ts';
+
+/* Fonte servida pelo próprio site (só os caracteres do português, 20 KB) */
+@font-face {
+  font-family: 'Figtree';
+  src: url('/marca/figtree.woff2') format('woff2');
+  font-weight: 300 900;
+  font-display: swap;
+}
+
+:root {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  font-family: var(--uf-font-text);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Títulos gigantes que se adaptam do celular ao computador */
+.titulo-hero {
+  font-size: clamp(2.6rem, 9vw, 5.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  font-weight: 900;
+}
+.titulo-secao {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  font-weight: 900;
+}
+
+/* Entrada ao rolar */
+.revelar {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--atraso, 0ms);
+}
+.revelar.visivel {
+  opacity: 1;
+  transform: none;
+}
+
+/* Faixa de categorias em movimento */
+.faixa {
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+.faixa__trilho {
+  display: flex;
+  width: max-content;
+  animation: rolar 28s linear infinite;
+}
+@keyframes rolar {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Brilho laranja que respira atrás dos mockups */
+.brilho {
+  background: radial-gradient(closest-side, rgb(254 84 1 / 0.55), transparent);
+  filter: blur(40px);
+  animation: respirar 6s ease-in-out infinite;
+}
+@keyframes respirar {
+  50% {
+    transform: scale(1.12);
+    opacity: 0.75;
+  }
+}
+
+/* Celular */
+.celular {
+  position: relative;
+  aspect-ratio: 9 / 19;
+  border-radius: 2.6rem;
+  border: 10px solid #111;
+  background: #fff;
+  box-shadow:
+    0 0 0 2px #2a2a2a,
+    0 40px 80px -20px rgb(0 0 0 / 0.55);
+  overflow: hidden;
+}
+.celular::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  translate: -50% 0;
+  width: 34%;
+  height: 22px;
+  border-radius: 999px;
+  background: #111;
+  z-index: 3;
+}
+
+/* Notebook */
+.notebook__tela {
+  aspect-ratio: 16 / 10;
+  border-radius: 14px 14px 0 0;
+  border: 10px solid #111;
+  border-bottom-width: 14px;
+  background: #f6f6f6;
+  overflow: hidden;
+  box-shadow: 0 40px 80px -24px rgb(0 0 0 / 0.5);
+}
+.notebook__base {
+  height: 14px;
+  margin: 0 -6%;
+  border-radius: 0 0 18px 18px;
+  background: linear-gradient(#d8d8d8, #a9a9a9);
+}
+
+/* "Do pedido à porta": a etapa atual acende no celular */
+.historia .etapa {
+  opacity: 0.35;
+  transition: opacity 0.4s ease;
+}
+.historia .etapa.atual {
+  opacity: 1;
+}
+.historia [data-marco] {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    transform 0.35s ease;
+}
+.historia[data-passo='1'] [data-marco='1'],
+.historia[data-passo='2'] [data-marco='1'],
+.historia[data-passo='2'] [data-marco='2'],
+.historia[data-passo='3'] [data-marco]:is([data-marco='1'], [data-marco='2'], [data-marco='3']),
+.historia[data-passo='4']
+  [data-marco]:is([data-marco='1'], [data-marco='2'], [data-marco='3'], [data-marco='4']),
+.historia[data-passo='5'] [data-marco] {
+  background: var(--uf-brand);
+  color: var(--uf-brand-ink);
+}
+.historia .tela-passo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+}
+.historia[data-passo='1'] .tela-passo[data-tela='1'],
+.historia[data-passo='2'] .tela-passo[data-tela='2'],
+.historia[data-passo='3'] .tela-passo[data-tela='3'],
+.historia[data-passo='4'] .tela-passo[data-tela='4'],
+.historia[data-passo='5'] .tela-passo[data-tela='5'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Barras que crescem quando entram na tela */
+.barra {
+  transform-origin: bottom;
+  transform: scaleY(0.05);
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--atraso, 0ms);
+}
+.visivel .barra {
+  transform: scaleY(1);
+}
+
+/* Pontos da cidade (franquia) */
+.pulso {
+  animation: pulsar 2.4s ease-out infinite;
+  animation-delay: var(--atraso, 0ms);
+}
+@keyframes pulsar {
+  0% {
+    box-shadow: 0 0 0 0 rgb(254 84 1 / 0.6);
+  }
+  100% {
+    box-shadow: 0 0 0 18px rgb(254 84 1 / 0);
+  }
+}
+
+/* Perguntas frequentes */
+details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+details[open] .mais {
+  rotate: 45deg;
+}
+
+/* Quem pediu menos movimento no aparelho: tudo parado e visível */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    scroll-behavior: auto;
+  }
+  .revelar,
+  .barra {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .faixa__trilho,
+  .brilho,
+  .pulso {
+    animation: none;
+  }
+  [data-paralaxe] {
+    transform: none !important;
+  }
+}

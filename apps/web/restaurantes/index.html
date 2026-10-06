@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>usefood para restaurantes · PDV, cardápio online, delivery e seus clientes</title>
+    <meta
+      name="description"
+      content="Venda mais com os clientes sendo seus. PDV, mesas, cozinha, impressão, loja online com o seu endereço e entregas com código, num sistema só. Funciona no navegador."
+    />
+    <link rel="canonical" href="https://usefood.netlify.app/restaurantes" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="icon" type="image/png" href="/marca/favicon.png" />
+    <link rel="apple-touch-icon" href="/marca/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="usefood" />
+    <meta property="og:title" content="Venda mais, com os clientes sendo seus · usefood" />
+    <meta
+      property="og:description"
+      content="PDV, cardápio online, delivery e a lista dos seus clientes, num sistema só."
+    />
+    <meta property="og:url" content="https://usefood.netlify.app/restaurantes" />
+    <meta property="og:image" content="https://usefood.netlify.app/marca/og-restaurantes.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preload" href="/marca/figtree.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/marca/hamburguer.webp" as="image" fetchpriority="high" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "name": "usefood",
+            "url": "https://usefood.netlify.app/",
+            "logo": "https://usefood.netlify.app/marca/logo.webp"
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "usefood para restaurantes",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Navegador (computador, tablet e celular)",
+            "description": "PDV, mesas e comanda, tela da cozinha, impressão, loja online com o endereço do restaurante, entregas com código e a lista de clientes do restaurante."
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Preciso de um computador novo?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Não. O usefood funciona no navegador do computador, do tablet ou do celular que você já tem."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Funciona com a minha impressora?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Funciona com impressoras térmicas de rede, as de cupom ligadas no cabo de rede, que são as mais comuns na cozinha."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Os dados dos clientes são meus?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Sim. Você vê e exporta a lista de quem pediu por delivery, retirada e loja online, com nome, WhatsApp e o que cada um mais pede."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Quanto custa?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Depende do porte e do que você vai usar. Na conversa montamos o plano certo para o seu restaurante."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <script type="module" src="/src/landing/main.ts"></script>
+  </head>
+  <body class="bg-canvas text-ink">
+    <a
+      href="#conteudo"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-brand focus:px-4 focus:py-2 focus:text-brand-ink"
+      >Pular para o conteúdo</a
+    >
+
+    <header data-topo class="sticky top-0 z-40 bg-surface/95 backdrop-blur transition-shadow">
+      <div
+        class="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-5 lg:h-20 lg:px-8"
+      >
+        <a href="/" aria-label="usefood, início"
+          ><img
+            src="/marca/logo.webp"
+            alt="USE! FOOD"
+            width="104"
+            height="48"
+            class="h-10 w-auto lg:h-12"
+        /></a>
+        <nav
+          aria-label="Seções"
+          class="hidden items-center gap-7 text-label text-ink-muted md:flex"
+        >
+          <a href="#recursos" class="hover:text-ink">Recursos</a>
+          <a href="#do-pedido-a-porta" class="hover:text-ink">Como funciona</a>
+          <a href="#perguntas" class="hover:text-ink">Perguntas</a>
+          <a href="/franquia" class="hover:text-ink">Franquia</a>
+        </nav>
+        <a
+          href="#quero"
+          class="inline-flex h-11 items-center rounded-pill bg-brand px-5 text-label font-bold text-brand-ink transition hover:brightness-95"
+          >Quero conhecer</a
+        >
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <!-- Abertura -->
+      <section class="relative overflow-hidden bg-ink text-canvas">
+        <div
+          class="mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pt-10 pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pt-20 lg:pb-28"
+        >
+          <div class="flex flex-col gap-6">
+            <span
+              class="revelar inline-flex w-fit items-center gap-2 rounded-pill border border-canvas/15 px-3 py-1.5 text-micro tracking-wide text-canvas/80 uppercase"
+            >
+              <span class="size-2 rounded-pill bg-brand"></span> Para restaurantes, lanchonetes e
+              pizzarias
+            </span>
+            <h1 class="titulo-hero revelar" style="--atraso: 80ms">
+              Venda mais, com os <span class="text-brand">clientes sendo seus.</span>
+            </h1>
+            <p
+              class="revelar max-w-xl text-[1.0625rem] leading-relaxed text-canvas/75"
+              style="--atraso: 160ms"
+            >
+              PDV, mesas, cozinha, impressão, loja online com o seu endereço e entregas com código.
+              Tudo num sistema só, no navegador, e a lista de quem compra de você fica com você.
+            </p>
+            <div class="revelar flex flex-wrap gap-3" style="--atraso: 240ms">
+              <a
+                href="#quero"
+                class="inline-flex h-14 items-center rounded-pill bg-brand px-7 text-body font-bold text-brand-ink transition hover:brightness-95"
+                >Quero conhecer</a
+              >
+              <a
+                href="#do-pedido-a-porta"
+                class="inline-flex h-14 items-center rounded-pill border border-canvas/25 px-7 text-body font-semibold text-canvas transition hover:bg-canvas/10"
+                >Ver como funciona</a
+              >
+            </div>
+            <ul
+              class="revelar flex flex-wrap gap-x-5 gap-y-2 text-caption text-canvas/60"
+              style="--atraso: 320ms"
+            >
+              <li>✓ Sem app para instalar</li>
+              <li>✓ Computador, tablet ou celular</li>
+              <li>✓ Seus clientes, seus dados</li>
+            </ul>
+          </div>
+
+          <div
+            class="relative mx-auto h-[460px] w-full max-w-[420px] lg:h-[560px]"
+            aria-hidden="true"
+          >
+            <div class="brilho absolute inset-6"></div>
+            <img
+              src="/marca/hamburguer.webp"
+              alt=""
+              width="264"
+              height="344"
+              data-paralaxe="0.06"
+              class="absolute top-6 -right-10 w-[62%] rounded-[2rem] opacity-80 blur-[1px] lg:-right-16"
+            />
+            <div
+              data-paralaxe="0.12"
+              class="celular absolute top-0 left-1/2 w-[230px] -translate-x-1/2 lg:w-[268px]"
+            >
+              <div class="h-[26%] bg-gradient-to-br from-[#3a1a08] via-[#7a2f08] to-brand"></div>
+              <div class="-mt-7 px-4">
+                <div
+                  class="flex size-14 items-center justify-center rounded-pill border-4 border-surface bg-ink text-micro font-black text-canvas"
+                >
+                  BP
+                </div>
+                <p class="mt-2 text-[15px] leading-tight font-black text-ink">Burguer da Praça</p>
+                <p class="text-[10px] text-ink-muted">
+                  Aberto · até 23:00 · 30–50 min · Entrega grátis
+                </p>
+                <div class="mt-3 flex gap-1.5 text-[9px] font-bold">
+                  <span class="rounded-pill bg-brand-soft px-2 py-1 text-brand-text">Lanches</span
+                  ><span class="rounded-pill bg-surface-strong px-2 py-1 text-ink-muted"
+                    >Porções</span
+                  ><span class="rounded-pill bg-surface-strong px-2 py-1 text-ink-muted"
+                    >Bebidas</span
+                  >
+                </div>
+                <ul class="mt-2 divide-y divide-line">
+                  <li class="flex items-center gap-2 py-2">
+                    <div class="flex-1">
+                      <p class="text-[11px] font-bold text-ink">Smash Duplo</p>
+                      <p class="text-[9px] text-ink-muted">
+                        Pão brioche, 2 blends, cheddar e bacon
+                      </p>
+                      <p class="text-[11px] font-bold text-ink">R$ 32,90</p>
+                    </div>
+                    <img
+                      src="/marca/hamburguer.webp"
+                      alt=""
+                      width="64"
+                      height="48"
+                      class="h-12 w-16 rounded-md object-cover"
+                    />
+                  </li>
+                  <li class="flex items-center gap-2 py-2">
+                    <div class="flex-1">
+                      <p class="text-[11px] font-bold text-ink">Batata da casa</p>
+                      <p class="text-[9px] text-ink-muted">Rústica, com páprica e alho</p>
+                      <p class="text-[11px] font-bold text-ink">R$ 18,00</p>
+                    </div>
+                    <div
+                      class="h-12 w-16 rounded-md bg-gradient-to-br from-[#f6c453] to-[#c9781a]"
+                    ></div>
+                  </li>
+                  <li class="flex items-center gap-2 py-2">
+                    <div class="flex-1">
+                      <p class="text-[11px] font-bold text-ink">Milk-shake</p>
+                      <p class="text-[9px] text-ink-muted">Ovomaltine, 400 ml</p>
+                      <p class="text-[11px] font-bold text-ink">R$ 16,00</p>
+                    </div>
+                    <div
+                      class="h-12 w-16 rounded-md bg-gradient-to-br from-[#e9d3b5] to-[#8a5a33]"
+                    ></div>
+                  </li>
+                </ul>
+              </div>
+              <div
+                class="absolute inset-x-3 bottom-4 rounded-pill bg-brand py-2.5 text-center text-[11px] font-black text-brand-ink"
+              >
+                Ver sacola · 2 itens · R$ 50,90
+              </div>
+            </div>
+            <div
+              data-paralaxe="-0.1"
+              class="absolute top-16 -left-2 w-48 rounded-lg bg-surface p-3 text-ink shadow-xl lg:-left-10"
+            >
+              <p class="text-[10px] font-bold text-brand-text uppercase">Novo pedido online</p>
+              <p class="text-[13px] font-black">#012 · Aline · R$ 50,90</p>
+              <p class="text-[10px] text-ink-muted">Rua das Flores, 120 · Centro</p>
+            </div>
+            <div
+              data-paralaxe="-0.18"
+              class="absolute right-0 bottom-10 flex w-52 items-center gap-2 rounded-lg bg-success-soft p-3 text-success shadow-xl lg:-right-6"
+            >
+              <span
+                class="flex size-8 shrink-0 items-center justify-center rounded-pill bg-success text-canvas"
+                >✓</span
+              >
+              <p class="text-[12px] leading-tight font-bold">Entregue: pedido #011 · Marcos</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Faixa de categorias -->
+      <section
+        aria-label="Para todo tipo de restaurante"
+        class="faixa overflow-hidden bg-brand py-4 text-brand-ink"
+      >
+        <p class="sr-only">Lanches, pizzas, sorvetes, marmitas, açaí, doces, bebidas e porções.</p>
+        <div
+          class="faixa__trilho gap-8 text-[clamp(1.25rem,4vw,2rem)] font-black tracking-tight uppercase"
+          aria-hidden="true"
+        >
+          <span>Lanches ✱ Pizzas ✱ Sorvetes ✱ Marmitas ✱ Açaí ✱ Doces ✱ Bebidas ✱ Porções ✱</span>
+          <span>Lanches ✱ Pizzas ✱ Sorvetes ✱ Marmitas ✱ Açaí ✱ Doces ✱ Bebidas ✱ Porções ✱</span>
+        </div>
+      </section>
+
+      <!-- Recursos -->
+      <section
+        id="recursos"
+        class="mx-auto w-full max-w-6xl scroll-mt-20 px-5 py-20 lg:px-8 lg:py-28"
+      >
+        <div class="flex max-w-2xl flex-col gap-4">
+          <h2 class="titulo-secao revelar">Tudo num lugar só.</h2>
+          <span class="revelar block h-1.5 w-16 rounded-pill bg-brand"></span>
+          <p class="revelar text-[1.0625rem] text-ink-muted">
+            Do balcão à porta do cliente, sem sistemas separados nem planilha no fim do dia.
+          </p>
+        </div>
+        <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <article
+            class="revelar flex flex-col justify-between gap-6 rounded-[1.75rem] bg-ink p-6 text-canvas sm:col-span-2 lg:row-span-2"
+          >
+            <div class="flex flex-col gap-3">
+              <span class="text-micro tracking-wide text-brand uppercase">O diferencial</span>
+              <h3 class="text-[1.75rem] leading-tight font-black tracking-tight">
+                Seus clientes são <span class="text-brand">seus</span>.
+              </h3>
+              <p class="text-body text-canvas/70">
+                Quem pediu, quanto gastou, o favorito e quem sumiu há mais de 30 dias. Exporte
+                quando quiser e chame no WhatsApp.
+              </p>
+            </div>
+            <ul class="flex flex-col gap-2" aria-label="Exemplo da lista de clientes">
+              <li
+                class="flex items-center justify-between rounded-md bg-canvas/8 px-4 py-3 text-body"
+              >
+                <span>Aline M. <span class="text-canvas/50">· Centro</span></span
+                ><span class="font-bold">12 pedidos · R$ 486</span>
+              </li>
+              <li
+                class="flex items-center justify-between rounded-md bg-canvas/8 px-4 py-3 text-body"
+              >
+                <span>Marcos T. <span class="text-canvas/50">· Jardim</span></span
+                ><span class="font-bold">9 pedidos · R$ 352</span>
+              </li>
+              <li
+                class="flex items-center justify-between rounded-md bg-canvas/8 px-4 py-3 text-body"
+              >
+                <span>Bia S. <span class="text-canvas/50">· Vila Nova</span></span
+                ><span class="font-bold text-brand">sumida há 34 dias</span>
+              </li>
+            </ul>
+          </article>
+          <article
+            data-ao-ver
+            class="revelar flex flex-col gap-4 rounded-[1.75rem] bg-surface p-6 sm:col-span-2"
+            style="--atraso: 80ms"
+          >
+            <div class="flex items-baseline justify-between gap-3">
+              <h3 class="text-title-section font-black">Números do dia</h3>
+              <span class="text-label font-bold text-success">+18% vs. ontem</span>
+            </div>
+            <div class="flex h-28 items-end gap-2" aria-label="Vendas por hora, com pico às 20h">
+              <span class="barra h-[18%] flex-1 rounded-t-sm bg-brand-soft"></span
+              ><span
+                class="barra h-[26%] flex-1 rounded-t-sm bg-brand-soft"
+                style="--atraso: 40ms"
+              ></span
+              ><span
+                class="barra h-[34%] flex-1 rounded-t-sm bg-brand-soft"
+                style="--atraso: 80ms"
+              ></span
+              ><span
+                class="barra h-[52%] flex-1 rounded-t-sm bg-brand-soft"
+                style="--atraso: 120ms"
+              ></span
+              ><span
+                class="barra h-[78%] flex-1 rounded-t-sm bg-brand-soft"
+                style="--atraso: 160ms"
+              ></span
+              ><span
+                class="barra h-full flex-1 rounded-t-sm bg-brand"
+                style="--atraso: 200ms"
+              ></span
+              ><span
+                class="barra h-[86%] flex-1 rounded-t-sm bg-brand-soft"
+                style="--atraso: 240ms"
+              ></span
+              ><span
+                class="barra h-[58%] flex-1 rounded-t-sm bg-brand-soft"
+                style="--atraso: 280ms"
+              ></span
+              ><span
+                class="barra h-[30%] flex-1 rounded-t-sm bg-brand-soft"
+                style="--atraso: 320ms"
+              ></span>
+            </div>
+            <p class="text-caption text-ink-muted">
+              Vendas, ticket médio, horários de pico e os mais vendidos, comparando com o período
+              anterior.
+            </p>
+          </article>
+          <article class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-brand-text"
+              aria-hidden="true"
+            >
+              <path d="M3 4h18v12H3zM8 20h8M12 16v4" />
+            </svg>
+            <h3 class="text-body font-black">PDV rápido</h3>
+            <p class="text-caption text-ink-muted">
+              Balcão, mesa, para viagem e delivery, com caixa e fechamento.
+            </p>
+          </article>
+          <article
+            class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
+            style="--atraso: 60ms"
+          >
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-brand-text"
+              aria-hidden="true"
+            >
+              <path d="M3 8.5h18v2.5H3zM6 11l-1.5 8M18 11l1.5 8M8.5 11v4.5h7V11" />
+            </svg>
+            <h3 class="text-body font-black">Mesas e comanda</h3>
+            <p class="text-caption text-ink-muted">
+              O garçom lança pelo celular, com PIN, e a conta soma as rodadas.
+            </p>
+          </article>
+          <article class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-brand-text"
+              aria-hidden="true"
+            >
+              <path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1 1 2 2 3 3 0-2 0-4 0-6z" />
+            </svg>
+            <h3 class="text-body font-black">Tela da cozinha</h3>
+            <p class="text-caption text-ink-muted">
+              Pedidos por praça, com cronômetro e aviso de pronto.
+            </p>
+          </article>
+          <article
+            class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6"
+            style="--atraso: 60ms"
+          >
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-brand-text"
+              aria-hidden="true"
+            >
+              <path d="M7 8V3h10v5M5 8h14v8h-2v4H7v-4H5zM9 15h6" />
+            </svg>
+            <h3 class="text-body font-black">Impressão</h3>
+            <p class="text-caption text-ink-muted">
+              Ticket na térmica de rede, com o pedido e o endereço da entrega.
+            </p>
+          </article>
+          <article
+            class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-surface p-6 sm:col-span-2 lg:col-span-2"
+          >
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-brand-text"
+              aria-hidden="true"
+            >
+              <path d="M4 9l2-5h12l2 5M4 9v11h16V9M4 9h16M9 20v-6h6v6" />
+            </svg>
+            <h3 class="text-body font-black">Loja online com o seu endereço</h3>
+            <p class="text-caption text-ink-muted">
+              Cardápio com fotos, busca, sacola, checkout com a taxa calculada sozinha e a página de
+              acompanhamento do pedido. Coloque o link no Instagram e no WhatsApp.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Do pedido à porta -->
+      <section
+        id="do-pedido-a-porta"
+        class="historia scroll-mt-16 bg-ink text-canvas"
+        data-passo="1"
+      >
+        <div class="mx-auto w-full max-w-6xl px-5 pt-20 lg:px-8 lg:pt-28">
+          <h2 class="titulo-secao revelar max-w-2xl">
+            Do pedido à porta, <span class="text-brand">sem perder nada.</span>
+          </h2>
+          <p class="revelar mt-4 max-w-xl text-[1.0625rem] text-canvas/70">
+            Role e acompanhe um pedido de delivery do começo ao fim.
+          </p>
+        </div>
+        <div
+          class="mx-auto grid w-full max-w-6xl grid-cols-[minmax(0,1fr)_118px] gap-5 px-5 pb-16 sm:grid-cols-[minmax(0,1fr)_200px] lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-16 lg:px-8"
+        >
+          <ol class="flex flex-col">
+            <li class="etapa atual flex min-h-[62vh] flex-col justify-center gap-3" data-etapa="1">
+              <span class="font-black text-brand">01</span>
+              <h3 class="text-[1.5rem] leading-tight font-black lg:text-[2rem]">
+                O cliente pede pelo seu link
+              </h3>
+              <p class="max-w-md text-body text-canvas/70">
+                Cardápio com fotos, sem app para instalar. Nome, WhatsApp e endereço ficam salvos
+                para o próximo pedido.
+              </p>
+            </li>
+            <li class="etapa flex min-h-[62vh] flex-col justify-center gap-3" data-etapa="2">
+              <span class="font-black text-brand">02</span>
+              <h3 class="text-[1.5rem] leading-tight font-black lg:text-[2rem]">
+                Você aceita no PDV
+              </h3>
+              <p class="max-w-md text-body text-canvas/70">
+                Um bipe avisa. Aceitar manda para a cozinha e para a impressora; recusar mostra o
+                motivo ao cliente.
+              </p>
+            </li>
+            <li class="etapa flex min-h-[62vh] flex-col justify-center gap-3" data-etapa="3">
+              <span class="font-black text-brand">03</span>
+              <h3 class="text-[1.5rem] leading-tight font-black lg:text-[2rem]">
+                A cozinha prepara
+              </h3>
+              <p class="max-w-md text-body text-canvas/70">
+                Na tela da cozinha ou no ticket impresso, com cronômetro. Pronto, o pedido fica
+                aguardando retirada.
+              </p>
+            </li>
+            <li class="etapa flex min-h-[62vh] flex-col justify-center gap-3" data-etapa="4">
+              <span class="font-black text-brand">04</span>
+              <h3 class="text-[1.5rem] leading-tight font-black lg:text-[2rem]">
+                O entregador leva
+              </h3>
+              <p class="max-w-md text-body text-canvas/70">
+                Com o endereço, o mapa e quanto cobrar. Na porta, só conclui com o código do
+                cliente.
+              </p>
+            </li>
+            <li class="etapa flex min-h-[62vh] flex-col justify-center gap-3" data-etapa="5">
+              <span class="font-black text-brand">05</span>
+              <h3 class="text-[1.5rem] leading-tight font-black lg:text-[2rem]">
+                Entregue, e você fica sabendo
+              </h3>
+              <p class="max-w-md text-body text-canvas/70">
+                O PDV avisa na hora, e o cliente entra na sua lista, pronto para o próximo pedido.
+              </p>
+            </li>
+          </ol>
+          <div class="relative" aria-hidden="true">
+            <div class="sticky top-24 lg:top-28">
+              <div class="celular w-full">
+                <div class="flex h-full flex-col gap-3 bg-canvas px-3 pt-9 pb-4 lg:px-5 lg:pt-12">
+                  <p class="text-[8px] text-ink-muted lg:text-[11px]">
+                    Pedido #012 · Burguer da Praça
+                  </p>
+                  <div class="relative h-12 lg:h-16">
+                    <p
+                      class="tela-passo text-[11px] leading-tight font-black text-ink lg:text-[17px]"
+                      data-tela="1"
+                    >
+                      Aguardando o restaurante aceitar
+                    </p>
+                    <p
+                      class="tela-passo text-[11px] leading-tight font-black text-ink lg:text-[17px]"
+                      data-tela="2"
+                    >
+                      Pedido aceito · em preparação
+                    </p>
+                    <p
+                      class="tela-passo text-[11px] leading-tight font-black text-ink lg:text-[17px]"
+                      data-tela="3"
+                    >
+                      Pronto · aguardando o entregador
+                    </p>
+                    <p
+                      class="tela-passo text-[11px] leading-tight font-black text-ink lg:text-[17px]"
+                      data-tela="4"
+                    >
+                      Pedido a caminho
+                    </p>
+                    <p
+                      class="tela-passo text-[11px] leading-tight font-black text-success lg:text-[17px]"
+                      data-tela="5"
+                    >
+                      Pedido entregue. Bom apetite!
+                    </p>
+                  </div>
+                  <ol class="flex flex-col gap-1.5 text-[8px] font-bold lg:gap-2 lg:text-[11px]">
+                    <li
+                      data-marco="1"
+                      class="rounded-md bg-surface-strong px-2 py-1.5 text-ink-muted lg:px-3 lg:py-2"
+                    >
+                      Pedido enviado
+                    </li>
+                    <li
+                      data-marco="2"
+                      class="rounded-md bg-surface-strong px-2 py-1.5 text-ink-muted lg:px-3 lg:py-2"
+                    >
+                      Aceito · em preparação
+                    </li>
+                    <li
+                      data-marco="3"
+                      class="rounded-md bg-surface-strong px-2 py-1.5 text-ink-muted lg:px-3 lg:py-2"
+                    >
+                      Pronto
+                    </li>
+                    <li
+                      data-marco="4"
+                      class="rounded-md bg-surface-strong px-2 py-1.5 text-ink-muted lg:px-3 lg:py-2"
+                    >
+                      A caminho
+                    </li>
+                    <li
+                      data-marco="5"
+                      class="rounded-md bg-surface-strong px-2 py-1.5 text-ink-muted lg:px-3 lg:py-2"
+                    >
+                      Entregue
+                    </li>
+                  </ol>
+                  <div class="mt-auto rounded-md bg-sun p-2 text-sun-ink lg:p-3">
+                    <p class="text-[7px] font-bold uppercase lg:text-[10px]">Código de entrega</p>
+                    <p class="text-[16px] font-black tracking-[0.2em] lg:text-[26px]">4321</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Um notebook só -->
+      <section
+        class="mx-auto grid w-full max-w-6xl items-center gap-12 px-5 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-28"
+      >
+        <div class="flex flex-col gap-4">
+          <h2 class="titulo-secao revelar">
+            Um notebook só? <span class="text-brand-text">Dá conta.</span>
+          </h2>
+          <span class="revelar block h-1.5 w-16 rounded-pill bg-brand"></span>
+          <p class="revelar text-[1.0625rem] text-ink-muted">
+            O PDV vira a central do restaurante: vender, mesas, entregas, pedidos online e cozinha
+            num menu ao lado, sem perder o pedido que você está montando.
+          </p>
+          <ul class="revelar flex flex-col gap-2 text-body text-ink">
+            <li>✓ Bolinha com o que está esperando em cada área</li>
+            <li>✓ Bipe a cada pedido online e a cada entrega concluída</li>
+            <li>✓ Tela da cozinha separada para quem tem tablet ou TV</li>
+          </ul>
+        </div>
+        <div class="revelar" data-paralaxe="0.05" aria-hidden="true">
+          <div class="notebook__tela flex">
+            <div
+              class="flex w-[13%] flex-col items-center gap-2 bg-brand py-3 text-[7px] font-bold text-brand-ink lg:text-[9px]"
+            >
+              <span class="rounded-sm bg-canvas px-1.5 py-1 text-brand-text">Vender</span
+              ><span>Mesas</span
+              ><span class="relative"
+                >Entregas<span
+                  class="absolute -top-2 -right-3 rounded-pill bg-sun px-1 text-sun-ink"
+                  >2</span
+                ></span
+              ><span class="relative"
+                >Online<span class="absolute -top-2 -right-3 rounded-pill bg-sun px-1 text-sun-ink"
+                  >1</span
+                ></span
+              ><span>Cozinha</span>
+            </div>
+            <div class="flex flex-1 flex-col gap-2 p-3">
+              <div class="flex gap-1 text-[7px] font-bold lg:text-[9px]">
+                <span class="rounded-pill bg-brand-soft px-2 py-0.5 text-brand-text">Lanches</span
+                ><span class="rounded-pill bg-surface px-2 py-0.5 text-ink-muted">Porções</span
+                ><span class="rounded-pill bg-surface px-2 py-0.5 text-ink-muted">Bebidas</span>
+              </div>
+              <div class="grid flex-1 grid-cols-3 gap-1.5">
+                <div class="flex flex-col overflow-hidden rounded-md bg-surface">
+                  <img
+                    src="/marca/hamburguer.webp"
+                    alt=""
+                    class="aspect-[4/3] w-full object-cover"
+                    loading="lazy"
+                  /><span class="p-1 text-[7px] font-bold lg:text-[9px]">Smash Duplo</span>
+                </div>
+                <div class="flex flex-col overflow-hidden rounded-md bg-surface">
+                  <span class="aspect-[4/3] bg-gradient-to-br from-[#f6c453] to-[#c9781a]"></span
+                  ><span class="p-1 text-[7px] font-bold lg:text-[9px]">Batata</span>
+                </div>
+                <div class="flex flex-col overflow-hidden rounded-md bg-surface">
+                  <span class="aspect-[4/3] bg-gradient-to-br from-[#e9d3b5] to-[#8a5a33]"></span
+                  ><span class="p-1 text-[7px] font-bold lg:text-[9px]">Milk-shake</span>
+                </div>
+              </div>
+            </div>
+            <div
+              class="flex w-[30%] flex-col gap-1.5 border-l border-line bg-surface p-2 text-[7px] lg:text-[9px]"
+            >
+              <span class="font-black">Pedido</span
+              ><span class="flex justify-between"><span>2× Smash Duplo</span><b>R$ 65,80</b></span
+              ><span class="flex justify-between"><span>1× Batata</span><b>R$ 18,00</b></span>
+              <span class="mt-auto rounded-sm bg-brand py-1.5 text-center font-black text-brand-ink"
+                >Enviar para a cozinha</span
+              >
+            </div>
+          </div>
+          <div class="notebook__base"></div>
+        </div>
+      </section>
+
+      <!-- Como começar -->
+      <section class="bg-surface">
+        <div class="mx-auto w-full max-w-6xl px-5 py-20 lg:px-8 lg:py-24">
+          <h2 class="titulo-secao revelar">Como começar</h2>
+          <ol class="mt-10 grid gap-4 lg:grid-cols-3">
+            <li class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-canvas p-6">
+              <span class="text-[3rem] leading-none font-black text-brand-text">1</span
+              ><b class="text-title-section">Conversa rápida</b
+              ><span class="text-body text-ink-muted"
+                >Entendemos como o seu restaurante funciona hoje.</span
+              >
+            </li>
+            <li
+              class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-canvas p-6"
+              style="--atraso: 80ms"
+            >
+              <span class="text-[3rem] leading-none font-black text-brand-text">2</span
+              ><b class="text-title-section">Cardápio no ar</b
+              ><span class="text-body text-ink-muted"
+                >Você cadastra os produtos com fotos, e a gente ajuda no que precisar.</span
+              >
+            </li>
+            <li
+              class="revelar flex flex-col gap-3 rounded-[1.75rem] bg-canvas p-6"
+              style="--atraso: 160ms"
+            >
+              <span class="text-[3rem] leading-none font-black text-brand-text">3</span
+              ><b class="text-title-section">Vendendo</b
+              ><span class="text-body text-ink-muted"
+                >PDV no balcão, loja online no Instagram e no WhatsApp, pedidos chegando.</span
+              >
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Formulário -->
+      <section
+        id="quero"
+        class="mx-auto grid w-full max-w-6xl scroll-mt-20 gap-8 px-5 py-20 lg:grid-cols-[0.85fr_1.15fr] lg:px-8 lg:py-28"
+      >
+        <div class="revelar flex flex-col gap-5 rounded-[1.75rem] bg-ink p-7 text-canvas lg:p-10">
+          <h2 class="titulo-secao">Vamos <span class="text-brand">conversar?</span></h2>
+          <p class="text-body text-canvas/75">
+            Deixe seus dados e chamamos você no WhatsApp para mostrar o sistema e montar o plano
+            ideal para o seu porte.
+          </p>
+          <ul class="flex flex-col gap-2 text-body">
+            <li>✓ Demonstração com o seu cardápio</li>
+            <li>✓ Ajuda para colocar a loja no ar</li>
+            <li>✓ Sem compromisso</li>
+          </ul>
+        </div>
+        <form
+          data-lead="restaurante"
+          data-botao="Quero conhecer"
+          class="revelar flex flex-col gap-4 rounded-[1.75rem] bg-surface p-6 lg:p-8"
+          style="--atraso: 80ms"
+          novalidate
+        >
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="flex flex-col gap-2 text-label"
+              >Seu nome<input
+                name="nome"
+                required
+                minlength="2"
+                maxlength="80"
+                autocomplete="name"
+                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+            /></label>
+            <label class="flex flex-col gap-2 text-label"
+              >WhatsApp com DDD<input
+                name="celular"
+                required
+                inputmode="tel"
+                autocomplete="tel"
+                placeholder="(17) 99123-4567"
+                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+            /></label>
+            <label class="flex flex-col gap-2 text-label"
+              >Nome do restaurante<input
+                name="negocio"
+                required
+                maxlength="80"
+                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+            /></label>
+            <label class="flex flex-col gap-2 text-label"
+              >E-mail (opcional)<input
+                name="email"
+                type="email"
+                autocomplete="email"
+                maxlength="120"
+                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+            /></label>
+            <label class="flex flex-col gap-2 text-label"
+              >Cidade<input
+                name="cidade"
+                required
+                maxlength="80"
+                autocomplete="address-level2"
+                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+            /></label>
+            <label class="flex flex-col gap-2 text-label"
+              >Estado
+              <select
+                name="uf"
+                required
+                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+              >
+                <option>AC</option>
+                <option>AL</option>
+                <option>AM</option>
+                <option>AP</option>
+                <option>BA</option>
+                <option>CE</option>
+                <option>DF</option>
+                <option>ES</option>
+                <option>GO</option>
+                <option>MA</option>
+                <option>MG</option>
+                <option>MS</option>
+                <option>MT</option>
+                <option>PA</option>
+                <option>PB</option>
+                <option>PE</option>
+                <option>PI</option>
+                <option>PR</option>
+                <option>RJ</option>
+                <option>RN</option>
+                <option>RO</option>
+                <option>RR</option>
+                <option>RS</option>
+                <option>SC</option>
+                <option>SE</option>
+                <option selected>SP</option>
+                <option>TO</option>
+              </select>
+            </label>
+            <label class="flex flex-col gap-2 text-label"
+              >Tipo
+              <select
+                name="segmento"
+                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+              >
+                <option value="">Escolha</option>
+                <option>Lanches</option>
+                <option>Pizzaria</option>
+                <option>Restaurante</option>
+                <option>Marmitaria</option>
+                <option>Doces e sorvetes</option>
+                <option>Bebidas</option>
+                <option>Outro</option>
+              </select>
+            </label>
+            <label class="flex flex-col gap-2 text-label"
+              >Pedidos por dia
+              <select
+                name="porte"
+                class="h-12 rounded-md border border-line-strong bg-canvas px-4 text-body focus-visible:outline-2 focus-visible:outline-brand"
+              >
+                <option value="">Escolha</option>
+                <option>Até 30</option>
+                <option>30 a 100</option>
+                <option>100 a 300</option>
+                <option>Mais de 300</option>
+              </select>
+            </label>
+          </div>
+          <label class="flex items-start gap-3 text-body"
+            ><input
+              name="aceite"
+              type="checkbox"
+              required
+              class="mt-1 size-5 shrink-0 accent-[var(--uf-brand)]"
+            /><span
+              >Aceito ser contatado pela equipe usefood pelo WhatsApp, telefone ou e-mail sobre este
+              interesse.</span
+            ></label
+          >
+          <p data-aviso role="alert" class="text-body text-danger"></p>
+          <button
+            type="submit"
+            class="h-14 rounded-pill bg-brand text-body font-black text-brand-ink transition hover:brightness-95 disabled:opacity-60"
+          >
+            Quero conhecer
+          </button>
+        </form>
+      </section>
+
+      <!-- Perguntas frequentes -->
+      <section id="perguntas" class="bg-surface">
+        <div class="mx-auto w-full max-w-3xl px-5 py-20 lg:py-24">
+          <h2 class="titulo-secao revelar">Perguntas frequentes</h2>
+          <div class="mt-8 flex flex-col divide-y divide-line">
+            <details class="revelar group py-5">
+              <summary
+                class="flex items-center justify-between gap-4 text-title-section font-black"
+              >
+                Preciso de um computador novo?<span
+                  class="mais text-[1.75rem] text-brand-text transition"
+                  >+</span
+                >
+              </summary>
+              <p class="mt-3 text-body text-ink-muted">
+                Não. O usefood funciona no navegador do computador, do tablet ou do celular que você
+                já tem.
+              </p>
+            </details>
+            <details class="revelar group py-5">
+              <summary
+                class="flex items-center justify-between gap-4 text-title-section font-black"
+              >
+                Funciona com a minha impressora?<span
+                  class="mais text-[1.75rem] text-brand-text transition"
+                  >+</span
+                >
+              </summary>
+              <p class="mt-3 text-body text-ink-muted">
+                Funciona com impressoras térmicas de rede (as de cupom, ligadas no cabo de rede),
+                que são as mais comuns na cozinha.
+              </p>
+            </details>
+            <details class="revelar group py-5">
+              <summary
+                class="flex items-center justify-between gap-4 text-title-section font-black"
+              >
+                Os dados dos clientes são meus?<span
+                  class="mais text-[1.75rem] text-brand-text transition"
+                  >+</span
+                >
+              </summary>
+              <p class="mt-3 text-body text-ink-muted">
+                Sim. Você vê e exporta a lista de quem pediu por delivery, retirada e loja online,
+                com nome, WhatsApp e o que cada um mais pede.
+              </p>
+            </details>
+            <details class="revelar group py-5">
+              <summary
+                class="flex items-center justify-between gap-4 text-title-section font-black"
+              >
+                Quanto custa?<span class="mais text-[1.75rem] text-brand-text transition">+</span>
+              </summary>
+              <p class="mt-3 text-body text-ink-muted">
+                Depende do porte e do que você vai usar. Na conversa montamos o plano certo para o
+                seu restaurante.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fechamento -->
+      <section class="bg-brand text-brand-ink">
+        <div
+          class="mx-auto flex w-full max-w-6xl flex-col items-start gap-6 px-5 py-16 lg:flex-row lg:items-center lg:justify-between lg:px-8"
+        >
+          <div class="rounded-[1.5rem] bg-surface p-5 shadow-xl">
+            <img
+              src="/marca/slogan.webp"
+              alt="Deu fome, USE!"
+              width="445"
+              height="232"
+              loading="lazy"
+              class="h-24 w-auto lg:h-32"
+            />
+          </div>
+          <div class="flex flex-col gap-4 lg:items-end">
+            <p class="max-w-md text-title-section font-black lg:text-right">
+              Coloque o seu restaurante no delivery da cidade.
+            </p>
+            <a
+              href="#quero"
+              class="inline-flex h-14 items-center rounded-pill bg-ink px-7 text-body font-black text-canvas transition hover:brightness-110"
+              >Quero conhecer</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bg-canvas">
+      <div
+        class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-12 lg:flex-row lg:items-center lg:justify-between lg:px-8"
+      >
+        <div class="rounded-lg bg-surface p-3">
+          <img
+            src="/marca/logo.webp"
+            alt="USE! FOOD"
+            width="104"
+            height="48"
+            loading="lazy"
+            class="h-10 w-auto"
+          />
+        </div>
+        <nav aria-label="Rodapé" class="flex flex-wrap gap-6 text-label text-ink-muted">
+          <a href="/" class="hover:text-ink">Início</a
+          ><a href="/franquia" class="hover:text-ink">Franquia e parceiros</a
+          ><a href="/pdv" class="hover:text-ink">Entrar no painel</a>
+        </nav>
+        <p class="text-caption text-ink-muted">
+          © <span data-ano>2026</span> usefood. Restaurantes, lanches, pizzas, sorvetes e muito
+          mais.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
