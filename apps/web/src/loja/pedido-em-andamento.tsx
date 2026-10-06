@@ -7,6 +7,8 @@ import { navegar } from '../rotas';
 
 interface EmAndamento {
   token: string;
+  lojaSlug: string;
+  lojaNome: string;
   numero: number;
   tipo: string;
   situacao: SituacaoDoPedido;
@@ -15,7 +17,8 @@ interface EmAndamento {
 const ENCERRADO: SituacaoDoPedido[] = ['concluido', 'cancelado'];
 
 /** Card no topo da loja quando o cliente tem pedido em andamento (aguardando, em preparo, saiu…). */
-export function PedidoEmAndamento({ lojaSlug, base }: { lojaSlug: string; base: string }) {
+/** Sem lojaSlug: o pedido em andamento mais recente de qualquer loja (vitrine do app). */
+export function PedidoEmAndamento({ lojaSlug, base }: { lojaSlug?: string; base?: string }) {
   const { supabase } = useAppContext();
   const [pedidos, setPedidos] = useState<EmAndamento[]>([]);
 
@@ -29,7 +32,14 @@ export function PedidoEmAndamento({ lojaSlug, base }: { lojaSlug: string; base: 
           const { data } = await supabase.rpc('acompanhar_pedido', { p_token: p.token });
           const d = data as { numero: number; tipo: string; situacao: SituacaoDoPedido } | null;
           return d && !ENCERRADO.includes(d.situacao)
-            ? { token: p.token, numero: d.numero, tipo: d.tipo, situacao: d.situacao }
+            ? {
+                token: p.token,
+                lojaSlug: p.lojaSlug,
+                lojaNome: p.lojaNome,
+                numero: d.numero,
+                tipo: d.tipo,
+                situacao: d.situacao,
+              }
             : null;
         }),
       );
@@ -50,7 +60,7 @@ export function PedidoEmAndamento({ lojaSlug, base }: { lojaSlug: string; base: 
         <button
           key={p.token}
           type="button"
-          onClick={() => navegar(`${base}/pedido/${p.token}`)}
+          onClick={() => navegar(`${base ?? `/${p.lojaSlug}`}/pedido/${p.token}`)}
           className="flex items-center gap-3 rounded-lg bg-brand p-4 text-left text-brand-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           <span className="flex size-10 shrink-0 items-center justify-center rounded-pill bg-brand-ink/15">
@@ -60,6 +70,7 @@ export function PedidoEmAndamento({ lojaSlug, base }: { lojaSlug: string; base: 
             <span className="flex flex-col">
               <span className="text-caption opacity-90">
                 Pedido #{String(p.numero).padStart(3, '0')}
+                {!lojaSlug && ` · ${p.lojaNome}`}
               </span>
               <span className="text-body-strong">{fraseDoPedido(p.tipo, p.situacao)}</span>
             </span>

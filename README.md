@@ -97,6 +97,7 @@ O `/pdv` entra sem senha: a pessoa digita o e-mail, recebe um código de 6 núme
 - Testes em `supabase/tests/vitrine.test.sql`.
 - Telas (`apps/web/src/vitrine`): **/delivery** escolhe a cidade ("usar minha localização" acha a cidade com lojas mais perto, pelo centro das lojas; ou a lista) e lembra no aparelho; **/delivery/<cidade>** é a vitrine (busca de restaurante e prato, categorias que existem na cidade, "Abertos agora" e "Abrem mais tarde" com quando abre); **/delivery/conta** mostra a conta e os pedidos de todas as lojas. Barra de baixo: Restaurantes e Pedidos. A loja mostra "Restaurantes" para voltar quando o cliente veio da vitrine.
 - App instalável: `public/manifest.webmanifest` (abre em /delivery, tela cheia), ícones `public/marca/icone-192.png` e `icone-512.png` (provisórios, do guia) e `public/sw.js` (guarda só os arquivos do app; páginas da internet primeiro; banco e imagens sempre da internet). Botão "Instalar app" quando o navegador permite. Próximo passo: Capacitor para as lojas (Google Play e App Store), com o mesmo código.
+- Pente fino: ao abrir /delivery pela primeira vez, pega a localização e entra direto na cidade com lojas mais perto (até 80 km; sem permissão, a lista). Logo claro no topo; topo fixo com cidade e busca; pedido em andamento de qualquer loja no topo; favoritos no aparelho ("Seus favoritos"); distância de cada loja (abertos mais perto primeiro); blocos de carregamento no formato dos cartões; loja fechada com logo em cinza e "Abre hoje às…".
 
 ## Site da marca (página inicial e restaurantes)
 
