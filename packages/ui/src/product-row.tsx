@@ -1,4 +1,5 @@
 import { cn } from './cn';
+import { Icon } from './icon';
 
 export interface ProductRowProps {
   name: string;
@@ -24,21 +25,14 @@ export function ProductRow({
     <button
       type="button"
       onClick={onClick}
-      aria-label={`${name}, ${priceLabel}${quantity ? `, ${quantity} na sacola` : ''}`}
+      aria-label={`${name}, ${priceLabel}${quantity ? `, ${quantity} no carrinho` : ''}`}
       className={cn(
-        'flex w-full items-start gap-4 rounded-lg py-4 text-left transition',
-        'hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
+        'relative flex w-full items-start gap-4 py-4 pr-12 text-left transition',
+        'active:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
       )}
     >
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="text-body-strong text-ink">{name}</span>
-        {description && (
-          <span className="line-clamp-2 text-caption text-ink-muted">{description}</span>
-        )}
-        <span className="pt-1 text-body-strong text-ink tabular-nums">{priceLabel}</span>
-      </span>
       {imageUrl && (
-        <span className="relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-md bg-surface-strong">
+        <span className="relative size-[5.5rem] shrink-0 overflow-hidden rounded-lg bg-surface-strong">
           <img
             src={imageUrl}
             alt=""
@@ -46,18 +40,21 @@ export function ProductRow({
             decoding="async"
             className="absolute inset-0 size-full object-cover"
           />
-          {quantity > 0 && (
-            <span className="absolute top-1.5 right-1.5 flex min-w-6 items-center justify-center rounded-pill bg-brand px-1.5 py-0.5 text-micro text-brand-ink">
-              {quantity}
-            </span>
-          )}
         </span>
       )}
-      {!imageUrl && quantity > 0 && (
-        <span className="flex min-w-6 items-center justify-center rounded-pill bg-brand px-1.5 py-0.5 text-micro text-brand-ink">
-          {quantity}
-        </span>
-      )}
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="text-body-strong text-ink">{name}</span>
+        {description && (
+          <span className="line-clamp-2 text-caption text-ink-muted">{description}</span>
+        )}
+        <span className="pt-1 text-body-strong text-ink tabular-nums">{priceLabel}</span>
+      </span>
+      <span
+        aria-hidden="true"
+        className="absolute right-0 bottom-4 flex size-9 items-center justify-center rounded-pill bg-brand text-label font-black text-brand-ink"
+      >
+        {quantity > 0 ? quantity : <Icon name="mais" size={20} />}
+      </span>
     </button>
   );
 }

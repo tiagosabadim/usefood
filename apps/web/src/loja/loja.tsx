@@ -4,11 +4,12 @@ import {
   DIAS_DA_SEMANA,
   formatarPreco,
   formatarTelefone,
+  type ItemCarrinho,
   quantidadeDoProduto,
   quantidadeTotal,
   resumoDoHorario,
+  rotuloDaCozinha,
   subtotalCentavos,
-  type ItemCarrinho,
 } from '@usefood/core';
 import type { AppSupabaseClient } from '@usefood/db';
 import {
@@ -18,21 +19,11 @@ import {
   type Cardapio,
   type ProdutoDoCardapio,
 } from '@usefood/pedidos';
-import {
-  Button,
-  CartList,
-  Icon,
-  Panel,
-  ProductRow,
-  Sheet,
-  TextField,
-  cn,
-  type IconName,
-} from '@usefood/ui';
+import { Button, CartList, Icon, Panel, ProductRow, Sheet, cn, type IconName } from '@usefood/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { gravarSacola, lerSacola } from '../guardado';
 import { navegar } from '../rotas';
-import { voltaParaVitrine } from '../vitrine/vitrine-dados';
+import { gravarFavoritos, lerFavoritos, voltaParaVitrine } from '../vitrine/vitrine-dados';
 import { Checkout } from './checkout';
 import { buscarLoja, whatsapp, type Horario, type LojaPublica } from './dados';
 import { PedidoEmAndamento } from './pedido-em-andamento';
@@ -119,10 +110,11 @@ function PaginaDaLoja({
   cardapio: Cardapio;
 }) {
   const [volta] = useState(() => voltaParaVitrine());
+  const [aba, setAba] = useState<'cardapio' | 'sobre'>('cardapio');
+  const [favorita, setFavorita] = useState(() => lerFavoritos().includes(loja.slug));
   const [sacola, setSacola] = useState<ItemCarrinho[]>(() => lerSacola(loja.id));
   const [aberto, setAberto] = useState<ProdutoDoCardapio | null>(null);
   const [vendoSacola, setVendoSacola] = useState(false);
-  const [vendoPerfil, setVendoPerfil] = useState(false);
   const [fechando, setFechando] = useState(false);
   const [busca, setBusca] = useState('');
   const [secaoAtiva, setSecaoAtiva] = useState<string | null>(null);
@@ -212,25 +204,78 @@ function PaginaDaLoja({
     );
   }
 
-  const informacoes: { icone: IconName; texto: string; destaque?: boolean }[] = [
-    { icone: 'calendario', texto: `${horario.titulo} · ${horario.detalhe}`, destaque: aberta },
-    { icone: 'relogio', texto: `${loja.prep_minutes_min}–${loja.prep_minutes_max} min` },
-    { icone: 'moto', texto: textoDaEntrega(loja) },
-  ];
+  const sobre = (
+    <div className="flex flex-col gap-5">
+      {loja.description && <p className="text-body text-ink">{loja.description}</p>}
+      <section className="flex flex-col gap-1">
+        <h3 className="text-label text-ink-muted">Endereço</h3>
+        <p className="text-body text-ink">
+          {loja.street}, {loja.street_number} · {loja.district}
+          {loja.city ? ` · ${loja.city}` : ''}
+        </p>
+      </section>
+      <section className="flex flex-col gap-2">
+        <h3 className="text-label text-ink-muted">Horários</h3>
+        <ul className="flex flex-col gap-1">
+          {DIAS_DA_SEMANA.map((dia, n) => {
+            const doDia = horarios.filter((h) => h.weekday === n);
+            const hoje = n === new Date().getDay();
+            return (
+              <li
+                key={dia}
+                className={cn(
+                  'flex justify-between gap-3 text-body',
+                  hoje ? 'text-body-strong text-ink' : 'text-ink',
+                )}
+              >
+                <span>
+                  {dia}
+                  {hoje ? ' (hoje)' : ''}
+                </span>
+                <span className={doDia.length ? '' : 'text-ink-muted'}>
+                  {doDia.length
+                    ? doDia.map((h) => `${hora(h.opens)}–${hora(h.closes)}`).join(', ')
+                    : 'Fechado'}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+      <section className="flex flex-col gap-1">
+        <h3 className="text-label text-ink-muted">Entrega</h3>
+        <p className="text-body text-ink">
+          {textoDaEntrega(loja)} · {loja.prep_minutes_min}–{loja.prep_minutes_max} min
+          {loja.accepts_pickup ? ' · Também dá para retirar na loja' : ''}
+        </p>
+        <p className="text-body text-ink">
+          {loja.min_order_cents
+            ? `Pedido mínimo ${formatarPreco(loja.min_order_cents)}`
+            : 'Sem pedido mínimo'}
+        </p>
+      </section>
+      <section className="flex flex-col gap-1">
+        <h3 className="text-label text-ink-muted">Pagamento</h3>
+        <p className="text-body text-ink">
+          Na entrega ou na retirada: dinheiro, Pix, crédito e débito.
+        </p>
+      </section>
+      {loja.phone && (
+        <a
+          href={whatsapp(loja.phone, `Oi, ${loja.name}! Vim pela loja online.`)}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <Button className="h-target-pdv w-full">
+            Falar com a loja · {formatarTelefone(loja.phone)}
+          </Button>
+        </a>
+      )}
+    </div>
+  );
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col pb-28 lg:px-8 lg:pb-12">
-      {volta && (
-        <nav aria-label="Voltar" className="px-4 pt-3 lg:px-0">
-          <button
-            type="button"
-            onClick={() => navegar(volta)}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-pill pr-3 text-label font-bold text-ink focus-visible:outline-2 focus-visible:outline-brand"
-          >
-            <Icon name="voltar" size={20} /> Restaurantes
-          </button>
-        </nav>
-      )}
       {loja.status !== 'ativo' && (
         // Só a equipe enxerga loja fora do ar (está logada); o cliente vê "Loja não encontrada"
         <p role="status" className="bg-sun px-5 py-3 text-body text-sun-ink lg:mt-4 lg:rounded-md">
@@ -239,23 +284,60 @@ function PaginaDaLoja({
         </p>
       )}
 
-      <div className="relative aspect-[2/1] w-full overflow-hidden bg-surface-strong lg:mt-4 lg:aspect-[4/1] lg:rounded-lg">
+      <div className="relative aspect-[4/3] max-h-[22rem] w-full overflow-hidden bg-surface-strong lg:mt-4 lg:aspect-[4/1] lg:rounded-lg">
         {loja.cover_path && (
           <img src={foto(loja.cover_path)!} alt="" className="size-full object-cover" />
         )}
-        <button
-          type="button"
-          aria-label="Minha conta"
-          onClick={() => navegar(`${base}/conta`)}
-          className="absolute top-3 right-3 flex size-11 items-center justify-center rounded-pill bg-canvas text-ink shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-        >
-          <Icon name="perfil" size={22} />
-        </button>
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgb(0_0_0/0.45),transparent)]"
+        />
+        <div className="absolute inset-x-3 top-[max(0.75rem,env(safe-area-inset-top))] flex items-center justify-between">
+          {volta ? (
+            <BotaoSobreFoto
+              rotulo="Voltar para os restaurantes"
+              icone="voltar"
+              onClick={() => navegar(volta)}
+            />
+          ) : (
+            <span />
+          )}
+          <div className="flex gap-2">
+            <BotaoSobreFoto
+              rotulo={favorita ? 'Tirar dos favoritos' : 'Favoritar'}
+              icone="coracao"
+              ativo={favorita}
+              onClick={() => {
+                const nova = favorita
+                  ? lerFavoritos().filter((x) => x !== loja.slug)
+                  : [...lerFavoritos(), loja.slug];
+                gravarFavoritos(nova);
+                setFavorita(!favorita);
+              }}
+            />
+            {typeof navigator.share === 'function' && (
+              <BotaoSobreFoto
+                rotulo="Compartilhar a loja"
+                icone="compartilhar"
+                onClick={() =>
+                  void navigator
+                    .share({ title: loja.name, url: window.location.href })
+                    .catch(() => undefined)
+                }
+              />
+            )}
+            <BotaoSobreFoto
+              rotulo="Minha conta"
+              icone="perfil"
+              onClick={() => navegar(`${base}/conta`)}
+            />
+          </div>
+        </div>
       </div>
 
-      <header className="flex flex-col gap-4 px-5 lg:px-0">
-        <div className="flex items-end gap-4">
-          <div className="relative z-10 -mt-10 flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-pill border-4 border-canvas bg-surface-strong">
+      <header className="relative z-10 -mt-7 flex flex-col gap-4 rounded-t-[1.75rem] bg-canvas px-5 pt-5 lg:mt-5 lg:rounded-none lg:px-0 lg:pt-0">
+        <div className="flex items-start gap-4">
+          <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-surface">
             {loja.logo_path ? (
               <img
                 src={foto(loja.logo_path)!}
@@ -263,77 +345,87 @@ function PaginaDaLoja({
                 className="size-full object-cover"
               />
             ) : (
-              <span className="font-display text-title-section text-ink-muted">
+              <span className="text-title-section font-black text-ink-muted">
                 {loja.name.slice(0, 2).toUpperCase()}
               </span>
             )}
           </div>
-          <div className="flex min-w-0 flex-1 flex-col pb-1">
-            <h1 className="font-display text-title-screen text-ink">{loja.name}</h1>
-            <button
-              type="button"
-              className="self-start text-label text-brand-text"
-              onClick={() => setVendoPerfil(true)}
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <h1 className="text-[1.75rem] leading-[1.1] font-black tracking-[-0.03em] text-ink">
+              {loja.name}
+            </h1>
+            <p className="text-caption text-ink-muted">
+              {[
+                (loja.cuisines ?? []).map(rotuloDaCozinha).join(', '),
+                `${loja.prep_minutes_min}–${loja.prep_minutes_max} min`,
+                textoDaEntrega(loja),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+            <p
+              className={cn(
+                'flex items-center gap-1.5 text-caption font-bold',
+                aberta ? 'text-success' : 'text-ink-muted',
+              )}
             >
-              Ver mais sobre a loja
-            </button>
+              <span
+                aria-hidden="true"
+                className={cn('size-2 rounded-pill', aberta ? 'bg-success' : 'bg-line-strong')}
+              />
+              {horario.titulo} · {horario.detalhe}
+            </p>
           </div>
         </div>
-        {loja.description && <p className="text-body text-ink-muted">{loja.description}</p>}
 
-        <div className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4">
-          <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            {informacoes.map((i) => (
-              <li
-                key={i.icone}
-                className={cn(
-                  'flex items-center gap-2 text-label',
-                  i.destaque ? 'text-success' : 'text-ink',
-                )}
-              >
-                <Icon name={i.icone} size={18} />
-                {i.texto}
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
-            <span className="text-caption text-ink-muted">
-              {loja.min_order_cents
-                ? `Pedido mínimo ${formatarPreco(loja.min_order_cents)}`
-                : 'Sem pedido mínimo'}
-            </span>
-            {loja.phone && (
-              <a
-                href={whatsapp(loja.phone, `Oi, ${loja.name}! Vim pela loja online.`)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Button variant="secondary" className="h-10">
-                  <Icon name="conversa" size={18} /> Falar com a loja
-                </Button>
-              </a>
-            )}
-          </div>
+        <div role="tablist" aria-label="Loja" className="flex border-b border-line">
+          {(['cardapio', 'sobre'] as const).map((a) => (
+            <button
+              key={a}
+              type="button"
+              role="tab"
+              aria-selected={aba === a}
+              onClick={() => setAba(a)}
+              className={cn(
+                '-mb-px flex-1 border-b-2 pb-3 text-label font-bold transition',
+                aba === a ? 'border-brand text-brand-text' : 'border-transparent text-ink-muted',
+              )}
+            >
+              {a === 'cardapio' ? 'Cardápio' : 'Sobre'}
+            </button>
+          ))}
         </div>
         <PedidoEmAndamento lojaSlug={loja.slug} base={base} />
       </header>
 
-      <div className="lg:mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8">
+      {aba === 'sobre' && <div className="px-5 pt-5 pb-10 lg:px-0">{sobre}</div>}
+      <div
+        className={cn(
+          'lg:mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8',
+          aba !== 'cardapio' && 'hidden',
+        )}
+      >
         <div className="min-w-0">
-          <div className="sticky top-0 z-20 mt-5 flex flex-col gap-3 border-b border-line bg-canvas px-5 pt-3 lg:mt-0 lg:px-0">
-            <TextField
-              label="Buscar no cardápio"
-              placeholder="Buscar no cardápio"
-              className="[&>label]:sr-only"
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-            />
+          <div className="sticky top-0 z-20 mt-1 flex flex-col gap-3 bg-canvas px-5 pt-3 lg:mt-0 lg:px-0">
+            <label className="relative block">
+              <span className="sr-only">Buscar no cardápio</span>
+              <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-ink-muted">
+                <Icon name="busca" size={20} />
+              </span>
+              <input
+                type="search"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                placeholder="Buscar no cardápio"
+                className="h-11 w-full rounded-pill border border-line bg-surface pr-4 pl-12 text-body text-ink placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-brand"
+              />
+            </label>
             {!encontrados && (
               <div
                 ref={abas}
                 role="tablist"
                 aria-label="Categorias"
-                className="-mb-px flex gap-1 overflow-x-auto"
+                className="flex gap-2 overflow-x-auto pb-3 [scrollbar-width:none]"
               >
                 {categorias.map((c) => (
                   <button
@@ -348,10 +440,10 @@ function PaginaDaLoja({
                         ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                     }
                     className={cn(
-                      'shrink-0 border-b-2 px-3 pb-3 text-label whitespace-nowrap transition',
+                      'h-9 shrink-0 rounded-pill px-4 text-label font-bold whitespace-nowrap transition',
                       secaoAtiva === c.id
-                        ? 'border-brand text-brand-text'
-                        : 'border-transparent text-ink-muted hover:text-ink',
+                        ? 'bg-brand text-brand-ink'
+                        : 'border border-line bg-surface text-ink',
                     )}
                   >
                     {c.name}
@@ -378,15 +470,15 @@ function PaginaDaLoja({
                     <h2 id="t-destaques" className="font-display text-title-section text-ink">
                       Destaques
                     </h2>
-                    <ul className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 lg:mx-0 lg:px-0">
+                    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                       {destaques.map((p) => (
-                        <li key={p.id} className="w-40 shrink-0">
+                        <li key={p.id}>
                           <button
                             type="button"
                             onClick={() => setAberto(p)}
-                            className="flex w-full flex-col gap-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                            className="relative flex w-full flex-col overflow-hidden rounded-lg bg-surface text-left active:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                           >
-                            <span className="relative block aspect-[4/3] w-full overflow-hidden rounded-md bg-surface-strong">
+                            <span className="relative block aspect-[4/3] w-full bg-surface-strong">
                               <img
                                 src={foto(p.photo_path)!}
                                 alt=""
@@ -394,9 +486,19 @@ function PaginaDaLoja({
                                 className="absolute inset-0 size-full object-cover"
                               />
                             </span>
-                            <span className="line-clamp-2 text-label text-ink">{p.name}</span>
-                            <span className="text-body-strong text-ink tabular-nums">
-                              {preco(p)}
+                            <span className="flex flex-col gap-1 p-3 pr-12">
+                              <span className="line-clamp-2 text-label font-bold text-ink">
+                                {p.name}
+                              </span>
+                              <span className="text-label font-bold text-ink tabular-nums">
+                                {preco(p)}
+                              </span>
+                            </span>
+                            <span
+                              aria-hidden="true"
+                              className="absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-pill bg-brand text-brand-ink"
+                            >
+                              <Icon name="mais" size={18} />
                             </span>
                           </button>
                         </li>
@@ -446,10 +548,18 @@ function PaginaDaLoja({
       </div>
 
       {itens > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-canvas px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden">
-          <Button className="h-target-pdv w-full" onClick={() => setVendoSacola(true)}>
-            Ver sacola · {itens === 1 ? '1 item' : `${itens} itens`} · {formatarPreco(subtotal)}
-          </Button>
+        <div className="fixed inset-x-0 bottom-0 z-30 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden">
+          <button
+            type="button"
+            onClick={() => setVendoSacola(true)}
+            className="flex h-14 w-full items-center justify-between gap-3 rounded-pill bg-brand px-3 pr-5 text-body font-bold text-brand-ink shadow-[0_8px_24px_rgb(0_0_0/0.18)] active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            <span className="flex size-9 items-center justify-center rounded-pill bg-[rgb(255_255_255/0.22)] tabular-nums">
+              {itens}
+            </span>
+            <span>Ver carrinho</span>
+            <span className="tabular-nums">{formatarPreco(subtotal)}</span>
+          </button>
         </div>
       )}
 
@@ -457,15 +567,26 @@ function PaginaDaLoja({
         <Sheet
           open
           onClose={() => setVendoSacola(false)}
-          title="Sua sacola"
+          title="Meu carrinho"
           footer={
-            <Button
-              className="h-target-pdv w-full"
-              disabled={sacola.length === 0}
-              onClick={continuar}
-            >
-              Continuar · {formatarPreco(subtotal)}
-            </Button>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-baseline justify-between text-body">
+                <span className="text-ink-muted">Subtotal</span>
+                <span className="text-title-section font-black text-ink tabular-nums">
+                  {formatarPreco(subtotal)}
+                </span>
+              </div>
+              <p className="text-caption text-ink-muted">
+                A taxa de entrega aparece no próximo passo, com o seu endereço.
+              </p>
+              <Button
+                className="h-target-pdv w-full"
+                disabled={sacola.length === 0}
+                onClick={continuar}
+              >
+                Finalizar pedido
+              </Button>
+            </div>
           }
         >
           <CartList
@@ -473,80 +594,8 @@ function PaginaDaLoja({
             onChange={setSacola}
             viagem="nenhum"
             imageFor={(id) => foto(cardapio.produtos.find((p) => p.id === id)?.photo_path ?? null)}
-            emptyText="Sua sacola está vazia."
+            emptyText="Seu carrinho está vazio."
           />
-        </Sheet>
-      )}
-
-      {vendoPerfil && (
-        <Sheet open onClose={() => setVendoPerfil(false)} title={loja.name}>
-          <div className="flex flex-col gap-5">
-            {loja.description && <p className="text-body text-ink">{loja.description}</p>}
-            <section className="flex flex-col gap-1">
-              <h3 className="text-label text-ink-muted">Endereço</h3>
-              <p className="text-body text-ink">
-                {loja.street}, {loja.street_number} · {loja.district}
-                {loja.city ? ` · ${loja.city}` : ''}
-              </p>
-            </section>
-            <section className="flex flex-col gap-2">
-              <h3 className="text-label text-ink-muted">Horários</h3>
-              <ul className="flex flex-col gap-1">
-                {DIAS_DA_SEMANA.map((dia, n) => {
-                  const doDia = horarios.filter((h) => h.weekday === n);
-                  const hoje = n === new Date().getDay();
-                  return (
-                    <li
-                      key={dia}
-                      className={cn(
-                        'flex justify-between gap-3 text-body',
-                        hoje ? 'text-body-strong text-ink' : 'text-ink',
-                      )}
-                    >
-                      <span>
-                        {dia}
-                        {hoje ? ' (hoje)' : ''}
-                      </span>
-                      <span className={doDia.length ? '' : 'text-ink-muted'}>
-                        {doDia.length
-                          ? doDia.map((h) => `${hora(h.opens)}–${hora(h.closes)}`).join(', ')
-                          : 'Fechado'}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-            <section className="flex flex-col gap-1">
-              <h3 className="text-label text-ink-muted">Entrega</h3>
-              <p className="text-body text-ink">
-                {textoDaEntrega(loja)} · {loja.prep_minutes_min}–{loja.prep_minutes_max} min
-                {loja.accepts_pickup ? ' · Também dá para retirar na loja' : ''}
-              </p>
-              <p className="text-body text-ink">
-                {loja.min_order_cents
-                  ? `Pedido mínimo ${formatarPreco(loja.min_order_cents)}`
-                  : 'Sem pedido mínimo'}
-              </p>
-            </section>
-            <section className="flex flex-col gap-1">
-              <h3 className="text-label text-ink-muted">Pagamento</h3>
-              <p className="text-body text-ink">
-                Na entrega ou na retirada: dinheiro, Pix, crédito e débito.
-              </p>
-            </section>
-            {loja.phone && (
-              <a
-                href={whatsapp(loja.phone, `Oi, ${loja.name}! Vim pela loja online.`)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Button className="h-target-pdv w-full">
-                  Falar com a loja · {formatarTelefone(loja.phone)}
-                </Button>
-              </a>
-            )}
-          </div>
         </Sheet>
       )}
 
@@ -556,6 +605,7 @@ function PaginaDaLoja({
           tamanhos={cardapio.opcoes.get(aberto.id)?.tamanhos ?? []}
           grupos={cardapio.opcoes.get(aberto.id)?.grupos ?? []}
           fotoUrl={foto(aberto.photo_path)}
+          rotuloDoBotao="Adicionar ao carrinho"
           onFechar={() => setAberto(null)}
           onAdicionar={(item) => {
             setSacola((s) => adicionarItem(s, item));
@@ -564,5 +614,48 @@ function PaginaDaLoja({
         />
       )}
     </main>
+  );
+}
+
+/** Botão redondo sobre a capa da loja (voltar, favoritar, compartilhar, conta). */
+function BotaoSobreFoto({
+  rotulo,
+  icone,
+  onClick,
+  ativo = false,
+}: {
+  rotulo: string;
+  icone: IconName;
+  onClick: () => void;
+  ativo?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={rotulo}
+      aria-pressed={icone === 'coracao' ? ativo : undefined}
+      onClick={onClick}
+      className={cn(
+        'flex size-11 items-center justify-center rounded-pill bg-[rgb(255_255_255/0.92)] shadow-md backdrop-blur focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
+        ativo ? 'text-brand-text' : 'text-[#141414]',
+      )}
+    >
+      {icone === 'coracao' ? (
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill={ativo ? 'currentColor' : 'none'}
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+        </svg>
+      ) : (
+        <Icon name={icone} size={22} />
+      )}
+    </button>
   );
 }

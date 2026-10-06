@@ -12,11 +12,14 @@ export function MontarItem({
   tamanhos,
   grupos,
   fotoUrl,
+  rotuloDoBotao = 'Adicionar',
   onAdicionar,
   onFechar,
 }: {
   produto: { id: string; name: string; price_cents: number; description?: string | null };
   fotoUrl?: string | null;
+  /** Texto do botão (loja online: "Adicionar ao carrinho"). */
+  rotuloDoBotao?: string;
   tamanhos: OpcaoTamanho[];
   grupos: GrupoDeOpcoes[];
   onAdicionar: (item: NovoItem) => void;
@@ -99,7 +102,7 @@ export function MontarItem({
               onIncrement={() => setQuantidade((q) => Math.min(999, q + 1))}
             />
             <Button className="h-target-pdv flex-1" onClick={adicionar}>
-              Adicionar · {formatarPreco(unitario * quantidade)}
+              {rotuloDoBotao} · {formatarPreco(unitario * quantidade)}
             </Button>
           </div>
         </div>
