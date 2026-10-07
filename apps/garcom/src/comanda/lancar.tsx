@@ -14,10 +14,12 @@ import {
 } from '@usefood/core';
 import type { AppSupabaseClient } from '@usefood/db';
 import {
+  agruparPorSecao,
   type Cardapio,
   carregarCardapio,
   MontarItem,
   type ProdutoDoCardapio,
+  produtosDaSecao,
   temOpcoes,
   TipoEIdentificacao,
   urlDaFoto,
@@ -77,7 +79,7 @@ export function Lancar({
       .then((c) => {
         if (!ativo) return;
         setCardapio(c);
-        setCategoria(c.categorias[0]?.id ?? null);
+        setCategoria(agruparPorSecao(c.categorias, c.produtos)[0]?.categoria.id ?? null);
       })
       .catch(() => ativo && setFalhou(true));
     return () => {
@@ -85,10 +87,15 @@ export function Lancar({
     };
   }, [supabase, lojaId]);
 
-  const visiveis = useMemo(
-    () => (cardapio ? cardapio.produtos.filter((p) => p.category_id === categoria) : []),
-    [cardapio, categoria],
+  // Chips só das categorias principais; as subcategorias entram dentro delas
+  const secoes = useMemo(
+    () => (cardapio ? agruparPorSecao(cardapio.categorias, cardapio.produtos) : []),
+    [cardapio],
   );
+  const visiveis = useMemo(() => {
+    const secao = secoes.find((s) => s.categoria.id === categoria);
+    return secao ? produtosDaSecao(secao) : [];
+  }, [secoes, categoria]);
   const comFotos = visiveis.some((p) => p.photo_path);
   const itens = quantidadeTotal(carrinho);
 
@@ -161,7 +168,7 @@ export function Lancar({
         role="group"
         aria-label="Categorias"
       >
-        {cardapio.categorias.map((c) => (
+        {secoes.map(({ categoria: c }) => (
           <Chip key={c.id} selected={c.id === categoria} onClick={() => setCategoria(c.id)}>
             {c.name}
           </Chip>

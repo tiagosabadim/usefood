@@ -32,11 +32,14 @@ import { TelaDaCozinha } from './cozinha';
 import { tocarAviso } from './tela-escura';
 import { PedidosOnline } from './pedidos-online';
 import {
+  agruparPorSecao,
   carregarCardapio,
   ListaDeEntregas,
   MontarItem,
   type OpcoesDoProduto,
+  produtosDaSecao,
   Salao,
+  type SecaoDoCardapio,
   SEM_OPCOES,
   TipoEIdentificacao,
   urlDaFoto,
@@ -99,6 +102,7 @@ export function Pdv({
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [opcoes, setOpcoes] = useState<Map<string, Opcoes>>(new Map());
   const [categoriaAtual, setCategoriaAtual] = useState<string | null>(null);
+  const [secoes, setSecoes] = useState<SecaoDoCardapio[]>([]);
   const [busca, setBusca] = useState('');
   const [montando, setMontando] = useState<Produto | null>(null);
 
@@ -205,10 +209,13 @@ export function Pdv({
     carregarCardapio(supabase, loja.id)
       .then((c) => {
         if (!ativo) return;
-        setCategorias(c.categorias);
+        // Chips só das categorias principais; as subcategorias entram dentro delas
+        const secoesDoCardapio = agruparPorSecao(c.categorias, c.produtos);
+        setSecoes(secoesDoCardapio);
+        setCategorias(secoesDoCardapio.map((s) => s.categoria));
         setProdutos(c.produtos);
         setOpcoes(c.opcoes);
-        setCategoriaAtual(c.categorias[0]?.id ?? null);
+        setCategoriaAtual(secoesDoCardapio[0]?.categoria.id ?? null);
         setCarregando(false);
       })
       .catch(() => {
@@ -224,8 +231,9 @@ export function Pdv({
   const visiveis = useMemo(() => {
     const termo = busca.trim().toLowerCase();
     if (termo) return produtos.filter((p) => p.name.toLowerCase().includes(termo));
-    return produtos.filter((p) => p.category_id === categoriaAtual);
-  }, [produtos, categoriaAtual, busca]);
+    const secao = secoes.find((s) => s.categoria.id === categoriaAtual);
+    return secao ? produtosDaSecao(secao) : [];
+  }, [produtos, secoes, categoriaAtual, busca]);
 
   const subtotal = subtotalCentavos(carrinho);
   // Algum produto da grade tem foto: todos os blocos reservam o espaço, para a grade ficar alinhada

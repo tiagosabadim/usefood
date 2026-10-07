@@ -10,6 +10,9 @@ export {
   type OpcoesDoProduto,
   type ProdutoDoCardapio,
   precoVigente,
+  agruparPorSecao,
+  produtosDaSecao,
+  type SecaoDoCardapio,
 } from './cardapio';
 export { ListaDeEntregas } from './entregas';
 export { urlDaFoto } from './foto';

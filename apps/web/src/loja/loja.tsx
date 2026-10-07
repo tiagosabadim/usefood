@@ -13,11 +13,12 @@ import {
 } from '@usefood/core';
 import type { AppSupabaseClient } from '@usefood/db';
 import {
+  agruparPorSecao,
+  type Cardapio,
   carregarCardapio,
   MontarItem,
-  urlDaFoto,
-  type Cardapio,
   type ProdutoDoCardapio,
+  urlDaFoto,
 } from '@usefood/pedidos';
 import { Button, CartList, Icon, Panel, ProductRow, Sheet, cn, type IconName } from '@usefood/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -125,9 +126,9 @@ function PaginaDaLoja({
   const foto = (caminho: string | null) => urlDaFoto(supabase, caminho);
   const itens = quantidadeTotal(sacola);
   const subtotal = subtotalCentavos(sacola);
-  const categorias = cardapio.categorias.filter((c) =>
-    cardapio.produtos.some((p) => p.category_id === c.id),
-  );
+  // Seções: só as categorias principais; dentro, os grupos por subcategoria (sabores)
+  const secoes = useMemo(() => agruparPorSecao(cardapio.categorias, cardapio.produtos), [cardapio]);
+  const categorias = secoes.map((s) => s.categoria);
   // Destaques: os marcados como destaque; sem nenhum marcado, os que têm foto
   const marcados = cardapio.produtos.filter((p) => p.is_featured);
   const destaques = (
@@ -536,7 +537,7 @@ function PaginaDaLoja({
                     </ul>
                   </section>
                 )}
-                {categorias.map((c) => (
+                {secoes.map(({ categoria: c, grupos }) => (
                   <section
                     key={c.id}
                     id={`cat-${c.id}`}
@@ -546,9 +547,16 @@ function PaginaDaLoja({
                     <h2 id={`t-${c.id}`} className="font-display text-title-section text-ink">
                       {c.name}
                     </h2>
-                    <ul className="flex flex-col divide-y divide-line">
-                      {cardapio.produtos.filter((p) => p.category_id === c.id).map(linha)}
-                    </ul>
+                    {grupos.map((g) => (
+                      <div key={g.sub?.id ?? 'diretos'} className="flex flex-col">
+                        {g.sub && (
+                          <h3 className="pt-4 text-label font-bold text-ink-muted">{g.sub.name}</h3>
+                        )}
+                        <ul className="flex flex-col divide-y divide-line">
+                          {g.produtos.map(linha)}
+                        </ul>
+                      </div>
+                    ))}
                   </section>
                 ))}
               </>

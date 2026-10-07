@@ -4,6 +4,7 @@ import type { AppSupabaseClient, Tables, Enums } from '@usefood/db';
 import {
   Alert,
   Button,
+  cn,
   EmptyState,
   Panel,
   SegmentedControl,
@@ -114,6 +115,7 @@ export function Cardapio({
   }, [supabase, loja.id, versao]);
 
   const recarregar = () => setVersao((v) => v + 1);
+  const [subcategoriaEm, setSubcategoriaEm] = useState<string | null>(null);
 
   // Principais na ordem, cada uma seguida das subcategorias
   const ordenadas = categorias
@@ -267,7 +269,7 @@ export function Cardapio({
               <Panel
                 key={categoria.id}
                 id={`cat-${categoria.id}`}
-                className="gap-2"
+                className={cn('gap-2', mae && 'ml-4 border-l-4 border-l-brand-soft sm:ml-10')}
                 title={mae ? `${mae.name} › ${categoria.name}` : categoria.name}
                 actions={
                   <div className="flex flex-wrap items-center justify-end gap-3">
@@ -362,6 +364,27 @@ export function Cardapio({
                     + Novo produto
                   </Button>
                 )}
+                {podeEditar &&
+                  !mae &&
+                  (subcategoriaEm === categoria.id ? (
+                    <NovaSubcategoria
+                      mae={categoria.name}
+                      onSalvar={async (nome) => {
+                        const ok = await criarCategoria(nome, null, categoria.id);
+                        if (ok) setSubcategoriaEm(null);
+                        return ok;
+                      }}
+                      onCancelar={() => setSubcategoriaEm(null)}
+                    />
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      className="self-start px-0 text-ink-muted"
+                      onClick={() => setSubcategoriaEm(categoria.id)}
+                    >
+                      + Subcategoria (ex.: sabores)
+                    </Button>
+                  ))}
               </Panel>
             );
           })}
@@ -493,5 +516,48 @@ function EtiquetasDoProduto({ produto }: { produto: Produto }) {
         </span>
       )}
     </span>
+  );
+}
+
+/** Subcategoria dentro de uma categoria (ex.: Pastel › Frango): só o nome; a categoria do app vem da de cima. */
+function NovaSubcategoria({
+  mae,
+  onSalvar,
+  onCancelar,
+}: {
+  mae: string;
+  onSalvar: (nome: string) => Promise<boolean>;
+  onCancelar: () => void;
+}) {
+  const [nome, setNome] = useState('');
+  const [salvando, setSalvando] = useState(false);
+  async function enviar(evento: FormEvent) {
+    evento.preventDefault();
+    setSalvando(true);
+    await onSalvar(nome.trim());
+    setSalvando(false);
+  }
+  return (
+    <form
+      onSubmit={enviar}
+      className="flex flex-wrap items-end gap-3 rounded-lg border border-line bg-canvas p-4"
+    >
+      <TextField
+        label={`Subcategoria de ${mae}`}
+        hint="Exemplos: Frango, Carne, Queijo"
+        required
+        maxLength={60}
+        autoFocus
+        className="min-w-48 flex-1"
+        value={nome}
+        onChange={(e) => setNome(e.target.value)}
+      />
+      <Button type="submit" loading={salvando} disabled={!nome.trim()}>
+        Criar
+      </Button>
+      <Button variant="ghost" onClick={onCancelar}>
+        Cancelar
+      </Button>
+    </form>
   );
 }

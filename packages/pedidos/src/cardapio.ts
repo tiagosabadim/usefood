@@ -1,6 +1,39 @@
 import type { AppSupabaseClient, Tables } from '@usefood/db';
 
-export type CategoriaDoCardapio = Pick<Tables<'categories'>, 'id' | 'name'>;
+export type CategoriaDoCardapio = Pick<Tables<'categories'>, 'id' | 'name' | 'parent_id'>;
+
+/** Seção do cardápio: a categoria principal, com os produtos dela e depois um grupo por subcategoria. */
+export interface SecaoDoCardapio {
+  categoria: CategoriaDoCardapio;
+  grupos: { sub: CategoriaDoCardapio | null; produtos: ProdutoDoCardapio[] }[];
+}
+
+/**
+ * Agrupa o cardápio para mostrar: só as categorias principais (as que têm produto nelas ou nas
+ * subcategorias); dentro de cada uma, os produtos diretos e depois um grupo por subcategoria
+ * (ex.: Pastel → Frango, Carne, Queijo). Mantém a ordem das categorias e dos produtos.
+ */
+export function agruparPorSecao(
+  categorias: CategoriaDoCardapio[],
+  produtos: ProdutoDoCardapio[],
+): SecaoDoCardapio[] {
+  const daCategoria = (id: string) => produtos.filter((p) => p.category_id === id);
+  return categorias
+    .filter((c) => !c.parent_id)
+    .map((c) => ({
+      categoria: c,
+      grupos: [
+        { sub: null, produtos: daCategoria(c.id) },
+        ...categorias
+          .filter((f) => f.parent_id === c.id)
+          .map((f) => ({ sub: f, produtos: daCategoria(f.id) })),
+      ].filter((g) => g.produtos.length > 0),
+    }))
+    .filter((s) => s.grupos.length > 0);
+}
+
+/** Produtos de uma seção na ordem de mostrar (os diretos e depois os de cada subcategoria). */
+export const produtosDaSecao = (s: SecaoDoCardapio) => s.grupos.flatMap((g) => g.produtos);
 export type ProdutoDoCardapio = Pick<
   Tables<'products'>,
   | 'id'
@@ -74,7 +107,7 @@ export async function carregarCardapio(
   const [cats, prods, tamanhos, ligacoes, grupos, itens, combos] = await Promise.all([
     supabase
       .from('categories')
-      .select('id, name')
+      .select('id, name, parent_id')
       .eq('restaurant_id', lojaId)
       .eq('is_active', true)
       .order('position')
