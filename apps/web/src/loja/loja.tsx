@@ -366,11 +366,14 @@ function PaginaDaLoja({
                 }
               />
             )}
-            <BotaoSobreFoto
-              rotulo="Minha conta"
-              icone="perfil"
-              onClick={() => navegar(volta ? '/delivery/conta' : `${base}/conta`)}
-            />
+            {/* No link do restaurante, Minha conta fica só na barra de baixo */}
+            {volta && (
+              <BotaoSobreFoto
+                rotulo="Minha conta"
+                icone="perfil"
+                onClick={() => navegar('/delivery/conta')}
+              />
+            )}
           </div>
         </div>
       </div>
