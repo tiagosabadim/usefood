@@ -144,7 +144,7 @@ export function Vitrine({ cidade }: { cidade: string }) {
   };
   const abrirLoja = (slug: string, produtoId?: string) => {
     lembrarVolta(`/delivery/${cidade}`);
-    navegar(`/${slug.replace(/^\//, '')}${produtoId ? `?produto=${produtoId}` : ''}`);
+    navegar(`/delivery/${slug.replace(/^\//, '')}${produtoId ? `?produto=${produtoId}` : ''}`);
   };
   const resumo = (l: LojaDaVitrine) =>
     [`${l.tempo_min}–${l.tempo_max} min`, resumoDaEntrega(l)].join(' · ');

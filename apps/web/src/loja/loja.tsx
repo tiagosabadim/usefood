@@ -25,7 +25,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { gravarSacola, lerSacola } from '../guardado';
 import { navegar, voltar } from '../rotas';
 import { BarraDaLoja } from '../vitrine/barra';
-import { gravarFavoritos, lerFavoritos, voltaParaVitrine } from '../vitrine/vitrine-dados';
+import { cidadeGuardada, gravarFavoritos, lerFavoritos } from '../vitrine/vitrine-dados';
 import { Checkout } from './checkout';
 import { buscarLoja, whatsapp, type Horario, type LojaPublica } from './dados';
 import { PedidoEmAndamento } from './pedido-em-andamento';
@@ -45,7 +45,16 @@ function textoDaEntrega(loja: LojaPublica): string {
   return loja.delivery_fee_mode === 'bairro' ? 'Taxa pelo bairro' : 'Taxa pela distância';
 }
 
-export function Loja({ slug, base }: { slug: string; base: string }) {
+/** noApp: aberta pelo app de delivery (/delivery/<loja>); senão, link próprio da loja. */
+export function Loja({
+  slug,
+  base,
+  noApp = false,
+}: {
+  slug: string;
+  base: string;
+  noApp?: boolean;
+}) {
   const { supabase, brand } = useAppContext();
   const [estado, setEstado] = useState<
     | { tipo: 'carregando' }
@@ -92,13 +101,14 @@ export function Loja({ slug, base }: { slug: string; base: string }) {
       </main>
     );
   }
-  return <PaginaDaLoja supabase={supabase} base={base} {...estado} />;
+  return <PaginaDaLoja supabase={supabase} base={base} noApp={noApp} {...estado} />;
 }
 
 /** Página da loja: topo com informações, busca e abas fixas, destaques, produtos em lista e sacola. */
 function PaginaDaLoja({
   supabase,
   base,
+  noApp,
   loja,
   horarios,
   aberta,
@@ -106,12 +116,15 @@ function PaginaDaLoja({
 }: {
   supabase: AppSupabaseClient;
   base: string;
+  noApp: boolean;
   loja: LojaPublica;
   horarios: Horario[];
   aberta: boolean;
   cardapio: Cardapio;
 }) {
-  const [volta] = useState(() => voltaParaVitrine());
+  // Pelo app: o ← Restaurantes volta para a vitrine da cidade
+  const cidadeDoApp = cidadeGuardada();
+  const volta = noApp ? (cidadeDoApp ? `/delivery/${cidadeDoApp}` : '/delivery') : null;
   const [aba, setAba] = useState<'cardapio' | 'sobre'>('cardapio');
   const [favorita, setFavorita] = useState(() => lerFavoritos().includes(loja.slug));
   const [sacola, setSacola] = useState<ItemCarrinho[]>(() => lerSacola(loja.id));
@@ -229,6 +242,7 @@ function PaginaDaLoja({
         loja={loja}
         aberta={aberta}
         itens={sacola}
+        origem={noApp ? 'app' : 'loja'}
         onVoltar={() => setFechando(false)}
         onFeito={(token) => {
           setSacola([]);

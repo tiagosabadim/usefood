@@ -300,7 +300,9 @@ export function MinhaConta({
                     type="button"
                     className="flex w-full items-center gap-3 py-3 text-left"
                     onClick={() =>
-                      navegar(`${base === '/delivery' ? `/${p.lojaSlug}` : base}/pedido/${p.token}`)
+                      navegar(
+                        `${base === '/delivery' ? `/delivery/${p.lojaSlug}` : base}/pedido/${p.token}`,
+                      )
                     }
                   >
                     <div className="min-w-0 flex-1">

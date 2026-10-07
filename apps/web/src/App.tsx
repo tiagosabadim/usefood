@@ -3,7 +3,7 @@ import { Acompanhar } from './loja/acompanhar';
 import { EscolherCidade } from './vitrine/cidades';
 import { Favoritos } from './vitrine/favoritos';
 import { Ofertas } from './vitrine/ofertas';
-import { Vitrine } from './vitrine/vitrine';
+import { CidadeOuLoja } from './vitrine/cidade-ou-loja';
 import { InicioDaMarca } from './marca/paginas';
 import { MinhaConta } from './loja/conta';
 import { Loja } from './loja/loja';
@@ -42,7 +42,11 @@ export function App() {
     if (a === 'conta' || a === 'perfil') return <MinhaConta base="/delivery" modo="perfil" />;
     if (a === 'favoritos') return <Favoritos />;
     if (a === 'ofertas') return <Ofertas />;
-    return <Vitrine cidade={a.toLowerCase()} />;
+    // Pedido feito pelo app: /delivery/<loja>/pedido/<token>
+    if (token && partes[2] === 'pedido' && partes[3] && TOKEN.test(partes[3]))
+      return <Acompanhar token={partes[3]} voltar={`/delivery/${a.toLowerCase()}`} />;
+    // /delivery/<cidade> é a vitrine; /delivery/<loja> é a loja aberta pelo app
+    return <CidadeOuLoja nome={a.toLowerCase()} />;
   }
   if (slug) {
     const loja = slug.toLowerCase();

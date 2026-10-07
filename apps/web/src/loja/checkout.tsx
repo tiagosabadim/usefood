@@ -40,6 +40,7 @@ export function Checkout({
   itens,
   onVoltar,
   onFeito,
+  origem,
 }: {
   supabase: AppSupabaseClient;
   loja: LojaPublica;
@@ -47,6 +48,8 @@ export function Checkout({
   itens: ItemCarrinho[];
   onVoltar: () => void;
   onFeito: (token: string) => void;
+  /** Por onde o pedido veio: app de delivery USE! ou link próprio da loja. */
+  origem: 'app' | 'loja';
 }) {
   const [conta] = useState<Conta>(() => lerConta());
   const [tipo, setTipo] = useState<'delivery' | 'retirada'>(
@@ -174,6 +177,7 @@ export function Checkout({
       p_latitude: tipo === 'delivery' ? (ponto?.lat ?? null) : null,
       p_longitude: tipo === 'delivery' ? (ponto?.lng ?? null) : null,
       p_observacao: observacao.trim() || null,
+      p_origem: origem,
     });
     setEnviando(false);
     const r = data?.[0];

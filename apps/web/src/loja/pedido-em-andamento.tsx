@@ -60,7 +60,7 @@ export function PedidoEmAndamento({ lojaSlug, base }: { lojaSlug?: string; base?
         <button
           key={p.token}
           type="button"
-          onClick={() => navegar(`${base ?? `/${p.lojaSlug}`}/pedido/${p.token}`)}
+          onClick={() => navegar(`${base ?? `/delivery/${p.lojaSlug}`}/pedido/${p.token}`)}
           className="flex items-center gap-3 rounded-lg bg-brand p-4 text-left text-brand-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           <span className="flex size-10 shrink-0 items-center justify-center rounded-pill bg-brand-ink/15">

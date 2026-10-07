@@ -731,6 +731,7 @@ export type Database = {
           identifier_type: Database["public"]["Enums"]["identifier_type"]
           notes: string | null
           number: number
+          online_origin: string | null
           paid_cents: number
           ready_at: string | null
           restaurant_id: string
@@ -759,6 +760,7 @@ export type Database = {
           identifier_type?: Database["public"]["Enums"]["identifier_type"]
           notes?: string | null
           number: number
+          online_origin?: string | null
           paid_cents?: number
           ready_at?: string | null
           restaurant_id: string
@@ -787,6 +789,7 @@ export type Database = {
           identifier_type?: Database["public"]["Enums"]["identifier_type"]
           notes?: string | null
           number?: number
+          online_origin?: string | null
           paid_cents?: number
           ready_at?: string | null
           restaurant_id?: string
@@ -1769,10 +1772,14 @@ export type Database = {
       console_lojas: {
         Args: never
         Returns: {
+          app_30d_cents: number
+          app_pedidos_30d: number
           cidade: string | null
           criada_em: string
           donos: string[]
           id: string
+          link_30d_cents: number
+          link_pedidos_30d: number
           marca: string
           marca_slug: string
           nome: string
@@ -1881,6 +1888,7 @@ export type Database = {
           p_longitude?: number | null
           p_nome: string
           p_observacao?: string | null
+          p_origem?: string
           p_pagamento: Database["public"]["Enums"]["payment_method"]
           p_restaurant_id: string
           p_tipo: Database["public"]["Enums"]["order_type"]

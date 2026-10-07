@@ -71,7 +71,7 @@ export function Ofertas() {
 
   const abrir = (slug: string, produtoId: string) => {
     if (cidade) lembrarVolta(`/delivery/${cidade}`);
-    navegar(`/${slug}?produto=${produtoId}`);
+    navegar(`/delivery/${slug}?produto=${produtoId}`);
   };
 
   return (

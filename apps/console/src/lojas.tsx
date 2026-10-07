@@ -88,6 +88,10 @@ export function Lojas({
       emCadastro: l.filter((x) => x.situacao === 'rascunho').length,
       pedidos: l.reduce((s, x) => s + x.pedidos_30d, 0),
       vendas: l.reduce((s, x) => s + Number(x.vendas_30d_cents), 0),
+      app: l.reduce((s, x) => s + Number(x.app_30d_cents), 0),
+      appPedidos: l.reduce((s, x) => s + x.app_pedidos_30d, 0),
+      link: l.reduce((s, x) => s + Number(x.link_30d_cents), 0),
+      linkPedidos: l.reduce((s, x) => s + x.link_pedidos_30d, 0),
     };
   }, [lojas]);
 
@@ -160,6 +164,62 @@ export function Lojas({
       <Alert>{erro}</Alert>
       <Alert tone="sucesso">{aviso}</Alert>
 
+      <section
+        aria-labelledby="t-canais"
+        className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4"
+      >
+        <h2 id="t-canais" className="text-body-strong text-ink">
+          Vendas online por canal (30 dias)
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {[
+            {
+              titulo: 'Pelo app USE!',
+              valor: totais.app,
+              pedidos: totais.appPedidos,
+              cor: 'bg-brand',
+            },
+            {
+              titulo: 'Pelo link das lojas',
+              valor: totais.link,
+              pedidos: totais.linkPedidos,
+              cor: 'bg-ink',
+            },
+          ].map((c) => {
+            const parte =
+              totais.app + totais.link > 0
+                ? Math.round((c.valor / (totais.app + totais.link)) * 100)
+                : 0;
+            return (
+              <div key={c.titulo} className="flex flex-col gap-2">
+                <span className="flex items-baseline justify-between gap-3">
+                  <span className="text-caption text-ink-muted">{c.titulo}</span>
+                  <span className="text-caption text-ink-muted tabular-nums">{parte}%</span>
+                </span>
+                <span className="text-title-section font-black text-ink tabular-nums">
+                  {formatarPreco(c.valor)}
+                </span>
+                <span className="text-caption text-ink-muted">
+                  {c.pedidos} {c.pedidos === 1 ? 'pedido' : 'pedidos'}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 overflow-hidden rounded-pill bg-surface-strong"
+                >
+                  <span
+                    className={`block h-full rounded-pill ${c.cor}`}
+                    style={{ width: `${parte}%` }}
+                  />
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-caption text-ink-muted">
+          Pedidos feitos antes desta separação, pelo PDV ou pelo garçom não entram aqui.
+        </p>
+      </section>
+
       <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
           { titulo: 'Lojas no ar', valor: String(totais.noAr) },
@@ -229,6 +289,10 @@ export function Lojas({
                   <span>
                     {l.pedidos_30d} pedidos em 30 dias · último {quando(l.ultimo_pedido_em)}
                   </span>
+                  <span>
+                    App {formatarPreco(Number(l.app_30d_cents))} · Link{' '}
+                    {formatarPreco(Number(l.link_30d_cents))}
+                  </span>
                 </div>
                 {acoes(l)}
               </li>
@@ -242,6 +306,8 @@ export function Lojas({
                   <th className="px-4 py-3 font-normal">Situação</th>
                   <th className="px-4 py-3 font-normal">Dono</th>
                   <th className="px-4 py-3 text-right font-normal">Vendas 30 dias</th>
+                  <th className="px-4 py-3 text-right font-normal">Pelo app</th>
+                  <th className="px-4 py-3 text-right font-normal">Pelo link</th>
                   <th className="px-4 py-3 text-right font-normal">Pedidos</th>
                   <th className="px-4 py-3 font-normal">Último pedido</th>
                   <th className="px-4 py-3 font-normal">
@@ -269,6 +335,18 @@ export function Lojas({
                     </td>
                     <td className="px-4 py-3 text-right text-body-strong text-ink tabular-nums">
                       {formatarPreco(Number(l.vendas_30d_cents))}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums">
+                      {formatarPreco(Number(l.app_30d_cents))}
+                      <span className="block text-caption text-ink-muted">
+                        {l.app_pedidos_30d} pedidos
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums">
+                      {formatarPreco(Number(l.link_30d_cents))}
+                      <span className="block text-caption text-ink-muted">
+                        {l.link_pedidos_30d} pedidos
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">{l.pedidos_30d}</td>
                     <td className="px-4 py-3 text-caption text-ink-muted">

@@ -56,7 +56,7 @@ export function Favoritos() {
             alternarFavorito={alternarFavorito}
             abrirLoja={(slug) => {
               if (cidade) lembrarVolta(`/delivery/${cidade}`);
-              navegar(`/${slug}`);
+              navegar(`/delivery/${slug}`);
             }}
             meta={(l) => l.cozinhas.map(rotuloDaCozinha).join(', ') || 'Restaurante'}
             resumo={(l) => `${l.tempo_min}–${l.tempo_max} min · ${resumoDaEntrega(l)}`}
