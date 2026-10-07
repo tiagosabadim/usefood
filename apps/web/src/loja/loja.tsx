@@ -114,7 +114,18 @@ function PaginaDaLoja({
   const [aba, setAba] = useState<'cardapio' | 'sobre'>('cardapio');
   const [favorita, setFavorita] = useState(() => lerFavoritos().includes(loja.slug));
   const [sacola, setSacola] = useState<ItemCarrinho[]>(() => lerSacola(loja.id));
-  const [aberto, setAberto] = useState<ProdutoDoCardapio | null>(null);
+  // Veio de um prato na vitrine (/loja?produto=…): a janela do produto já abre
+  const [aberto, setAberto] = useState<ProdutoDoCardapio | null>(() => {
+    const id = new URLSearchParams(window.location.search).get('produto');
+    return (id && cardapio.produtos.find((p) => p.id === id)) || null;
+  });
+  // Tira o ?produto= do endereço (fechar a janela não reabre ao atualizar)
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('produto')) return;
+    url.searchParams.delete('produto');
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }, []);
   const [vendoSacola, setVendoSacola] = useState(false);
   const [fechando, setFechando] = useState(false);
   const [busca, setBusca] = useState('');

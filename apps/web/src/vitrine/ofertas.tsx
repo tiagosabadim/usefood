@@ -15,7 +15,7 @@ export function CartaoDeOferta({
   onAbrir,
 }: {
   oferta: Oferta;
-  onAbrir: (slug: string) => void;
+  onAbrir: (slug: string, produtoId: string) => void;
 }) {
   const { supabase } = useAppContext();
   const foto = supabase && o.foto_path ? urlDaFoto(supabase, o.foto_path) : null;
@@ -23,7 +23,7 @@ export function CartaoDeOferta({
   return (
     <button
       type="button"
-      onClick={() => onAbrir(o.loja_slug)}
+      onClick={() => onAbrir(o.loja_slug, o.produto_id)}
       className="flex w-full flex-col gap-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
       <span className="relative block aspect-[4/3] w-full overflow-hidden rounded-lg bg-surface-strong">
@@ -69,9 +69,9 @@ export function Ofertas() {
       .then(({ data }) => setOfertas(data ?? []));
   }, [supabase, site.brand, cidade]);
 
-  const abrir = (slug: string) => {
+  const abrir = (slug: string, produtoId: string) => {
     if (cidade) lembrarVolta(`/delivery/${cidade}`);
-    navegar(`/${slug}`);
+    navegar(`/${slug}?produto=${produtoId}`);
   };
 
   return (

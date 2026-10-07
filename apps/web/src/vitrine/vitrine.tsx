@@ -142,9 +142,9 @@ export function Vitrine({ cidade }: { cidade: string }) {
     setFavoritos(nova);
     gravarFavoritos(nova);
   };
-  const abrirLoja = (slug: string) => {
+  const abrirLoja = (slug: string, produtoId?: string) => {
     lembrarVolta(`/delivery/${cidade}`);
-    navegar(`/${slug.replace(/^\//, '')}`);
+    navegar(`/${slug.replace(/^\//, '')}${produtoId ? `?produto=${produtoId}` : ''}`);
   };
   const resumo = (l: LojaDaVitrine) =>
     [`${l.tempo_min}–${l.tempo_max} min`, resumoDaEntrega(l)].join(' · ');
@@ -282,7 +282,7 @@ export function Vitrine({ cidade }: { cidade: string }) {
                     <li key={p.produto_id}>
                       <button
                         type="button"
-                        onClick={() => abrirLoja(p.loja_slug)}
+                        onClick={() => abrirLoja(p.loja_slug, p.produto_id)}
                         className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-strong"
                       >
                         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -317,7 +317,7 @@ export function Vitrine({ cidade }: { cidade: string }) {
                     <li key={p.produto_id}>
                       <button
                         type="button"
-                        onClick={() => abrirLoja(p.loja_slug)}
+                        onClick={() => abrirLoja(p.loja_slug, p.produto_id)}
                         className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-strong"
                       >
                         {p.foto_path && (
