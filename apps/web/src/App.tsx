@@ -23,7 +23,8 @@ export function App() {
     const [a, token] = partes;
     if (a === 'pedido' && token && TOKEN.test(token))
       return <Acompanhar token={token} voltar="/" />;
-    if (a === 'conta') return <MinhaConta base="" />;
+    if (a === 'pedidos') return <MinhaConta base="" modo="pedidos" />;
+    if (a === 'conta') return <MinhaConta base="" modo="perfil" />;
     return <Loja slug={site.store} base="" />;
   }
 
@@ -47,7 +48,8 @@ export function App() {
     const loja = slug.toLowerCase();
     if (a === 'pedido' && token && TOKEN.test(token))
       return <Acompanhar token={token} voltar={`/${loja}`} />;
-    if (a === 'conta') return <MinhaConta base={`/${loja}`} />;
+    if (a === 'pedidos') return <MinhaConta base={`/${loja}`} modo="pedidos" />;
+    if (a === 'conta') return <MinhaConta base={`/${loja}`} modo="perfil" />;
     return <Loja slug={loja} base={`/${loja}`} />;
   }
 

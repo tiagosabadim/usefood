@@ -39,7 +39,7 @@ export function Favoritos() {
 
   return (
     <div className="min-h-dvh bg-canvas pb-28">
-      <TopoDoApp titulo="Favoritos" cidade={cidade} />
+      <TopoDoApp titulo="Favoritos" voltarPara={cidade ? `/delivery/${cidade}` : '/delivery'} />
       <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 pt-5">
         {lojas && minhas.length === 0 ? (
           <div className="mx-5 flex flex-col gap-2 rounded-lg bg-surface p-6">

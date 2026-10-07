@@ -24,6 +24,7 @@ import { Button, CartList, Icon, Panel, ProductRow, Sheet, cn, type IconName } f
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { gravarSacola, lerSacola } from '../guardado';
 import { navegar, voltar } from '../rotas';
+import { BarraDaLoja } from '../vitrine/barra';
 import { gravarFavoritos, lerFavoritos, voltaParaVitrine } from '../vitrine/vitrine-dados';
 import { Checkout } from './checkout';
 import { buscarLoja, whatsapp, type Horario, type LojaPublica } from './dados';
@@ -309,7 +310,12 @@ function PaginaDaLoja({
   );
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col pb-28 lg:px-8 lg:pb-12">
+    <main
+      className={cn(
+        'mx-auto flex min-h-dvh w-full max-w-6xl flex-col lg:px-8 lg:pb-12',
+        volta ? 'pb-28' : 'pb-44',
+      )}
+    >
       {loja.status !== 'ativo' && (
         // Só a equipe enxerga loja fora do ar (está logada); o cliente vê "Loja não encontrada"
         <p role="status" className="bg-sun px-5 py-3 text-body text-sun-ink lg:mt-4 lg:rounded-md">
@@ -601,7 +607,14 @@ function PaginaDaLoja({
       </div>
 
       {itens > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden">
+        <div
+          className={cn(
+            'fixed inset-x-0 z-30 px-4 pt-3 lg:hidden',
+            volta
+              ? 'bottom-0 pb-[max(1rem,env(safe-area-inset-bottom))]'
+              : 'bottom-[calc(3.6rem+env(safe-area-inset-bottom))] pb-2',
+          )}
+        >
           <button
             type="button"
             onClick={() => setVendoSacola(true)}
@@ -669,6 +682,7 @@ function PaginaDaLoja({
           }}
         />
       )}
+      {!volta && <BarraDaLoja base={base} ativo="cardapio" />}
     </main>
   );
 }

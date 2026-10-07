@@ -76,7 +76,7 @@ export function Ofertas() {
 
   return (
     <div className="min-h-dvh bg-canvas pb-28">
-      <TopoDoApp titulo="Ofertas" cidade={cidade} />
+      <TopoDoApp titulo="Ofertas" voltarPara={cidade ? `/delivery/${cidade}` : '/delivery'} />
       <main className="mx-auto w-full max-w-3xl px-5 pt-5">
         {!ofertas ? (
           <div

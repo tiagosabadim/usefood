@@ -3,8 +3,8 @@ import { formatarTelefone, fraseDoPedido, lerTelefone, type SituacaoDoPedido } f
 import { Alert, Button, cn, EmptyState, Icon, Panel, TextField, ThemeToggle } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { ENDERECO_EM_BRANCO, gravarConta, lerConta, novoId, type Conta } from '../guardado';
-import { navegar } from '../rotas';
-import { BarraDoApp, TopoDoApp } from '../vitrine/barra';
+import { navegar, voltar } from '../rotas';
+import { BarraDaLoja, BarraDoApp, TopoDoApp } from '../vitrine/barra';
 import { cidadeGuardada } from '../vitrine/vitrine-dados';
 import {
   CamposDeEndereco,
@@ -22,7 +22,7 @@ export function MinhaConta({
   modo?: 'tudo' | 'pedidos' | 'perfil';
 }) {
   const [abaDosPedidos, setAbaDosPedidos] = useState<'andamento' | 'anteriores'>('andamento');
-  const { supabase } = useAppContext();
+  const { supabase, site } = useAppContext();
   const [tema, setTema] = usePreferenciaDeTema();
   const [conta, setConta] = useState<Conta>(() => lerConta());
   const [dados, setDados] = useState({
@@ -37,6 +37,16 @@ export function MinhaConta({
   >({});
   const [aviso, setAviso] = useState('');
   const [erro, setErro] = useState('');
+
+  // No link do restaurante: só os pedidos dele; o "início" é o cardápio. No app de delivery: a cidade.
+  const lojaDaTela =
+    base === '/delivery' ? null : base ? base.slice(1) : site.kind === 'loja' ? site.store : null;
+  const cidade = cidadeGuardada();
+  const inicio =
+    base === '/delivery' ? (cidade ? `/delivery/${cidade}` : '/delivery') : base || '/';
+  const pedidosDaTela = lojaDaTela
+    ? conta.pedidos.filter((p) => p.lojaSlug === lojaDaTela)
+    : conta.pedidos;
 
   // Pedidos: em andamento (ainda não entregue nem recusado) ou anteriores
   const encerrado = (token: string) => {
@@ -104,16 +114,16 @@ export function MinhaConta({
         <button
           type="button"
           className="self-start text-label text-ink-muted"
-          onClick={() => navegar(base || '/')}
+          onClick={() => voltar(base || '/')}
         >
           ← Voltar à loja
         </button>
       )}
-      {base === '/delivery' ? (
+      {modo !== 'tudo' ? (
         <div className="-mx-5 -mt-6">
           <TopoDoApp
             titulo={modo === 'pedidos' ? 'Meus pedidos' : 'Minha conta'}
-            cidade={cidadeGuardada()}
+            voltarPara={inicio}
           />
         </div>
       ) : (
@@ -216,20 +226,15 @@ export function MinhaConta({
       )}
 
       {/* Pedidos sem nenhum pedido: entrar (sem nome e celular) ou "ainda não fez pedidos" */}
-      {modo === 'pedidos' && conta.pedidos.length === 0 && (
+      {modo === 'pedidos' && pedidosDaTela.length === 0 && (
         <div className="pt-2">
           {conta.nome && conta.celular ? (
             <EmptyState
               title="Você ainda não fez pedidos"
               description="Quando você pedir num restaurante da cidade, o pedido aparece aqui para você acompanhar."
               action={
-                <Button
-                  className="h-target-pdv"
-                  onClick={() =>
-                    navegar(cidadeGuardada() ? `/delivery/${cidadeGuardada()}` : '/delivery')
-                  }
-                >
-                  Ver restaurantes
+                <Button className="h-target-pdv" onClick={() => navegar(inicio)}>
+                  {base === '/delivery' ? 'Ver restaurantes' : 'Ver cardápio'}
                 </Button>
               }
             />
@@ -238,7 +243,12 @@ export function MinhaConta({
               title="Faça login para ver seus pedidos"
               description="Entre com seu nome e WhatsApp. Seus pedidos ficam guardados neste aparelho para você acompanhar."
               action={
-                <Button className="h-target-pdv" onClick={() => navegar('/delivery/conta')}>
+                <Button
+                  className="h-target-pdv"
+                  onClick={() =>
+                    navegar(base === '/delivery' ? '/delivery/conta' : `${base}/conta`)
+                  }
+                >
                   Entrar
                 </Button>
               }
@@ -246,7 +256,7 @@ export function MinhaConta({
           )}
         </div>
       )}
-      {modo !== 'perfil' && !(modo === 'pedidos' && conta.pedidos.length === 0) && (
+      {modo !== 'perfil' && !(modo === 'pedidos' && pedidosDaTela.length === 0) && (
         <Panel title={modo === 'pedidos' ? '' : 'Meus pedidos'}>
           {modo === 'pedidos' && (
             <div
@@ -319,8 +329,12 @@ export function MinhaConta({
           )}
         </Panel>
       )}
-      {base === '/delivery' && (
+      {base === '/delivery' ? (
         <BarraDoApp ativo={modo === 'perfil' ? 'perfil' : 'pedidos'} cidade={cidadeGuardada()} />
+      ) : (
+        modo !== 'tudo' && (
+          <BarraDaLoja base={base} ativo={modo === 'perfil' ? 'conta' : 'pedidos'} />
+        )
       )}
     </main>
   );

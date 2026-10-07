@@ -73,15 +73,15 @@ export function useInstalar(): (() => void) | null {
     : null;
 }
 
-/** Topo das telas do menu do app: seta de voltar e o título. */
-export function TopoDoApp({ titulo, cidade }: { titulo: string; cidade: string | null }) {
+/** Topo das telas do menu do app: seta de voltar e o título. voltarPara: se a tela foi aberta direto. */
+export function TopoDoApp({ titulo, voltarPara }: { titulo: string; voltarPara: string }) {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-surface">
       <div className="mx-auto flex w-full max-w-3xl items-center gap-1 px-2 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2">
         <button
           type="button"
           aria-label="Voltar"
-          onClick={() => voltar(cidade ? `/delivery/${cidade}` : '/delivery')}
+          onClick={() => voltar(voltarPara)}
           className="flex size-11 shrink-0 items-center justify-center rounded-pill text-ink focus-visible:outline-2 focus-visible:outline-brand"
         >
           <Icon name="voltar" size={22} />
@@ -89,5 +89,38 @@ export function TopoDoApp({ titulo, cidade }: { titulo: string; cidade: string |
         <h1 className="text-title-section font-extrabold tracking-[-0.02em] text-ink">{titulo}</h1>
       </div>
     </header>
+  );
+}
+
+/** Barra de baixo do link próprio do restaurante (mesmo BottomNav do app): Cardápio, Pedidos e Minha conta. */
+export function BarraDaLoja({
+  base,
+  ativo,
+}: {
+  base: string;
+  ativo: 'cardapio' | 'pedidos' | 'conta';
+}) {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden">
+      <BottomNav
+        label="Loja"
+        onNavigate={(href) => navegar(href)}
+        items={[
+          { label: 'Cardápio', icon: 'cardapio', href: base || '/', current: ativo === 'cardapio' },
+          {
+            label: 'Pedidos',
+            icon: 'pedidos',
+            href: `${base}/pedidos`,
+            current: ativo === 'pedidos',
+          },
+          {
+            label: 'Minha conta',
+            icon: 'perfil',
+            href: `${base}/conta`,
+            current: ativo === 'conta',
+          },
+        ]}
+      />
+    </div>
   );
 }

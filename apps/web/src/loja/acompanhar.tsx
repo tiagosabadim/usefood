@@ -2,7 +2,7 @@ import { useAppContext } from '@usefood/app';
 import { etapasDoPedido, formatarPreco, fraseDoPedido, type SituacaoDoPedido } from '@usefood/core';
 import { Alert, Button, cn, Icon, Panel } from '@usefood/ui';
 import { useEffect, useState } from 'react';
-import { navegar } from '../rotas';
+import { navegar, voltar as voltarNoApp } from '../rotas';
 import { whatsapp } from './dados';
 
 interface Acompanhamento {
@@ -90,7 +90,7 @@ export function Acompanhar({ token, voltar }: { token: string; voltar: string })
       <button
         type="button"
         className="self-start text-label text-ink-muted"
-        onClick={() => navegar(voltar)}
+        onClick={() => voltarNoApp(voltar)}
       >
         ← {pedido.loja.nome}
       </button>
