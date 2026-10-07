@@ -23,7 +23,7 @@ import {
 import { Button, CartList, Icon, Panel, ProductRow, Sheet, cn, type IconName } from '@usefood/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { gravarSacola, lerSacola } from '../guardado';
-import { navegar } from '../rotas';
+import { navegar, voltar } from '../rotas';
 import { gravarFavoritos, lerFavoritos, voltaParaVitrine } from '../vitrine/vitrine-dados';
 import { Checkout } from './checkout';
 import { buscarLoja, whatsapp, type Horario, type LojaPublica } from './dados';
@@ -119,6 +119,10 @@ function PaginaDaLoja({
     const id = new URLSearchParams(window.location.search).get('produto');
     return (id && cardapio.produtos.find((p) => p.id === id)) || null;
   });
+  // Produto aberto pela vitrine: fechar sem adicionar volta para onde a pessoa estava
+  const [veioDoProduto] = useState(() =>
+    new URLSearchParams(window.location.search).has('produto'),
+  );
   // Tira o ?produto= do endereço (fechar a janela não reabre ao atualizar)
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -327,7 +331,7 @@ function PaginaDaLoja({
             <BotaoSobreFoto
               rotulo="Voltar para os restaurantes"
               icone="voltar"
-              onClick={() => navegar(volta)}
+              onClick={() => voltar(volta)}
             />
           ) : (
             <span />
@@ -655,7 +659,10 @@ function PaginaDaLoja({
           grupos={cardapio.opcoes.get(aberto.id)?.grupos ?? []}
           fotoUrl={foto(aberto.photo_path)}
           rotuloDoBotao="Adicionar ao carrinho"
-          onFechar={() => setAberto(null)}
+          onFechar={() => {
+            setAberto(null);
+            if (veioDoProduto && volta) voltar(volta);
+          }}
           onAdicionar={(item) => {
             setSacola((s) => adicionarItem(s, item));
             setAberto(null);

@@ -4,7 +4,7 @@ import { Alert, Button, cn, EmptyState, Icon, Panel, TextField, ThemeToggle } fr
 import { useEffect, useState } from 'react';
 import { ENDERECO_EM_BRANCO, gravarConta, lerConta, novoId, type Conta } from '../guardado';
 import { navegar } from '../rotas';
-import { BarraDoApp } from '../vitrine/barra';
+import { BarraDoApp, TopoDoApp } from '../vitrine/barra';
 import { cidadeGuardada } from '../vitrine/vitrine-dados';
 import {
   CamposDeEndereco,
@@ -109,9 +109,18 @@ export function MinhaConta({
           ← Voltar à loja
         </button>
       )}
-      <h1 className="text-title-screen font-extrabold tracking-[-0.02em] text-ink">
-        {modo === 'pedidos' ? 'Meus pedidos' : 'Minha conta'}
-      </h1>
+      {base === '/delivery' ? (
+        <div className="-mx-5 -mt-6">
+          <TopoDoApp
+            titulo={modo === 'pedidos' ? 'Meus pedidos' : 'Minha conta'}
+            cidade={cidadeGuardada()}
+          />
+        </div>
+      ) : (
+        <h1 className="text-title-screen font-extrabold tracking-[-0.02em] text-ink">
+          Minha conta
+        </h1>
+      )}
       {modo !== 'pedidos' && (
         <p className="text-caption text-ink-muted">
           Seus dados ficam guardados neste aparelho para os próximos pedidos.

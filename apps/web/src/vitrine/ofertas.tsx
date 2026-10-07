@@ -4,7 +4,7 @@ import type { Database } from '@usefood/db';
 import { urlDaFoto } from '@usefood/pedidos';
 import { useEffect, useState } from 'react';
 import { navegar } from '../rotas';
-import { BarraDoApp } from './barra';
+import { BarraDoApp, TopoDoApp } from './barra';
 import { cidadeGuardada, lembrarVolta } from './vitrine-dados';
 
 export type Oferta = Database['public']['Functions']['vitrine_ofertas']['Returns'][number];
@@ -76,11 +76,7 @@ export function Ofertas() {
 
   return (
     <div className="min-h-dvh bg-canvas pb-28">
-      <header className="sticky top-0 z-30 border-b border-line bg-surface">
-        <h1 className="mx-auto w-full max-w-3xl px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-4 text-title-screen font-extrabold tracking-[-0.02em] text-ink">
-          Ofertas
-        </h1>
-      </header>
+      <TopoDoApp titulo="Ofertas" cidade={cidade} />
       <main className="mx-auto w-full max-w-3xl px-5 pt-5">
         {!ofertas ? (
           <div

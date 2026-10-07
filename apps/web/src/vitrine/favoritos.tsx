@@ -3,7 +3,7 @@ import { rotuloDaCozinha } from '@usefood/core';
 import { urlDaFoto } from '@usefood/pedidos';
 import { useEffect, useState } from 'react';
 import { navegar } from '../rotas';
-import { BarraDoApp } from './barra';
+import { BarraDoApp, TopoDoApp } from './barra';
 import { ListaDeLojas } from './vitrine';
 import {
   cidadeGuardada,
@@ -39,11 +39,7 @@ export function Favoritos() {
 
   return (
     <div className="min-h-dvh bg-canvas pb-28">
-      <header className="sticky top-0 z-30 border-b border-line bg-surface">
-        <h1 className="mx-auto w-full max-w-3xl px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-4 text-title-screen font-extrabold tracking-[-0.02em] text-ink">
-          Favoritos
-        </h1>
-      </header>
+      <TopoDoApp titulo="Favoritos" cidade={cidade} />
       <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 pt-5">
         {lojas && minhas.length === 0 ? (
           <div className="mx-5 flex flex-col gap-2 rounded-lg bg-surface p-6">
