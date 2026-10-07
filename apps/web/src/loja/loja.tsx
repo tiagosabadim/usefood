@@ -329,7 +329,7 @@ function PaginaDaLoja({
             <BotaoSobreFoto
               rotulo="Minha conta"
               icone="perfil"
-              onClick={() => navegar(`${base}/conta`)}
+              onClick={() => navegar(volta ? '/delivery/conta' : `${base}/conta`)}
             />
           </div>
         </div>

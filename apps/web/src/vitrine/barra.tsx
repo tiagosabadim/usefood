@@ -4,7 +4,7 @@ import { navegar } from '../rotas';
 
 type Aba = 'inicio' | 'pedidos' | 'favoritos' | 'perfil';
 
-/** Barra de baixo do app (BottomNav do design system): Início, Pedidos, Favoritos e Perfil. */
+/** Barra de baixo do app (BottomNav do design system): Início, Pedidos, Favoritos e Minha conta. */
 export function BarraDoApp({ ativo, cidade }: { ativo: Aba; cidade: string | null }) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40">
@@ -30,6 +30,12 @@ export function BarraDoApp({ ativo, cidade }: { ativo: Aba; cidade: string | nul
               icon: 'coracao',
               href: '/delivery/favoritos',
               current: ativo === 'favoritos',
+            },
+            {
+              label: 'Minha conta',
+              icon: 'perfil',
+              href: '/delivery/conta',
+              current: ativo === 'perfil',
             },
           ]}
         />

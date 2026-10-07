@@ -110,7 +110,7 @@ export function MinhaConta({
         </button>
       )}
       <h1 className="text-title-screen font-extrabold tracking-[-0.02em] text-ink">
-        {modo === 'pedidos' ? 'Meus pedidos' : modo === 'perfil' ? 'Meu perfil' : 'Minha conta'}
+        {modo === 'pedidos' ? 'Meus pedidos' : 'Minha conta'}
       </h1>
       {modo !== 'pedidos' && (
         <p className="text-caption text-ink-muted">
