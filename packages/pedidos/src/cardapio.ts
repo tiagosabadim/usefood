@@ -3,7 +3,7 @@ import type { AppSupabaseClient, Tables } from '@usefood/db';
 export type CategoriaDoCardapio = Pick<Tables<'categories'>, 'id' | 'name'>;
 export type ProdutoDoCardapio = Pick<
   Tables<'products'>,
-  'id' | 'category_id' | 'name' | 'description' | 'price_cents' | 'photo_path'
+  'id' | 'category_id' | 'name' | 'description' | 'price_cents' | 'photo_path' | 'is_featured'
 > & {
   /** Preço sem a promoção, quando há promoção valendo (para mostrar riscado). price_cents já é o da promoção. */
   preco_original_cents: number | null;
@@ -73,7 +73,7 @@ export async function carregarCardapio(
     supabase
       .from('products')
       .select(
-        'id, category_id, name, description, price_cents, promo_price_cents, promo_ends_at, photo_path',
+        'id, category_id, name, description, price_cents, promo_price_cents, promo_ends_at, photo_path, is_featured',
       )
       .eq('restaurant_id', lojaId)
       .eq('is_active', true)

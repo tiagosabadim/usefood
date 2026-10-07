@@ -1,4 +1,5 @@
-import { COZINHAS, formatarPreco, lerPreco } from '@usefood/core';
+import { COZINHAS, formatarPreco } from '@usefood/core';
+import { precoVigente } from '@usefood/pedidos';
 import type { AppSupabaseClient, Tables, Enums } from '@usefood/db';
 import {
   Alert,
@@ -31,12 +32,8 @@ type Produto = Pick<
   | 'position'
   | 'photo_path'
   | 'station_id'
+  | 'is_featured'
 >;
-interface NovoProduto {
-  nome: string;
-  precoCentavos: number;
-  descricao: string;
-}
 
 /** Categorias e produtos da loja. Dono e gerente editam; o resto da equipe só consulta. */
 export function Cardapio({
@@ -55,7 +52,6 @@ export function Cardapio({
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [versao, setVersao] = useState(0);
   const [criandoCategoria, setCriandoCategoria] = useState(false);
-  const [produtoNaCategoria, setProdutoNaCategoria] = useState<string | null>(null);
   const [erro, setErro] = useState('');
   const [aba, setAba] = useState<'produtos' | 'adicionais'>('produtos');
   const [grupos, setGrupos] = useState<Grupo[]>([]);
@@ -75,7 +71,7 @@ export function Cardapio({
       supabase
         .from('products')
         .select(
-          'id, category_id, name, description, price_cents, promo_price_cents, promo_ends_at, is_active, position, photo_path, station_id',
+          'id, category_id, name, description, price_cents, promo_price_cents, promo_ends_at, is_featured, is_active, position, photo_path, station_id',
         )
         .eq('restaurant_id', loja.id)
         .order('position')
@@ -151,25 +147,6 @@ export function Cardapio({
       return false;
     }
     setCriandoCategoria(false);
-    recarregar();
-    return true;
-  }
-
-  async function criarProduto(categoriaId: string, novo: NovoProduto): Promise<boolean> {
-    setErro('');
-    const { error } = await supabase.from('products').insert({
-      restaurant_id: loja.id,
-      category_id: categoriaId,
-      name: novo.nome,
-      description: novo.descricao || null,
-      price_cents: novo.precoCentavos,
-      position: produtos.filter((p) => p.category_id === categoriaId).length,
-    });
-    if (error) {
-      setErro('Não foi possível salvar o produto. Tente de novo.');
-      return false;
-    }
-    setProdutoNaCategoria(null);
     recarregar();
     return true;
   }
@@ -335,6 +312,7 @@ export function Cardapio({
                           ) : (
                             <p className="text-body-strong text-ink">{produto.name}</p>
                           )}
+                          <EtiquetasDoProduto produto={produto} />
                           {produto.description && (
                             <p className="truncate text-caption text-ink-muted">
                               {produto.description}
@@ -358,21 +336,30 @@ export function Cardapio({
                   </ul>
                 )}
 
-                {podeEditar &&
-                  (produtoNaCategoria === categoria.id ? (
-                    <NovoProdutoForm
-                      onSalvar={(novo) => criarProduto(categoria.id, novo)}
-                      onCancelar={() => setProdutoNaCategoria(null)}
-                    />
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      className="self-start px-0 text-brand-text"
-                      onClick={() => setProdutoNaCategoria(categoria.id)}
-                    >
-                      + Novo produto
-                    </Button>
-                  ))}
+                {podeEditar && (
+                  <Button
+                    variant="ghost"
+                    className="self-start px-0 text-brand-text"
+                    onClick={() =>
+                      setEditando({
+                        id: '',
+                        category_id: categoria.id,
+                        name: '',
+                        description: null,
+                        price_cents: 0,
+                        photo_path: null,
+                        station_id: pracas[0]?.id ?? null,
+                        promo_price_cents: null,
+                        promo_ends_at: null,
+                        is_featured: false,
+                        is_active: true,
+                        position: itens.length,
+                      })
+                    }
+                  >
+                    + Novo produto
+                  </Button>
+                )}
               </Panel>
             );
           })}
@@ -385,6 +372,10 @@ export function Cardapio({
           produto={editando}
           grupos={grupos}
           pracas={pracas}
+          categorias={ordenadas.map((c) => {
+            const mae = c.parent_id ? categorias.find((m) => m.id === c.parent_id) : undefined;
+            return { id: c.id, nome: mae ? `${mae.name} › ${c.name}` : c.name };
+          })}
           onAlterado={recarregar}
           onFechar={() => setEditando(null)}
         />
@@ -462,71 +453,35 @@ function NovaCategoria({
   );
 }
 
-function NovoProdutoForm({
-  onSalvar,
-  onCancelar,
-}: {
-  onSalvar: (novo: NovoProduto) => Promise<boolean>;
-  onCancelar: () => void;
-}) {
-  const [nome, setNome] = useState('');
-  const [preco, setPreco] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [tentou, setTentou] = useState(false);
-  const [salvando, setSalvando] = useState(false);
-
-  const precoCentavos = lerPreco(preco);
-  const erroPreco =
-    tentou && precoCentavos === null ? 'Digite o preço, por exemplo 14,90.' : undefined;
-
-  async function enviar(evento: FormEvent) {
-    evento.preventDefault();
-    setTentou(true);
-    if (precoCentavos === null || !nome.trim()) return;
-    setSalvando(true);
-    await onSalvar({ nome: nome.trim(), precoCentavos, descricao: descricao.trim() });
-    setSalvando(false);
-  }
-
+/** Etiquetas do produto no cardápio: desconto da promoção valendo, destaque e pausado. */
+function EtiquetasDoProduto({ produto }: { produto: Produto }) {
+  const vigente = precoVigente(
+    produto.price_cents,
+    produto.promo_price_cents,
+    produto.promo_ends_at,
+  );
+  const desconto =
+    vigente < produto.price_cents
+      ? Math.round(((produto.price_cents - vigente) / produto.price_cents) * 100)
+      : 0;
+  if (!desconto && !produto.is_featured && produto.is_active) return null;
   return (
-    <form
-      onSubmit={enviar}
-      className="mt-2 flex flex-col gap-4 rounded-md border border-line bg-canvas p-4"
-    >
-      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_10rem]">
-        <TextField
-          label="Nome do produto"
-          required
-          maxLength={80}
-          autoFocus
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-        />
-        <TextField
-          label="Preço"
-          inputMode="decimal"
-          placeholder="0,00"
-          value={preco}
-          onChange={(e) => setPreco(e.target.value)}
-          error={erroPreco}
-          hint={precoCentavos !== null ? formatarPreco(precoCentavos) : 'Em reais'}
-        />
-      </div>
-      <TextField
-        label="Descrição (opcional)"
-        hint="O que vem no prato. Aparece para o cliente no cardápio."
-        maxLength={500}
-        value={descricao}
-        onChange={(e) => setDescricao(e.target.value)}
-      />
-      <div className="flex gap-3">
-        <Button type="submit" loading={salvando} disabled={!nome.trim()}>
-          Salvar produto
-        </Button>
-        <Button variant="ghost" onClick={onCancelar}>
-          Cancelar
-        </Button>
-      </div>
-    </form>
+    <span className="mt-1 flex flex-wrap gap-1.5">
+      {desconto > 0 && (
+        <span className="rounded-pill bg-brand px-2 py-0.5 text-micro font-bold text-brand-ink">
+          -{desconto}% · {formatarPreco(vigente)}
+        </span>
+      )}
+      {produto.is_featured && (
+        <span className="rounded-pill bg-brand-soft px-2 py-0.5 text-micro font-bold text-brand-text">
+          Destaque
+        </span>
+      )}
+      {!produto.is_active && (
+        <span className="rounded-pill bg-surface-strong px-2 py-0.5 text-micro font-bold text-ink-muted">
+          Pausado
+        </span>
+      )}
+    </span>
   );
 }

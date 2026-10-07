@@ -6,6 +6,7 @@ import {
   ChoiceGrid,
   ImageCropper,
   PhotoField,
+  SelectField,
   Sheet,
   Switch,
   TextField,
@@ -23,6 +24,8 @@ export type ProdutoEditavel = Pick<
   | 'station_id'
   | 'promo_price_cents'
   | 'promo_ends_at'
+  | 'category_id'
+  | 'is_featured'
 >;
 export type PracaResumo = Pick<Tables<'stations'>, 'id' | 'name'>;
 export type GrupoResumo = Pick<
@@ -47,12 +50,16 @@ export function EditorProduto({
   produto,
   grupos,
   pracas,
+  categorias,
   onAlterado,
   onFechar,
 }: {
   supabase: AppSupabaseClient;
   lojaId: string;
+  /** Produto sem id: criar (tudo de uma vez). Com id: editar. */
   produto: ProdutoEditavel;
+  /** Categorias do cardápio para escolher (subcategorias como "Lanches › Artesanais"). */
+  categorias: { id: string; nome: string }[];
   grupos: GrupoResumo[];
   /** Praças da loja; a primeira é a padrão. */
   pracas: PracaResumo[];
@@ -60,9 +67,18 @@ export function EditorProduto({
   onAlterado: () => void;
   onFechar: () => void;
 }) {
-  const [carregando, setCarregando] = useState(true);
+  const novo = !produto.id;
+  const [carregando, setCarregando] = useState(!novo);
+  const [categoriaId, setCategoriaId] = useState(produto.category_id);
+  const [destaque, setDestaque] = useState(produto.is_featured);
+  // Criar: a foto enquadrada fica guardada e sobe junto com o produto ao salvar
+  const [fotoPendente, setFotoPendente] = useState<{
+    fonte: Blob;
+    recorte: Recorte;
+    previa: string;
+  } | null>(null);
   const [nome, setNome] = useState(produto.name);
-  const [preco, setPreco] = useState(precoParaCampo(produto.price_cents));
+  const [preco, setPreco] = useState(produto.id ? precoParaCampo(produto.price_cents) : '');
   // Promoção: preço menor (opcional) e até quando vale (opcional, fim do dia)
   const [promo, setPromo] = useState(
     produto.promo_price_cents ? precoParaCampo(produto.promo_price_cents) : '',
@@ -91,6 +107,7 @@ export function EditorProduto({
   const [erro, setErro] = useState('');
 
   useEffect(() => {
+    if (!produto.id) return;
     let ativo = true;
     void Promise.all([
       supabase
@@ -153,6 +170,15 @@ export function EditorProduto({
 
   async function salvarFoto(recorte: Recorte) {
     if (!enquadrando) return;
+    if (novo) {
+      setFotoPendente({
+        fonte: enquadrando.fonte,
+        recorte,
+        previa: URL.createObjectURL(enquadrando.fonte),
+      });
+      pararDeEnquadrar();
+      return;
+    }
     setErroFoto(undefined);
     setEnviandoFoto(true);
     try {
@@ -195,19 +221,44 @@ export function EditorProduto({
     setErro('');
     setSalvando(true);
     try {
-      const produtoAtualizado = await supabase
-        .from('products')
-        .update({
-          name: nome.trim(),
-          price_cents: precoCentavos,
-          promo_price_cents: tamanhos.length ? null : promoCentavos,
-          promo_ends_at:
-            tamanhos.length || !promoCentavos || !promoAte ? null : `${promoAte}T23:59:59-03:00`,
-          description: descricao.trim() || null,
-          station_id: pracaId,
-        })
-        .eq('id', produto.id);
-      if (produtoAtualizado.error) throw produtoAtualizado.error;
+      const dados = {
+        name: nome.trim(),
+        price_cents: precoCentavos,
+        promo_price_cents: tamanhos.length ? null : promoCentavos,
+        promo_ends_at:
+          tamanhos.length || !promoCentavos || !promoAte ? null : `${promoAte}T23:59:59-03:00`,
+        description: descricao.trim() || null,
+        station_id: pracaId,
+        category_id: categoriaId,
+        is_featured: destaque,
+      };
+      let id = produto.id;
+      if (novo) {
+        const criado = await supabase
+          .from('products')
+          .insert({ ...dados, restaurant_id: lojaId })
+          .select('id')
+          .single();
+        if (criado.error) throw criado.error;
+        id = criado.data.id;
+        if (fotoPendente) {
+          const caminho = await enviarFoto(
+            supabase,
+            lojaId,
+            id,
+            fotoPendente.fonte,
+            fotoPendente.recorte,
+          );
+          const comFoto = await supabase
+            .from('products')
+            .update({ photo_path: caminho })
+            .eq('id', id);
+          if (comFoto.error) throw comFoto.error;
+        }
+      } else {
+        const atualizado = await supabase.from('products').update(dados).eq('id', id);
+        if (atualizado.error) throw atualizado.error;
+      }
 
       // Tamanhos: apaga os que saíram, atualiza os que ficaram, cria os novos
       const ficaram = new Set(tamanhos.flatMap((t) => (t.id ? [t.id] : [])));
@@ -226,7 +277,7 @@ export function EditorProduto({
           ? await supabase.from('product_variants').update(dados).eq('id', t.id)
           : await supabase
               .from('product_variants')
-              .insert({ ...dados, restaurant_id: lojaId, product_id: produto.id });
+              .insert({ ...dados, restaurant_id: lojaId, product_id: id });
         if (error) throw error;
       }
 
@@ -237,7 +288,7 @@ export function EditorProduto({
         const { error } = await supabase.from('product_modifier_groups').insert(
           ligar.map((g, i) => ({
             restaurant_id: lojaId,
-            product_id: produto.id,
+            product_id: id,
             group_id: g,
             position: i,
           })),
@@ -248,7 +299,7 @@ export function EditorProduto({
         const { error } = await supabase
           .from('product_modifier_groups')
           .delete()
-          .eq('product_id', produto.id)
+          .eq('product_id', id)
           .in('group_id', desligar);
         if (error) throw error;
       }
@@ -280,7 +331,7 @@ export function EditorProduto({
     <Sheet
       open
       onClose={onFechar}
-      title="Editar produto"
+      title={novo ? 'Novo produto' : 'Editar produto'}
       footer={
         <div className="flex gap-3">
           <Button
@@ -315,7 +366,7 @@ export function EditorProduto({
       ) : (
         <PhotoField
           label="Foto"
-          imageUrl={urlDaFoto(supabase, fotoPath)}
+          imageUrl={fotoPendente?.previa ?? urlDaFoto(supabase, fotoPath)}
           busy={enviandoFoto}
           error={erroFoto}
           onSelect={enquadrar}
@@ -374,6 +425,21 @@ export function EditorProduto({
         value={descricao}
         onChange={(e) => setDescricao(e.target.value)}
       />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <SelectField
+          label="Categoria"
+          hint="A categoria do cardápio (e a do app, ligada a ela)."
+          options={categorias.map((c) => ({ value: c.id, label: c.nome }))}
+          value={categoriaId}
+          onChange={setCategoriaId}
+        />
+        <div className="flex flex-col gap-2">
+          <Switch label="Destaque" showLabel checked={destaque} onChange={setDestaque} />
+          <p className="text-caption text-ink-muted">
+            Aparece em Destaques na loja e primeiro na categoria do app.
+          </p>
+        </div>
+      </div>
 
       {pracas.length > 1 && (
         <section className="flex flex-col gap-2">
@@ -470,31 +536,33 @@ export function EditorProduto({
         )}
       </section>
 
-      <section className="mt-2 flex flex-col items-start gap-3 border-t border-line pt-5">
-        {confirmarExclusao ? (
-          <>
-            <p className="text-body text-ink">
-              Excluir de vez? Pedidos antigos continuam mostrando o nome e o preço da época.
-            </p>
-            <div className="flex gap-2">
-              <Button variant="danger" loading={excluindo} onClick={() => void excluir()}>
-                Sim, excluir
-              </Button>
-              <Button variant="ghost" onClick={() => setConfirmarExclusao(false)}>
-                Não
-              </Button>
-            </div>
-          </>
-        ) : (
-          <Button
-            variant="ghost"
-            className="px-0 text-danger"
-            onClick={() => setConfirmarExclusao(true)}
-          >
-            Excluir produto
-          </Button>
-        )}
-      </section>
+      {!novo && (
+        <section className="mt-2 flex flex-col items-start gap-3 border-t border-line pt-5">
+          {confirmarExclusao ? (
+            <>
+              <p className="text-body text-ink">
+                Excluir de vez? Pedidos antigos continuam mostrando o nome e o preço da época.
+              </p>
+              <div className="flex gap-2">
+                <Button variant="danger" loading={excluindo} onClick={() => void excluir()}>
+                  Sim, excluir
+                </Button>
+                <Button variant="ghost" onClick={() => setConfirmarExclusao(false)}>
+                  Não
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Button
+              variant="ghost"
+              className="px-0 text-danger"
+              onClick={() => setConfirmarExclusao(true)}
+            >
+              Excluir produto
+            </Button>
+          )}
+        </section>
+      )}
     </Sheet>
   );
 }

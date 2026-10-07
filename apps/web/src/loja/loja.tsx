@@ -128,7 +128,11 @@ function PaginaDaLoja({
   const categorias = cardapio.categorias.filter((c) =>
     cardapio.produtos.some((p) => p.category_id === c.id),
   );
-  const destaques = cardapio.produtos.filter((p) => p.photo_path).slice(0, 8);
+  // Destaques: os marcados como destaque; sem nenhum marcado, os que têm foto
+  const marcados = cardapio.produtos.filter((p) => p.is_featured);
+  const destaques = (
+    marcados.length ? marcados : cardapio.produtos.filter((p) => p.photo_path)
+  ).slice(0, 8);
   const horario = resumoDoHorario(horarios, aberta, new Date());
 
   const encontrados = useMemo(() => {
@@ -177,6 +181,13 @@ function PaginaDaLoja({
         priceLabel={preco(p)}
         originalPriceLabel={
           p.preco_original_cents ? formatarPreco(p.preco_original_cents) : undefined
+        }
+        badge={
+          p.preco_original_cents
+            ? `-${Math.round(((p.preco_original_cents - p.price_cents) / p.preco_original_cents) * 100)}%`
+            : p.is_featured
+              ? 'Destaque'
+              : undefined
         }
         imageUrl={foto(p.photo_path)}
         quantity={quantidadeDoProduto(sacola, p.id)}

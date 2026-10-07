@@ -2,6 +2,8 @@ import { cn } from './cn';
 import { Icon } from './icon';
 
 export interface ProductRowProps {
+  /** Etiqueta curta ao lado do nome (ex.: \"-20%\", \"Destaque\"). */
+  badge?: string;
   /** Preço sem a promoção, mostrado riscado ao lado do preço. */
   originalPriceLabel?: string;
   name: string;
@@ -23,6 +25,7 @@ export function ProductRow({
   quantity = 0,
   onClick,
   originalPriceLabel,
+  badge,
 }: ProductRowProps) {
   return (
     <button
@@ -46,7 +49,14 @@ export function ProductRow({
         </span>
       )}
       <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="text-body-strong text-ink">{name}</span>
+        <span className="flex flex-wrap items-center gap-1.5">
+          <span className="text-body-strong text-ink">{name}</span>
+          {badge && (
+            <span className="rounded-pill bg-brand px-2 py-0.5 text-micro font-bold text-brand-ink">
+              {badge}
+            </span>
+          )}
+        </span>
         {description && (
           <span className="line-clamp-2 text-caption text-ink-muted">{description}</span>
         )}

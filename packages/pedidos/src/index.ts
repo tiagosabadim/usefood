@@ -9,6 +9,7 @@ export {
   type OpcaoTamanho,
   type OpcoesDoProduto,
   type ProdutoDoCardapio,
+  precoVigente,
 } from './cardapio';
 export { ListaDeEntregas } from './entregas';
 export { urlDaFoto } from './foto';
