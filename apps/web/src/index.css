@@ -5,3 +5,41 @@
 @source '../../../packages/ui/src';
 @source '../../../packages/app/src';
 @source '../../../packages/pedidos/src';
+
+/* Splash do app: logo surge, texto aparece em seguida, barrinha laranja correndo */
+@keyframes splash-surgir {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@keyframes splash-texto {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes splash-barra {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(310%);
+  }
+}
+.splash-logo {
+  animation: splash-surgir 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.splash-texto {
+  animation: splash-texto 0.6s 0.35s ease-out both;
+}
+.splash-barra {
+  animation: splash-barra 1.1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash-logo,
+  .splash-texto,
+  .splash-barra {
+    animation: none;
+  }
+}
