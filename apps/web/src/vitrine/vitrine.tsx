@@ -47,7 +47,6 @@ export function Vitrine({ cidade }: { cidade: string }) {
 
   useEffect(() => {
     if (!supabase) return;
-    guardarCidade(cidade);
     void supabase
       .rpc('vitrine_da_cidade', { p_marca: site.brand, p_cidade: cidade })
       .then(({ data, error }) => {
@@ -60,7 +59,11 @@ export function Vitrine({ cidade }: { cidade: string }) {
       .then(({ data }) => setOfertas(data ?? []));
     void supabase.rpc('vitrine_cidades', { p_marca: site.brand }).then(({ data }) => {
       const c = data?.find((x) => x.slug === cidade);
-      if (c) setNomeDaCidade(`${c.cidade}/${c.uf}`);
+      // Só guarda a cidade no aparelho quando ela existe de verdade
+      if (c) {
+        setNomeDaCidade(`${c.cidade}/${c.uf}`);
+        guardarCidade(cidade);
+      }
     });
   }, [supabase, site.brand, cidade]);
 

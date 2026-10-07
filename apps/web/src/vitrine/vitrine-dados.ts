@@ -15,6 +15,14 @@ export function cidadeGuardada(): string | null {
     return null;
   }
 }
+/** Esquece a cidade guardada (quando ela não existe mais na lista de cidades). */
+export function esquecerCidade(): void {
+  try {
+    localStorage.removeItem(CHAVE_CIDADE);
+  } catch {
+    // sem armazenamento
+  }
+}
 export function guardarCidade(slug: string): void {
   try {
     localStorage.setItem(CHAVE_CIDADE, slug);

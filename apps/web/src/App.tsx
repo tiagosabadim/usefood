@@ -46,7 +46,7 @@ export function App() {
     if (token && partes[2] === 'pedido' && partes[3] && TOKEN.test(partes[3]))
       return <Acompanhar token={partes[3]} voltar={`/delivery/${a.toLowerCase()}`} />;
     // /delivery/<cidade> é a vitrine; /delivery/<loja> é a loja aberta pelo app
-    return <CidadeOuLoja nome={a.toLowerCase()} />;
+    return <CidadeOuLoja key={a.toLowerCase()} nome={a.toLowerCase()} />;
   }
   if (slug) {
     const loja = slug.toLowerCase();
