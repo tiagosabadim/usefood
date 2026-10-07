@@ -9,16 +9,7 @@ import {
   type MetodoPagamento,
 } from '@usefood/core';
 import type { AppSupabaseClient } from '@usefood/db';
-import {
-  Alert,
-  Button,
-  ChoiceGrid,
-  Panel,
-  SegmentedControl,
-  SelectField,
-  Switch,
-  TextField,
-} from '@usefood/ui';
+import { Alert, Button, cn, Icon, Panel, SelectField, Switch, TextField } from '@usefood/ui';
 import { useEffect, useState, type FormEvent } from 'react';
 import {
   ENDERECO_EM_BRANCO,
@@ -219,26 +210,56 @@ export function Checkout({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-5 px-5 py-6 pb-32">
-      <button type="button" className="self-start text-label text-ink-muted" onClick={onVoltar}>
-        ← Voltar ao cardápio
-      </button>
-      <h1 className="font-display text-title-screen text-ink">Finalizar pedido</h1>
+      <header className="sticky top-0 z-20 -mx-5 -mt-6 flex items-center gap-1 border-b border-line bg-canvas px-2 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2">
+        <button
+          type="button"
+          aria-label="Voltar ao cardápio"
+          onClick={onVoltar}
+          className="flex size-11 items-center justify-center rounded-pill text-ink focus-visible:outline-2 focus-visible:outline-brand"
+        >
+          <Icon name="voltar" size={22} />
+        </button>
+        <h1 className="text-title-section font-extrabold tracking-[-0.02em] text-ink">
+          Finalizar pedido
+        </h1>
+      </header>
       {!aberta && (
         <Alert>A loja está fechada agora. Você pode montar a sacola e pedir quando abrir.</Alert>
       )}
 
       <form className="flex flex-col gap-5" onSubmit={enviar}>
         {loja.accepts_delivery && loja.accepts_pickup && (
-          <SegmentedControl
-            label="Entrega ou retirada"
-            className="self-start"
-            options={[
-              { value: 'delivery', label: 'Entregar' },
-              { value: 'retirada', label: 'Retirar na loja' },
-            ]}
-            value={tipo}
-            onChange={setTipo}
-          />
+          <fieldset className="flex flex-col gap-3">
+            <legend className="mb-3 text-title-section font-extrabold text-ink">
+              Tipo de entrega
+            </legend>
+            <div className="grid grid-cols-2 gap-3">
+              {(
+                [
+                  ['delivery', 'Entrega', 'moto'],
+                  ['retirada', 'Retirada no local', 'loja'],
+                ] as const
+              ).map(([valor, rotulo, icone]) => (
+                <label
+                  key={valor}
+                  className={cn(
+                    'flex min-h-14 cursor-pointer items-center gap-3 rounded-lg border bg-surface px-4 transition',
+                    tipo === valor ? 'border-brand ring-1 ring-brand' : 'border-line',
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="tipo"
+                    className="size-5 shrink-0 accent-[var(--uf-brand)]"
+                    checked={tipo === valor}
+                    onChange={() => setTipo(valor)}
+                  />
+                  <Icon name={icone} size={20} className="shrink-0 text-brand-text" />
+                  <span className="text-label font-bold text-ink">{rotulo}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
         )}
 
         <Panel title="Seus dados">
@@ -349,18 +370,32 @@ export function Checkout({
           </Panel>
         )}
 
-        <Panel title={`Pagamento na ${tipo === 'delivery' ? 'entrega' : 'retirada'}`}>
-          <ChoiceGrid
-            label="Como vai pagar"
-            options={[
-              { value: 'dinheiro', label: 'Dinheiro' },
-              { value: 'pix', label: 'Pix' },
-              { value: 'credito', label: 'Crédito' },
-              { value: 'debito', label: 'Débito' },
-            ]}
-            value={pagamento}
-            onChange={setPagamento}
-          />
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-3 text-title-section font-extrabold text-ink">
+            Como vai pagar na {tipo === 'delivery' ? 'entrega' : 'retirada'}
+          </legend>
+          <div className="flex flex-col divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
+            {(
+              [
+                ['pix', 'Pix', 'pix'],
+                ['credito', 'Cartão de crédito', 'cartao'],
+                ['debito', 'Cartão de débito', 'cartao'],
+                ['dinheiro', 'Dinheiro', 'dinheiro'],
+              ] as const
+            ).map(([valor, rotulo, icone]) => (
+              <label key={valor} className="flex min-h-14 cursor-pointer items-center gap-3 px-4">
+                <Icon name={icone} size={22} className="shrink-0 text-brand-text" />
+                <span className="flex-1 text-body text-ink">{rotulo}</span>
+                <input
+                  type="radio"
+                  name="pagamento"
+                  className="size-5 shrink-0 accent-[var(--uf-brand)]"
+                  checked={pagamento === valor}
+                  onChange={() => setPagamento(valor)}
+                />
+              </label>
+            ))}
+          </div>
           {pagamento === 'dinheiro' && (
             <TextField
               label="Troco para (opcional)"
@@ -370,7 +405,7 @@ export function Checkout({
               onChange={(e) => setTrocoPara(e.target.value)}
             />
           )}
-        </Panel>
+        </fieldset>
 
         <TextField
           label="Observação para a loja (opcional)"
@@ -379,7 +414,7 @@ export function Checkout({
           onChange={(e) => setObservacao(e.target.value)}
         />
 
-        <dl className="flex flex-col gap-1 text-body">
+        <dl className="flex flex-col gap-2 rounded-lg bg-surface p-4 text-body">
           <div className="flex justify-between text-ink-muted">
             <dt>Itens</dt>
             <dd className="tabular-nums">{formatarPreco(subtotal)}</dd>
@@ -392,14 +427,14 @@ export function Checkout({
               </dd>
             </div>
           )}
-          <div className="flex justify-between text-body-strong text-ink">
+          <div className="flex justify-between border-t border-line pt-2 text-title-section font-black text-ink">
             <dt>Total</dt>
             <dd className="tabular-nums">{formatarPreco(total)}</dd>
           </div>
         </dl>
 
         <Alert>{erro}</Alert>
-        <div className="fixed inset-x-0 bottom-0 border-t border-line bg-canvas px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-canvas px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="mx-auto flex max-w-xl flex-col gap-1">
             {faltando && <p className="text-center text-caption text-ink-muted">{faltando}</p>}
             <Button

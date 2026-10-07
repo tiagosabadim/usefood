@@ -1,6 +1,6 @@
 import { useAppContext } from '@usefood/app';
 import { etapasDoPedido, formatarPreco, fraseDoPedido, type SituacaoDoPedido } from '@usefood/core';
-import { Alert, Button, cn, Panel } from '@usefood/ui';
+import { Alert, Button, cn, Icon, Panel } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { navegar } from '../rotas';
 import { whatsapp } from './dados';
@@ -35,6 +35,21 @@ const PAGAMENTO: Record<string, string> = {
 };
 
 /** Página do cliente para acompanhar o pedido pelo link secreto. Atualiza sozinha. */
+// Etapa com nome curto e ícone (a linha do tempo na horizontal); o nome completo vai para o leitor de tela
+const ETAPA_CURTA: Record<
+  string,
+  { texto: string; icone: 'relogio' | 'check' | 'cozinha' | 'sacola' | 'moto' | 'inicio' }
+> = {
+  'Aguardando o restaurante aceitar': { texto: 'Enviado', icone: 'relogio' },
+  'Pedido aceito': { texto: 'Aceito', icone: 'check' },
+  'Em preparação': { texto: 'Preparo', icone: 'cozinha' },
+  Pronto: { texto: 'Pronto', icone: 'sacola' },
+  'Pronto para retirar': { texto: 'Pronto', icone: 'sacola' },
+  'Pedido a caminho': { texto: 'A caminho', icone: 'moto' },
+  'Pedido entregue': { texto: 'Entregue', icone: 'inicio' },
+  Retirado: { texto: 'Retirado', icone: 'check' },
+};
+
 export function Acompanhar({ token, voltar }: { token: string; voltar: string }) {
   const { supabase } = useAppContext();
   const [pedido, setPedido] = useState<Acompanhamento | null | undefined>(undefined);
@@ -87,8 +102,13 @@ export function Acompanhar({ token, voltar }: { token: string; voltar: string })
           {fraseDoPedido(pedido.tipo, pedido.situacao)}
         </h1>
         {!cancelado && pedido.situacao !== 'concluido' && (
-          <span className="text-body text-ink-muted">
-            Tempo estimado: {pedido.tempo.min} a {pedido.tempo.max} min
+          <span className="flex flex-col pt-2">
+            <span className="text-caption text-ink-muted">
+              {pedido.tipo === 'delivery' ? 'Entrega em' : 'Pronto em'}
+            </span>
+            <span className="text-[2.5rem] leading-none font-black tracking-[-0.04em] text-ink tabular-nums">
+              {pedido.tempo.min}–{pedido.tempo.max} min
+            </span>
           </span>
         )}
       </header>
@@ -100,28 +120,53 @@ export function Acompanhar({ token, voltar }: { token: string; voltar: string })
             : 'A loja não conseguiu aceitar o pedido agora.'}
         </Alert>
       ) : (
-        <ol className="flex flex-col gap-3" aria-label="Andamento do pedido">
-          {etapasDoPedido(pedido.tipo, pedido.situacao).map((e) => (
-            <li key={e.rotulo} className="flex items-center gap-3">
-              <span
-                className={cn(
-                  'size-4 shrink-0 rounded-pill border-2',
-                  e.estado === 'feito' && 'border-success bg-success',
-                  e.estado === 'atual' && 'border-brand bg-brand',
-                  e.estado === 'futuro' && 'border-line-strong',
+        <ol
+          aria-label="Andamento do pedido"
+          className="grid gap-1 rounded-lg bg-surface px-2 py-4"
+          style={{
+            gridTemplateColumns: `repeat(${etapasDoPedido(pedido.tipo, pedido.situacao).length}, minmax(0, 1fr))`,
+          }}
+        >
+          {etapasDoPedido(pedido.tipo, pedido.situacao).map((e, i, todas) => {
+            const curto = ETAPA_CURTA[e.rotulo] ?? { texto: e.rotulo, icone: 'check' as const };
+            return (
+              <li key={e.rotulo} className="relative flex flex-col items-center gap-2 text-center">
+                {i > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'absolute top-[1.125rem] right-1/2 h-0.5 w-full -translate-y-1/2',
+                      e.estado === 'futuro' ? 'bg-line' : 'bg-brand',
+                    )}
+                  />
                 )}
-              />
-              <span
-                className={cn(
-                  'text-body',
-                  e.estado === 'futuro' ? 'text-ink-muted' : 'text-body-strong text-ink',
-                )}
-              >
-                {e.rotulo}
-                {e.estado === 'atual' && <span className="sr-only"> (agora)</span>}
-              </span>
-            </li>
-          ))}
+                <span
+                  className={cn(
+                    'relative flex size-9 items-center justify-center rounded-pill',
+                    e.estado === 'futuro'
+                      ? 'bg-surface-strong text-ink-muted'
+                      : 'bg-brand text-brand-ink',
+                    e.estado === 'atual' && 'ring-4 ring-brand-soft',
+                  )}
+                >
+                  <Icon name={curto.icone} size={18} />
+                </span>
+                <span
+                  className={cn(
+                    'text-micro leading-tight',
+                    e.estado === 'futuro' ? 'text-ink-muted' : 'font-bold text-ink',
+                  )}
+                >
+                  {curto.texto}
+                </span>
+                <span className="sr-only">
+                  {e.rotulo}
+                  {e.estado === 'atual' ? ' (agora)' : e.estado === 'feito' ? ' (feito)' : ''}
+                  {i === todas.length - 1 ? '' : ','}
+                </span>
+              </li>
+            );
+          })}
         </ol>
       )}
 

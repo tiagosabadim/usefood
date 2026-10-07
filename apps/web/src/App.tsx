@@ -36,7 +36,8 @@ export function App() {
   // App de delivery: escolher a cidade, vitrine da cidade e pedidos/conta
   if (slug === 'delivery') {
     if (!a) return <EscolherCidade />;
-    if (a === 'conta') return <MinhaConta base="/delivery" />;
+    if (a === 'conta' || a === 'pedidos') return <MinhaConta base="/delivery" modo="pedidos" />;
+    if (a === 'perfil') return <MinhaConta base="/delivery" modo="perfil" />;
     if (a === 'favoritos') return <Favoritos />;
     return <Vitrine cidade={a.toLowerCase()} />;
   }
