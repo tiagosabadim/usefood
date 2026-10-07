@@ -22,7 +22,7 @@ export function BarraDoApp({ ativo, cidade }: { ativo: Aba; cidade: string | nul
             {
               label: 'Pedidos',
               icon: 'pedidos',
-              href: '/delivery/conta',
+              href: '/delivery/pedidos',
               current: ativo === 'pedidos',
             },
             {
