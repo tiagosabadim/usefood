@@ -8,6 +8,9 @@ import { PedidoEmAndamento } from '../loja/pedido-em-andamento';
 import { navegar } from '../rotas';
 import { BarraDoApp, useInstalar } from './barra';
 import { CartaoDeOferta, type Oferta } from './ofertas';
+import type { Database, Enums } from '@usefood/db';
+
+type PratoDaCategoria = Database['public']['Functions']['vitrine_por_categoria']['Returns'][number];
 import {
   distanciaKm,
   gravarFavoritos,
@@ -38,6 +41,7 @@ export function Vitrine({ cidade }: { cidade: string }) {
   const [favoritos, setFavoritos] = useState<string[]>(lerFavoritos);
   const [local, setLocal] = useState<Local | null>(localGuardado);
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
+  const [pratosDaCategoria, setPratosDaCategoria] = useState<PratoDaCategoria[]>([]);
   const [erro, setErro] = useState('');
   const endereco = lerConta().enderecos[0];
 
@@ -80,6 +84,18 @@ export function Vitrine({ cidade }: { cidade: string }) {
     }, 300);
     return () => clearTimeout(t);
   }, [supabase, site.brand, cidade, busca]);
+
+  // Categoria escolhida: os pratos dela nas lojas da cidade (destaques e promoções primeiro)
+  useEffect(() => {
+    if (!supabase || !categoria) return;
+    void supabase
+      .rpc('vitrine_por_categoria', {
+        p_marca: site.brand,
+        p_cidade: cidade,
+        p_cozinha: categoria as Enums<'cuisine_type'>,
+      })
+      .then(({ data }) => setPratosDaCategoria(data ?? []));
+  }, [supabase, site.brand, cidade, categoria]);
 
   const foto = (caminho: string | null) =>
     supabase && caminho ? (urlDaFoto(supabase, caminho) ?? undefined) : undefined;
@@ -287,6 +303,60 @@ export function Vitrine({ cidade }: { cidade: string }) {
                             className="size-16 shrink-0 rounded-md object-cover"
                           />
                         )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </Secao>
+            )}
+
+            {categoria && !buscando && pratosDaCategoria.length > 0 && (
+              <Secao titulo={`Pratos de ${rotuloDaCozinha(categoria)}`}>
+                <ul className="mx-5 flex flex-col divide-y divide-line overflow-hidden rounded-lg bg-surface">
+                  {pratosDaCategoria.slice(0, 20).map((p) => (
+                    <li key={p.produto_id}>
+                      <button
+                        type="button"
+                        onClick={() => abrirLoja(p.loja_slug)}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-strong"
+                      >
+                        {p.foto_path && (
+                          <img
+                            src={foto(p.foto_path)}
+                            alt=""
+                            loading="lazy"
+                            className="size-16 shrink-0 rounded-md object-cover"
+                          />
+                        )}
+                        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                          <span className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-body-strong text-ink">{p.produto}</span>
+                            {p.destaque && (
+                              <span className="rounded-pill bg-brand-soft px-2 py-0.5 text-micro font-bold text-brand-text">
+                                Destaque
+                              </span>
+                            )}
+                          </span>
+                          <span className="truncate text-caption text-ink-muted">
+                            {p.loja_nome}
+                            {p.loja_aberta ? '' : ' (fechada agora)'}
+                          </span>
+                          <span className="flex items-baseline gap-1.5">
+                            <span
+                              className={cn(
+                                'text-label font-bold tabular-nums',
+                                p.preco_original_cents ? 'text-brand-text' : 'text-ink',
+                              )}
+                            >
+                              {formatarPreco(p.preco_cents)}
+                            </span>
+                            {p.preco_original_cents && (
+                              <s className="text-micro text-ink-muted tabular-nums">
+                                {formatarPreco(p.preco_original_cents)}
+                              </s>
+                            )}
+                          </span>
+                        </div>
                       </button>
                     </li>
                   ))}

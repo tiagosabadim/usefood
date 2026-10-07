@@ -178,30 +178,36 @@ export type Database = {
       categories: {
         Row: {
           created_at: string
+          cuisine: Database["public"]["Enums"]["cuisine_type"] | null
           description: string | null
           id: string
           is_active: boolean
           name: string
+          parent_id: string | null
           position: number
           restaurant_id: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          cuisine?: Database["public"]["Enums"]["cuisine_type"] | null
           description?: string | null
           id?: string
           is_active?: boolean
           name: string
+          parent_id?: string | null
           position?: number
           restaurant_id: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          cuisine?: Database["public"]["Enums"]["cuisine_type"] | null
           description?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          parent_id?: string | null
           position?: number
           restaurant_id?: string
           updated_at?: string
@@ -1202,6 +1208,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          is_featured: boolean
           name: string
           photo_path: string | null
           position: number
@@ -1220,6 +1227,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_featured?: boolean
           name: string
           photo_path?: string | null
           position?: number
@@ -1238,6 +1246,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_featured?: boolean
           name?: string
           photo_path?: string | null
           position?: number
@@ -2037,6 +2046,21 @@ export type Database = {
           produto_id: string
           promo_cents: number
           termina_em: string | null
+        }[]
+      }
+      vitrine_por_categoria: {
+        Args: { p_cidade: string; p_cozinha: Database["public"]["Enums"]["cuisine_type"]; p_marca: string }
+        Returns: {
+          descricao: string | null
+          destaque: boolean
+          foto_path: string | null
+          loja_aberta: boolean
+          loja_nome: string
+          loja_slug: string
+          preco_cents: number
+          preco_original_cents: number | null
+          produto: string
+          produto_id: string
         }[]
       }
     }

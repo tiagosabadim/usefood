@@ -1,11 +1,12 @@
-import { formatarPreco, lerPreco } from '@usefood/core';
-import type { AppSupabaseClient, Tables } from '@usefood/db';
+import { COZINHAS, formatarPreco, lerPreco } from '@usefood/core';
+import type { AppSupabaseClient, Tables, Enums } from '@usefood/db';
 import {
   Alert,
   Button,
   EmptyState,
   Panel,
   SegmentedControl,
+  SelectField,
   StatusPill,
   Switch,
   TextField,
@@ -16,7 +17,7 @@ import { EditorProduto, type PracaResumo } from './editor-produto';
 import { urlDaFoto } from './foto';
 import { Tela, Titulo } from './tela';
 
-type Categoria = Pick<Tables<'categories'>, 'id' | 'name' | 'position'>;
+type Categoria = Pick<Tables<'categories'>, 'id' | 'name' | 'position' | 'cuisine' | 'parent_id'>;
 type Produto = Pick<
   Tables<'products'>,
   | 'id'
@@ -67,7 +68,7 @@ export function Cardapio({
     void Promise.all([
       supabase
         .from('categories')
-        .select('id, name, position')
+        .select('id, name, position, cuisine, parent_id')
         .eq('restaurant_id', loja.id)
         .order('position')
         .order('created_at'),
@@ -117,11 +118,34 @@ export function Cardapio({
 
   const recarregar = () => setVersao((v) => v + 1);
 
-  async function criarCategoria(nome: string): Promise<boolean> {
+  // Principais na ordem, cada uma seguida das subcategorias
+  const ordenadas = categorias
+    .filter((c) => !c.parent_id)
+    .flatMap((c) => [c, ...categorias.filter((f) => f.parent_id === c.id)]);
+
+  async function mudarCozinha(categoriaId: string, cozinha: string) {
     setErro('');
     const { error } = await supabase
       .from('categories')
-      .insert({ restaurant_id: loja.id, name: nome, position: categorias.length });
+      .update({ cuisine: (cozinha || null) as Enums<'cuisine_type'> | null })
+      .eq('id', categoriaId);
+    if (error) return setErro('Não foi possível mudar a categoria no app. Tente de novo.');
+    recarregar();
+  }
+
+  async function criarCategoria(
+    nome: string,
+    cozinha: string | null,
+    mae: string | null,
+  ): Promise<boolean> {
+    setErro('');
+    const { error } = await supabase.from('categories').insert({
+      restaurant_id: loja.id,
+      name: nome,
+      position: categorias.length,
+      cuisine: (cozinha || null) as Enums<'cuisine_type'> | null,
+      parent_id: mae || null,
+    });
     if (error) {
       setErro('Não foi possível salvar a categoria. Tente de novo.');
       return false;
@@ -236,6 +260,7 @@ export function Cardapio({
         <div className="flex flex-col gap-6">
           {criandoCategoria && (
             <NovaCategoria
+              principais={categorias.filter((c) => !c.parent_id)}
               onSalvar={criarCategoria}
               onCancelar={() => setCriandoCategoria(false)}
             />
@@ -255,18 +280,33 @@ export function Cardapio({
             />
           )}
 
-          {categorias.map((categoria) => {
+          {ordenadas.map((categoria) => {
             const itens = produtos.filter((p) => p.category_id === categoria.id);
+            const mae = categoria.parent_id
+              ? categorias.find((c) => c.id === categoria.parent_id)
+              : undefined;
             return (
               <Panel
                 key={categoria.id}
                 id={`cat-${categoria.id}`}
                 className="gap-2"
-                title={categoria.name}
+                title={mae ? `${mae.name} › ${categoria.name}` : categoria.name}
                 actions={
-                  <span className="text-caption text-ink-muted">
-                    {itens.length === 1 ? '1 produto' : `${itens.length} produtos`}
-                  </span>
+                  <div className="flex flex-wrap items-center justify-end gap-3">
+                    <SelectField
+                      label={`Categoria no app de ${categoria.name}`}
+                      className="w-44 [&>label]:sr-only"
+                      options={[
+                        { value: '', label: mae ? 'No app: igual à mãe' : 'No app: nenhuma' },
+                        ...COZINHAS.map((z) => ({ value: z.valor, label: `No app: ${z.rotulo}` })),
+                      ]}
+                      value={categoria.cuisine ?? ''}
+                      onChange={(v) => void mudarCozinha(categoria.id, v)}
+                    />
+                    <span className="text-caption text-ink-muted">
+                      {itens.length === 1 ? '1 produto' : `${itens.length} produtos`}
+                    </span>
+                  </div>
                 }
               >
                 {itens.length > 0 && (
@@ -354,19 +394,23 @@ export function Cardapio({
 }
 
 function NovaCategoria({
+  principais,
   onSalvar,
   onCancelar,
 }: {
-  onSalvar: (nome: string) => Promise<boolean>;
+  principais: Categoria[];
+  onSalvar: (nome: string, cozinha: string | null, mae: string | null) => Promise<boolean>;
   onCancelar: () => void;
 }) {
   const [nome, setNome] = useState('');
+  const [cozinha, setCozinha] = useState('');
+  const [mae, setMae] = useState('');
   const [salvando, setSalvando] = useState(false);
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
     setSalvando(true);
-    await onSalvar(nome.trim());
+    await onSalvar(nome.trim(), cozinha || null, mae || null);
     setSalvando(false);
   }
 
@@ -377,13 +421,35 @@ function NovaCategoria({
     >
       <TextField
         label="Nome da categoria"
-        hint="Exemplos: Pastéis, Lanches, Bebidas"
+        hint="Exemplos: Hambúrgueres, Pizzas doces, Bebidas"
         required
         maxLength={60}
         autoFocus
         value={nome}
         onChange={(e) => setNome(e.target.value)}
       />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <SelectField
+          label="Categoria no app"
+          hint="Onde os produtos dela aparecem no app de delivery."
+          options={[
+            { value: '', label: mae ? 'Igual à categoria de cima' : 'Nenhuma' },
+            ...COZINHAS.map((z) => ({ value: z.valor, label: z.rotulo })),
+          ]}
+          value={cozinha}
+          onChange={setCozinha}
+        />
+        <SelectField
+          label="Dentro de (opcional)"
+          hint="Para criar uma subcategoria, como Lanches › Artesanais."
+          options={[
+            { value: '', label: 'Nenhuma (categoria principal)' },
+            ...principais.map((p) => ({ value: p.id, label: p.name })),
+          ]}
+          value={mae}
+          onChange={setMae}
+        />
+      </div>
       <div className="flex gap-3">
         <Button type="submit" loading={salvando} disabled={!nome.trim()}>
           Salvar categoria
