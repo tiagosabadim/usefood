@@ -1122,6 +1122,33 @@ export type Database = {
           },
         ]
       }
+      product_combo_items: {
+        Row: {
+          combo_id: string
+          id: string
+          item_id: string
+          position: number
+          quantity: number
+          restaurant_id: string
+        }
+        Insert: {
+          combo_id: string
+          id?: string
+          item_id: string
+          position?: number
+          quantity?: number
+          restaurant_id: string
+        }
+        Update: {
+          combo_id?: string
+          id?: string
+          item_id?: string
+          position?: number
+          quantity?: number
+          restaurant_id?: string
+        }
+        Relationships: []
+      }
       product_modifier_groups: {
         Row: {
           group_id: string
@@ -1208,6 +1235,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          is_combo: boolean
           is_featured: boolean
           name: string
           photo_path: string | null
@@ -1227,6 +1255,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_combo?: boolean
           is_featured?: boolean
           name: string
           photo_path?: string | null
@@ -1246,6 +1275,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_combo?: boolean
           is_featured?: boolean
           name?: string
           photo_path?: string | null

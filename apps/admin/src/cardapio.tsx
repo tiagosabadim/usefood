@@ -33,6 +33,7 @@ type Produto = Pick<
   | 'photo_path'
   | 'station_id'
   | 'is_featured'
+  | 'is_combo'
 >;
 
 /** Categorias e produtos da loja. Dono e gerente editam; o resto da equipe só consulta. */
@@ -71,7 +72,7 @@ export function Cardapio({
       supabase
         .from('products')
         .select(
-          'id, category_id, name, description, price_cents, promo_price_cents, promo_ends_at, is_featured, is_active, position, photo_path, station_id',
+          'id, category_id, name, description, price_cents, promo_price_cents, promo_ends_at, is_featured, is_combo, is_active, position, photo_path, station_id',
         )
         .eq('restaurant_id', loja.id)
         .order('position')
@@ -352,6 +353,7 @@ export function Cardapio({
                         promo_price_cents: null,
                         promo_ends_at: null,
                         is_featured: false,
+                        is_combo: false,
                         is_active: true,
                         position: itens.length,
                       })
@@ -372,6 +374,9 @@ export function Cardapio({
           produto={editando}
           grupos={grupos}
           pracas={pracas}
+          produtosDaLoja={produtos
+            .filter((p) => !p.is_combo)
+            .map((p) => ({ id: p.id, nome: p.name }))}
           categorias={ordenadas.map((c) => {
             const mae = c.parent_id ? categorias.find((m) => m.id === c.parent_id) : undefined;
             return { id: c.id, nome: mae ? `${mae.name} › ${c.name}` : c.name };
@@ -464,12 +469,17 @@ function EtiquetasDoProduto({ produto }: { produto: Produto }) {
     vigente < produto.price_cents
       ? Math.round(((produto.price_cents - vigente) / produto.price_cents) * 100)
       : 0;
-  if (!desconto && !produto.is_featured && produto.is_active) return null;
+  if (!desconto && !produto.is_featured && !produto.is_combo && produto.is_active) return null;
   return (
     <span className="mt-1 flex flex-wrap gap-1.5">
       {desconto > 0 && (
         <span className="rounded-pill bg-brand px-2 py-0.5 text-micro font-bold text-brand-ink">
           -{desconto}% · {formatarPreco(vigente)}
+        </span>
+      )}
+      {produto.is_combo && (
+        <span className="rounded-pill bg-ink px-2 py-0.5 text-micro font-bold text-canvas">
+          Combo
         </span>
       )}
       {produto.is_featured && (

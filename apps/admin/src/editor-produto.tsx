@@ -6,6 +6,8 @@ import {
   ChoiceGrid,
   ImageCropper,
   PhotoField,
+  QuantityStepper,
+  SegmentedControl,
   SelectField,
   Sheet,
   Switch,
@@ -26,6 +28,7 @@ export type ProdutoEditavel = Pick<
   | 'promo_ends_at'
   | 'category_id'
   | 'is_featured'
+  | 'is_combo'
 >;
 export type PracaResumo = Pick<Tables<'stations'>, 'id' | 'name'>;
 export type GrupoResumo = Pick<
@@ -51,6 +54,7 @@ export function EditorProduto({
   grupos,
   pracas,
   categorias,
+  produtosDaLoja,
   onAlterado,
   onFechar,
 }: {
@@ -60,6 +64,8 @@ export function EditorProduto({
   produto: ProdutoEditavel;
   /** Categorias do cardápio para escolher (subcategorias como "Lanches › Artesanais"). */
   categorias: { id: string; nome: string }[];
+  /** Produtos da loja que podem entrar num combo (os que não são combo). */
+  produtosDaLoja: { id: string; nome: string }[];
   grupos: GrupoResumo[];
   /** Praças da loja; a primeira é a padrão. */
   pracas: PracaResumo[];
@@ -71,6 +77,10 @@ export function EditorProduto({
   const [carregando, setCarregando] = useState(!novo);
   const [categoriaId, setCategoriaId] = useState(produto.category_id);
   const [destaque, setDestaque] = useState(produto.is_featured);
+  const [ehCombo, setEhCombo] = useState(produto.is_combo);
+  const [itensDoCombo, setItensDoCombo] = useState<
+    { chave: string; itemId: string; quantidade: number }[]
+  >([]);
   // Criar: a foto enquadrada fica guardada e sobe junto com o produto ao salvar
   const [fotoPendente, setFotoPendente] = useState<{
     fonte: Blob;
@@ -116,7 +126,17 @@ export function EditorProduto({
         .eq('product_id', produto.id)
         .order('position'),
       supabase.from('product_modifier_groups').select('group_id').eq('product_id', produto.id),
-    ]).then(([variantes, ligacoes]) => {
+      supabase
+        .from('product_combo_items')
+        .select('item_id, quantity')
+        .eq('combo_id', produto.id)
+        .order('position'),
+    ]).then(([variantes, ligacoes, combo]) => {
+      if (ativo && combo.data) {
+        setItensDoCombo(
+          combo.data.map((c) => ({ chave: c.item_id, itemId: c.item_id, quantidade: c.quantity })),
+        );
+      }
       if (!ativo) return;
       if (variantes.error || ligacoes.error) {
         setErro('Não conseguimos carregar os tamanhos e adicionais deste produto.');
@@ -146,6 +166,8 @@ export function EditorProduto({
   const promoInvalida =
     Boolean(promo.trim()) &&
     (promoCentavos === null || (precoCentavos !== null && promoCentavos >= precoCentavos));
+  const comboInvalido =
+    ehCombo && (itensDoCombo.length === 0 || itensDoCombo.some((i) => !i.itemId));
   const tamanhosValidos = tamanhos.every((t) => t.nome.trim() && lerPreco(t.preco) !== null);
 
   function enquadrar(fonte: Blob) {
@@ -217,7 +239,14 @@ export function EditorProduto({
 
   async function salvar() {
     setTentou(true);
-    if (!nome.trim() || precoCentavos === null || !tamanhosValidos || promoInvalida) return;
+    if (
+      !nome.trim() ||
+      precoCentavos === null ||
+      !tamanhosValidos ||
+      promoInvalida ||
+      comboInvalido
+    )
+      return;
     setErro('');
     setSalvando(true);
     try {
@@ -231,6 +260,7 @@ export function EditorProduto({
         station_id: pracaId,
         category_id: categoriaId,
         is_featured: destaque,
+        is_combo: ehCombo,
       };
       let id = produto.id;
       if (novo) {
@@ -258,6 +288,24 @@ export function EditorProduto({
       } else {
         const atualizado = await supabase.from('products').update(dados).eq('id', id);
         if (atualizado.error) throw atualizado.error;
+      }
+
+      // Itens do combo: apaga e grava de novo na ordem da tela
+      if (!novo) {
+        const limpou = await supabase.from('product_combo_items').delete().eq('combo_id', id);
+        if (limpou.error) throw limpou.error;
+      }
+      if (ehCombo && itensDoCombo.length) {
+        const gravou = await supabase.from('product_combo_items').insert(
+          itensDoCombo.map((i, posicao) => ({
+            restaurant_id: lojaId,
+            combo_id: id,
+            item_id: i.itemId,
+            quantity: i.quantidade,
+            position: posicao,
+          })),
+        );
+        if (gravou.error) throw gravou.error;
       }
 
       // Tamanhos: apaga os que saíram, atualiza os que ficaram, cria os novos
@@ -319,7 +367,11 @@ export function EditorProduto({
     const { error } = await supabase.from('products').delete().eq('id', produto.id);
     setExcluindo(false);
     if (error) {
-      setErro('Não foi possível excluir o produto agora.');
+      setErro(
+        error.code === '23503'
+          ? 'Este produto está num combo. Tire ele do combo antes de excluir (ou pause o produto).'
+          : 'Não foi possível excluir o produto agora.',
+      );
       return;
     }
     if (fotoPath) await apagarFoto(supabase, fotoPath);
@@ -364,15 +416,27 @@ export function EditorProduto({
           {erroFoto && <p className="text-caption text-danger">{erroFoto}</p>}
         </section>
       ) : (
-        <PhotoField
-          label="Foto"
-          imageUrl={fotoPendente?.previa ?? urlDaFoto(supabase, fotoPath)}
-          busy={enviandoFoto}
-          error={erroFoto}
-          onSelect={enquadrar}
-          onAdjust={() => void reenquadrarAtual()}
-          onRemove={() => void removerFoto()}
-        />
+        <>
+          <SegmentedControl
+            label="Tipo"
+            className="self-start"
+            options={[
+              { value: 'produto', label: 'Produto' },
+              { value: 'combo', label: 'Combo' },
+            ]}
+            value={ehCombo ? 'combo' : 'produto'}
+            onChange={(v) => setEhCombo(v === 'combo')}
+          />
+          <PhotoField
+            label="Foto"
+            imageUrl={fotoPendente?.previa ?? urlDaFoto(supabase, fotoPath)}
+            busy={enviandoFoto}
+            error={erroFoto}
+            onSelect={enquadrar}
+            onAdjust={() => void reenquadrarAtual()}
+            onRemove={() => void removerFoto()}
+          />
+        </>
       )}
 
       <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_9rem]">
@@ -454,58 +518,140 @@ export function EditorProduto({
         </section>
       )}
 
-      <section aria-labelledby="tamanhos-titulo" className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <h3 id="tamanhos-titulo" className="text-body-strong text-ink">
-            Tamanhos
-          </h3>
-          <p className="text-caption text-ink-muted">
-            Para quando o mesmo produto tem versões com preços diferentes, como Pequena e Grande.
-          </p>
-        </div>
-        {tamanhos.map((t, i) => (
-          <div key={t.chave} className="grid grid-cols-[minmax(0,1fr)_7rem_auto] items-start gap-2">
-            <TextField
-              label={`Tamanho ${i + 1}`}
-              maxLength={40}
-              value={t.nome}
-              onChange={(e) =>
-                setTamanhos((ts) =>
-                  ts.map((x) => (x.chave === t.chave ? { ...x, nome: e.target.value } : x)),
-                )
-              }
-              error={tentou && !t.nome.trim() ? 'Dê um nome.' : undefined}
-            />
-            <TextField
-              label="Preço"
-              inputMode="decimal"
-              value={t.preco}
-              onChange={(e) =>
-                setTamanhos((ts) =>
-                  ts.map((x) => (x.chave === t.chave ? { ...x, preco: e.target.value } : x)),
-                )
-              }
-              error={tentou && lerPreco(t.preco) === null ? 'Ex.: 30,00' : undefined}
-            />
-            <Button
-              variant="ghost"
-              className="mt-7"
-              aria-label={`Remover o tamanho ${t.nome || i + 1}`}
-              onClick={() => setTamanhos((ts) => ts.filter((x) => x.chave !== t.chave))}
-            >
-              Remover
-            </Button>
+      {ehCombo && (
+        <section aria-labelledby="combo-titulo" className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <h3 id="combo-titulo" className="text-body-strong text-ink">
+              Itens do combo
+            </h3>
+            <p className="text-caption text-ink-muted">
+              O que vai no combo. Sai na cozinha e no ticket como "Inclui: 1× X-Burguer, 1× Batata".
+            </p>
           </div>
-        ))}
-        <Button
-          variant="ghost"
-          className="self-start px-0 text-brand-text"
-          disabled={carregando}
-          onClick={() => setTamanhos((ts) => [...ts, { chave: novaChave(), nome: '', preco: '' }])}
-        >
-          + Adicionar tamanho
-        </Button>
-      </section>
+          {itensDoCombo.map((item) => (
+            <div key={item.chave} className="flex flex-wrap items-end gap-3">
+              <SelectField
+                label="Produto"
+                className="min-w-48 flex-1"
+                options={[
+                  { value: '', label: 'Escolha' },
+                  ...produtosDaLoja
+                    .filter((p) => p.id !== produto.id)
+                    .map((p) => ({ value: p.id, label: p.nome })),
+                ]}
+                value={item.itemId}
+                onChange={(v) =>
+                  setItensDoCombo((is) =>
+                    is.map((x) => (x.chave === item.chave ? { ...x, itemId: v } : x)),
+                  )
+                }
+              />
+              <QuantityStepper
+                value={item.quantidade}
+                itemName="item do combo"
+                onDecrement={() =>
+                  setItensDoCombo((is) =>
+                    is.map((x) =>
+                      x.chave === item.chave
+                        ? { ...x, quantidade: Math.max(1, x.quantidade - 1) }
+                        : x,
+                    ),
+                  )
+                }
+                onIncrement={() =>
+                  setItensDoCombo((is) =>
+                    is.map((x) =>
+                      x.chave === item.chave
+                        ? { ...x, quantidade: Math.min(20, x.quantidade + 1) }
+                        : x,
+                    ),
+                  )
+                }
+              />
+              <Button
+                variant="ghost"
+                className="text-danger"
+                onClick={() => setItensDoCombo((is) => is.filter((x) => x.chave !== item.chave))}
+              >
+                Tirar
+              </Button>
+            </div>
+          ))}
+          {tentou && comboInvalido && (
+            <p className="text-caption text-danger">Escolha pelo menos um produto para o combo.</p>
+          )}
+          <Button
+            variant="ghost"
+            className="self-start px-0 text-brand-text"
+            disabled={carregando}
+            onClick={() =>
+              setItensDoCombo((is) => [...is, { chave: novaChave(), itemId: '', quantidade: 1 }])
+            }
+          >
+            + Adicionar item ao combo
+          </Button>
+        </section>
+      )}
+
+      {!ehCombo && (
+        <section aria-labelledby="tamanhos-titulo" className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <h3 id="tamanhos-titulo" className="text-body-strong text-ink">
+              Tamanhos
+            </h3>
+            <p className="text-caption text-ink-muted">
+              Para quando o mesmo produto tem versões com preços diferentes, como Pequena e Grande.
+            </p>
+          </div>
+          {tamanhos.map((t, i) => (
+            <div
+              key={t.chave}
+              className="grid grid-cols-[minmax(0,1fr)_7rem_auto] items-start gap-2"
+            >
+              <TextField
+                label={`Tamanho ${i + 1}`}
+                maxLength={40}
+                value={t.nome}
+                onChange={(e) =>
+                  setTamanhos((ts) =>
+                    ts.map((x) => (x.chave === t.chave ? { ...x, nome: e.target.value } : x)),
+                  )
+                }
+                error={tentou && !t.nome.trim() ? 'Dê um nome.' : undefined}
+              />
+              <TextField
+                label="Preço"
+                inputMode="decimal"
+                value={t.preco}
+                onChange={(e) =>
+                  setTamanhos((ts) =>
+                    ts.map((x) => (x.chave === t.chave ? { ...x, preco: e.target.value } : x)),
+                  )
+                }
+                error={tentou && lerPreco(t.preco) === null ? 'Ex.: 30,00' : undefined}
+              />
+              <Button
+                variant="ghost"
+                className="mt-7"
+                aria-label={`Remover o tamanho ${t.nome || i + 1}`}
+                onClick={() => setTamanhos((ts) => ts.filter((x) => x.chave !== t.chave))}
+              >
+                Remover
+              </Button>
+            </div>
+          ))}
+          <Button
+            variant="ghost"
+            className="self-start px-0 text-brand-text"
+            disabled={carregando}
+            onClick={() =>
+              setTamanhos((ts) => [...ts, { chave: novaChave(), nome: '', preco: '' }])
+            }
+          >
+            + Adicionar tamanho
+          </Button>
+        </section>
+      )}
 
       <section aria-labelledby="adicionais-titulo" className="flex flex-col gap-2">
         <h3 id="adicionais-titulo" className="text-body-strong text-ink">

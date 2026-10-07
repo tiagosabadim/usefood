@@ -3,8 +3,17 @@ import type { AppSupabaseClient, Tables } from '@usefood/db';
 export type CategoriaDoCardapio = Pick<Tables<'categories'>, 'id' | 'name'>;
 export type ProdutoDoCardapio = Pick<
   Tables<'products'>,
-  'id' | 'category_id' | 'name' | 'description' | 'price_cents' | 'photo_path' | 'is_featured'
+  | 'id'
+  | 'category_id'
+  | 'name'
+  | 'description'
+  | 'price_cents'
+  | 'photo_path'
+  | 'is_featured'
+  | 'is_combo'
 > & {
+  /** Combo: o que vem nele ("1× X-Burguer, 2× Batata"); null quando não é combo. */
+  combo_texto: string | null;
   /** Preço sem a promoção, quando há promoção valendo (para mostrar riscado). price_cents já é o da promoção. */
   preco_original_cents: number | null;
 };
@@ -62,7 +71,7 @@ export async function carregarCardapio(
   supabase: AppSupabaseClient,
   lojaId: string,
 ): Promise<Cardapio> {
-  const [cats, prods, tamanhos, ligacoes, grupos, itens] = await Promise.all([
+  const [cats, prods, tamanhos, ligacoes, grupos, itens, combos] = await Promise.all([
     supabase
       .from('categories')
       .select('id, name')
@@ -73,7 +82,7 @@ export async function carregarCardapio(
     supabase
       .from('products')
       .select(
-        'id, category_id, name, description, price_cents, promo_price_cents, promo_ends_at, photo_path, is_featured',
+        'id, category_id, name, description, price_cents, promo_price_cents, promo_ends_at, photo_path, is_featured, is_combo',
       )
       .eq('restaurant_id', lojaId)
       .eq('is_active', true)
@@ -100,9 +109,20 @@ export async function carregarCardapio(
       .eq('restaurant_id', lojaId)
       .eq('is_active', true)
       .order('position'),
+    supabase
+      .from('product_combo_items')
+      .select('combo_id, item_id, quantity')
+      .eq('restaurant_id', lojaId)
+      .order('position'),
   ]);
   const erro =
-    cats.error ?? prods.error ?? tamanhos.error ?? ligacoes.error ?? grupos.error ?? itens.error;
+    cats.error ??
+    prods.error ??
+    tamanhos.error ??
+    ligacoes.error ??
+    grupos.error ??
+    itens.error ??
+    combos.error;
   if (erro) throw new Error(erro.message);
 
   const porGrupo = new Map<string, GrupoDeOpcoes>(
@@ -130,10 +150,19 @@ export async function carregarCardapio(
   const produtos: ProdutoDoCardapio[] = prods.data!.map(
     ({ promo_price_cents, promo_ends_at, ...p }) => {
       const vigente = precoVigente(p.price_cents, promo_price_cents, promo_ends_at);
+      const doCombo = p.is_combo ? combos.data!.filter((x) => x.combo_id === p.id) : [];
+      const texto = doCombo
+        .map((x) => {
+          const item = prods.data!.find((q) => q.id === x.item_id);
+          return item ? `${x.quantity}× ${item.name}` : null;
+        })
+        .filter(Boolean)
+        .join(', ');
       return {
         ...p,
         price_cents: vigente,
         preco_original_cents: vigente < p.price_cents ? p.price_cents : null,
+        combo_texto: texto || null,
       };
     },
   );

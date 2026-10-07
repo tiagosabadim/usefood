@@ -177,7 +177,9 @@ function PaginaDaLoja({
     <li key={p.id}>
       <ProductRow
         name={p.name}
-        description={p.description}
+        description={
+          p.combo_texto ? [p.combo_texto, p.description].filter(Boolean).join(' · ') : p.description
+        }
         priceLabel={preco(p)}
         originalPriceLabel={
           p.preco_original_cents ? formatarPreco(p.preco_original_cents) : undefined
@@ -187,7 +189,9 @@ function PaginaDaLoja({
             ? `-${Math.round(((p.preco_original_cents - p.price_cents) / p.preco_original_cents) * 100)}%`
             : p.is_featured
               ? 'Destaque'
-              : undefined
+              : p.is_combo
+                ? 'Combo'
+                : undefined
         }
         imageUrl={foto(p.photo_path)}
         quantity={quantidadeDoProduto(sacola, p.id)}
