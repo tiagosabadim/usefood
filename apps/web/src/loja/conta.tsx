@@ -1,6 +1,6 @@
 import { useAppContext, usePreferenciaDeTema } from '@usefood/app';
 import { formatarTelefone, fraseDoPedido, lerTelefone, type SituacaoDoPedido } from '@usefood/core';
-import { Alert, Button, cn, Icon, Panel, TextField, ThemeToggle } from '@usefood/ui';
+import { Alert, Button, cn, EmptyState, Icon, Panel, TextField, ThemeToggle } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { ENDERECO_EM_BRANCO, gravarConta, lerConta, novoId, type Conta } from '../guardado';
 import { navegar } from '../rotas';
@@ -206,7 +206,38 @@ export function MinhaConta({
         </>
       )}
 
-      {modo !== 'perfil' && (
+      {/* Pedidos sem nenhum pedido: entrar (sem nome e celular) ou "ainda não fez pedidos" */}
+      {modo === 'pedidos' && conta.pedidos.length === 0 && (
+        <div className="pt-2">
+          {conta.nome && conta.celular ? (
+            <EmptyState
+              title="Você ainda não fez pedidos"
+              description="Quando você pedir num restaurante da cidade, o pedido aparece aqui para você acompanhar."
+              action={
+                <Button
+                  className="h-target-pdv"
+                  onClick={() =>
+                    navegar(cidadeGuardada() ? `/delivery/${cidadeGuardada()}` : '/delivery')
+                  }
+                >
+                  Ver restaurantes
+                </Button>
+              }
+            />
+          ) : (
+            <EmptyState
+              title="Faça login para ver seus pedidos"
+              description="Entre com seu nome e WhatsApp. Seus pedidos ficam guardados neste aparelho para você acompanhar."
+              action={
+                <Button className="h-target-pdv" onClick={() => navegar('/delivery/conta')}>
+                  Entrar
+                </Button>
+              }
+            />
+          )}
+        </div>
+      )}
+      {modo !== 'perfil' && !(modo === 'pedidos' && conta.pedidos.length === 0) && (
         <Panel title={modo === 'pedidos' ? '' : 'Meus pedidos'}>
           {modo === 'pedidos' && (
             <div
