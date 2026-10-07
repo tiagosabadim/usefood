@@ -2095,7 +2095,7 @@ export type Database = {
       }
     }
     Enums: {
-      cuisine_type: "lanches" | "pizza" | "brasileira" | "marmita" | "japonesa" | "arabe" | "acai" | "sorvetes" | "doces" | "padaria" | "saudavel" | "porcoes" | "bebidas" | "outros"
+      cuisine_type: "lanches" | "pastel" | "pizza" | "brasileira" | "marmita" | "japonesa" | "arabe" | "acai" | "sorvetes" | "doces" | "padaria" | "saudavel" | "porcoes" | "bebidas" | "outros"
       lead_kind: "restaurante" | "franquia"
       lead_status: "novo" | "em_contato" | "convertido" | "descartado"
       brand_role: "franqueado" | "suporte"

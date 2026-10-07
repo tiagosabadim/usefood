@@ -1,7 +1,7 @@
 -- Categorias do cardápio ligadas às do app, subcategorias e a loja em várias categorias.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(8);
+select plan(9);
 
 insert into public.brands (id, slug, name, status) values ('1e000000-0000-4000-8000-000000000001', 'marca-cat', 'Marca', 'ativa');
 insert into public.organizations (id, brand_id, name) values ('2e000000-0000-4000-8000-000000000001', '1e000000-0000-4000-8000-000000000001', 'Org');
@@ -44,6 +44,8 @@ select is(
   (select count(*)::int from public.vitrine_por_categoria('marca-cat', 'mirassol-sp', 'pizza')), 1, 'pratos da categoria Pizza');
 select is(
   (select count(*)::int from public.vitrine_por_categoria('marca-cat', 'mirassol-sp', 'acai')), 0, 'produto pausado não aparece');
+
+select ok('pastel' = any (enum_range(null::public.cuisine_type)::text[]), 'Pastel é categoria do app');
 
 select * from finish();
 rollback;

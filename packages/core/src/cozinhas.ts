@@ -1,6 +1,7 @@
 /** Tipos de cozinha da vitrine (mesma ordem e nomes do banco: public.cuisine_type). */
 export const COZINHAS = [
   { valor: 'lanches', rotulo: 'Lanches' },
+  { valor: 'pastel', rotulo: 'Pastel' },
   { valor: 'pizza', rotulo: 'Pizza' },
   { valor: 'brasileira', rotulo: 'Brasileira' },
   { valor: 'marmita', rotulo: 'Marmita' },
