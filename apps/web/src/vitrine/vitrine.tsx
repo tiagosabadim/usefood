@@ -1,5 +1,5 @@
 import { useAppContext } from '@usefood/app';
-import { formatarPreco, rotuloDaCozinha } from '@usefood/core';
+import { COZINHAS, formatarPreco, rotuloDaCozinha } from '@usefood/core';
 import { urlDaFoto } from '@usefood/pedidos';
 import { Alert, Icon, StoreCard, cn, type IconName } from '@usefood/ui';
 import { useEffect, useMemo, useState } from 'react';
@@ -7,6 +7,7 @@ import { lerConta } from '../guardado';
 import { PedidoEmAndamento } from '../loja/pedido-em-andamento';
 import { navegar } from '../rotas';
 import { BarraDoApp, useInstalar } from './barra';
+import { CartaoDeOferta, type Oferta } from './ofertas';
 import {
   distanciaKm,
   gravarFavoritos,
@@ -36,6 +37,7 @@ export function Vitrine({ cidade }: { cidade: string }) {
   const [pratos, setPratos] = useState<PratoEncontrado[]>([]);
   const [favoritos, setFavoritos] = useState<string[]>(lerFavoritos);
   const [local, setLocal] = useState<Local | null>(localGuardado);
+  const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [erro, setErro] = useState('');
   const endereco = lerConta().enderecos[0];
 
@@ -49,6 +51,9 @@ export function Vitrine({ cidade }: { cidade: string }) {
           setErro('Não conseguimos carregar os restaurantes. Confira a internet e tente de novo.');
         setLojas(data ?? []);
       });
+    void supabase
+      .rpc('vitrine_ofertas', { p_marca: site.brand, p_cidade: cidade })
+      .then(({ data }) => setOfertas(data ?? []));
     void supabase.rpc('vitrine_cidades', { p_marca: site.brand }).then(({ data }) => {
       const c = data?.find((x) => x.slug === cidade);
       if (c) setNomeDaCidade(`${c.cidade}/${c.uf}`);
@@ -83,7 +88,13 @@ export function Vitrine({ cidade }: { cidade: string }) {
       ? distanciaKm(local.lat, local.lng, l.latitude, l.longitude)
       : null;
   const buscando = busca.trim().length >= 2;
-  const categorias = useMemo(() => [...new Set((lojas ?? []).flatMap((l) => l.cozinhas))], [lojas]);
+  // Categorias sempre visíveis (como na referência): as que têm lojas na cidade primeiro
+  const categorias = useMemo(() => {
+    const comLojas = new Set((lojas ?? []).flatMap((l) => l.cozinhas as string[]));
+    return COZINHAS.map((c) => c.valor as string)
+      .filter((c) => c !== 'outros')
+      .sort((a, b) => Number(comLojas.has(b)) - Number(comLojas.has(a)));
+  }, [lojas]);
   const filtradas = useMemo(() => {
     const termo = normalizar(busca);
     return (lojas ?? []).filter((l) => {
@@ -99,9 +110,14 @@ export function Vitrine({ cidade }: { cidade: string }) {
   const abertas = filtradas.filter((l) => l.aberta).sort(perto);
   const fechadas = filtradas.filter((l) => !l.aberta);
   // Destaques: abertas com capa primeiro (até 8)
-  const destaques = [...abertas]
-    .sort((a, b) => Number(Boolean(b.capa_path)) - Number(Boolean(a.capa_path)))
-    .slice(0, 8);
+  // Destaques: aparecem com 1 loja ou mais; abertas (com foto primeiro) e depois as fechadas
+  const destaques = [
+    ...[...abertas].sort(
+      (a, b) =>
+        Number(Boolean(b.logo_path ?? b.capa_path)) - Number(Boolean(a.logo_path ?? a.capa_path)),
+    ),
+    ...fechadas,
+  ].slice(0, 10);
 
   const alternarFavorito = (slug: string) => {
     const nova = favoritos.includes(slug)
@@ -278,7 +294,7 @@ export function Vitrine({ cidade }: { cidade: string }) {
               </Secao>
             )}
 
-            {!buscando && !categoria && destaques.length > 1 && (
+            {!buscando && !categoria && destaques.length > 0 && (
               <Secao
                 titulo="Restaurantes em destaque"
                 acao={{
@@ -289,17 +305,33 @@ export function Vitrine({ cidade }: { cidade: string }) {
               >
                 <ul className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
                   {destaques.map((l) => (
-                    <li key={l.slug} className="w-60 shrink-0 snap-start">
+                    <li key={l.slug} className="w-[7.75rem] shrink-0 snap-start">
                       <StoreCard
+                        variant="compacto"
                         name={l.nome}
                         href={`/${l.slug}`}
                         onNavigate={abrirLoja}
-                        meta={meta(l)}
-                        delivery={resumo(l)}
+                        meta={l.cozinhas.map(rotuloDaCozinha).join(', ') || 'Restaurante'}
+                        delivery={`${l.tempo_min}–${l.tempo_max} min`}
                         open={l.aberta}
                         closedLabel={quandoAbre(l)}
-                        photoUrl={foto(l.capa_path) ?? foto(l.logo_path)}
+                        photoUrl={foto(l.logo_path) ?? foto(l.capa_path)}
                       />
+                    </li>
+                  ))}
+                </ul>
+              </Secao>
+            )}
+
+            {!buscando && !categoria && ofertas.length > 0 && (
+              <Secao
+                titulo="Promoções"
+                acao={{ texto: 'Ver todas', onClick: () => navegar('/delivery/ofertas') }}
+              >
+                <ul className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
+                  {ofertas.slice(0, 10).map((o) => (
+                    <li key={o.produto_id} className="w-40 shrink-0 snap-start">
+                      <CartaoDeOferta oferta={o} onAbrir={abrirLoja} />
                     </li>
                   ))}
                 </ul>
@@ -320,7 +352,9 @@ export function Vitrine({ cidade }: { cidade: string }) {
             </div>
             {filtradas.length === 0 && pratos.length === 0 && (
               <p className="px-5 text-body text-ink-muted">
-                Nada encontrado. Tente outro nome ou prato.
+                {categoria && !buscando
+                  ? `Ainda não há restaurantes de ${rotuloDaCozinha(categoria)} na cidade.`
+                  : 'Nada encontrado. Tente outro nome ou prato.'}
               </p>
             )}
           </>

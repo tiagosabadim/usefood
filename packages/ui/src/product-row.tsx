@@ -2,6 +2,8 @@ import { cn } from './cn';
 import { Icon } from './icon';
 
 export interface ProductRowProps {
+  /** Preço sem a promoção, mostrado riscado ao lado do preço. */
+  originalPriceLabel?: string;
   name: string;
   description?: string | null;
   /** Preço já formatado: "R$ 14,00" ou "a partir de R$ 12,00". */
@@ -20,6 +22,7 @@ export function ProductRow({
   imageUrl,
   quantity = 0,
   onClick,
+  originalPriceLabel,
 }: ProductRowProps) {
   return (
     <button
@@ -47,7 +50,19 @@ export function ProductRow({
         {description && (
           <span className="line-clamp-2 text-caption text-ink-muted">{description}</span>
         )}
-        <span className="pt-1 text-body-strong text-ink tabular-nums">{priceLabel}</span>
+        <span className="flex flex-wrap items-baseline gap-x-2 pt-1">
+          <span
+            className={cn(
+              'text-body-strong tabular-nums',
+              originalPriceLabel ? 'text-brand-text' : 'text-ink',
+            )}
+          >
+            {priceLabel}
+          </span>
+          {originalPriceLabel && (
+            <s className="text-caption text-ink-muted tabular-nums">{originalPriceLabel}</s>
+          )}
+        </span>
       </span>
       <span
         aria-hidden="true"

@@ -1206,6 +1206,8 @@ export type Database = {
           photo_path: string | null
           position: number
           price_cents: number
+          promo_ends_at: string | null
+          promo_price_cents: number | null
           restaurant_id: string
           station_id: string | null
           updated_at: string
@@ -1222,6 +1224,8 @@ export type Database = {
           photo_path?: string | null
           position?: number
           price_cents: number
+          promo_ends_at?: string | null
+          promo_price_cents?: number | null
           restaurant_id: string
           station_id?: string | null
           updated_at?: string
@@ -1238,6 +1242,8 @@ export type Database = {
           photo_path?: string | null
           position?: number
           price_cents?: number
+          promo_ends_at?: string | null
+          promo_price_cents?: number | null
           restaurant_id?: string
           station_id?: string | null
           updated_at?: string
@@ -2016,6 +2022,21 @@ export type Database = {
           taxa_modo: Database["public"]["Enums"]["delivery_fee_mode"]
           tempo_max: number
           tempo_min: number
+        }[]
+      }
+      vitrine_ofertas: {
+        Args: { p_cidade: string; p_marca: string }
+        Returns: {
+          descricao: string | null
+          foto_path: string | null
+          loja_aberta: boolean
+          loja_nome: string
+          loja_slug: string
+          preco_cents: number
+          produto: string
+          produto_id: string
+          promo_cents: number
+          termina_em: string | null
         }[]
       }
     }

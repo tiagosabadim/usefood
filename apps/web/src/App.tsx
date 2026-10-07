@@ -2,6 +2,7 @@ import { useAppContext } from '@usefood/app';
 import { Acompanhar } from './loja/acompanhar';
 import { EscolherCidade } from './vitrine/cidades';
 import { Favoritos } from './vitrine/favoritos';
+import { Ofertas } from './vitrine/ofertas';
 import { Vitrine } from './vitrine/vitrine';
 import { InicioDaMarca } from './marca/paginas';
 import { MinhaConta } from './loja/conta';
@@ -39,6 +40,7 @@ export function App() {
     if (a === 'pedidos') return <MinhaConta base="/delivery" modo="pedidos" />;
     if (a === 'conta' || a === 'perfil') return <MinhaConta base="/delivery" modo="perfil" />;
     if (a === 'favoritos') return <Favoritos />;
+    if (a === 'ofertas') return <Ofertas />;
     return <Vitrine cidade={a.toLowerCase()} />;
   }
   if (slug) {

@@ -4,7 +4,22 @@ export type CategoriaDoCardapio = Pick<Tables<'categories'>, 'id' | 'name'>;
 export type ProdutoDoCardapio = Pick<
   Tables<'products'>,
   'id' | 'category_id' | 'name' | 'description' | 'price_cents' | 'photo_path'
->;
+> & {
+  /** Preço sem a promoção, quando há promoção valendo (para mostrar riscado). price_cents já é o da promoção. */
+  preco_original_cents: number | null;
+};
+
+/** Preço que vale agora: o da promoção, se existir, for menor e não tiver vencido (mesma regra do servidor). */
+export function precoVigente(
+  preco: number,
+  promo: number | null,
+  ate: string | null,
+  agora = Date.now(),
+): number {
+  return promo != null && promo < preco && (!ate || new Date(ate).getTime() > agora)
+    ? promo
+    : preco;
+}
 
 export interface OpcaoTamanho {
   id: string;
@@ -57,7 +72,9 @@ export async function carregarCardapio(
       .order('created_at'),
     supabase
       .from('products')
-      .select('id, category_id, name, description, price_cents, photo_path')
+      .select(
+        'id, category_id, name, description, price_cents, promo_price_cents, promo_ends_at, photo_path',
+      )
       .eq('restaurant_id', lojaId)
       .eq('is_active', true)
       .order('position')
@@ -110,5 +127,15 @@ export async function carregarCardapio(
     if (grupo && (grupo.itens.length > 0 || grupo.minimo > 0))
       doProduto(l.product_id).grupos.push(grupo);
   }
-  return { categorias: cats.data!, produtos: prods.data!, opcoes };
+  const produtos: ProdutoDoCardapio[] = prods.data!.map(
+    ({ promo_price_cents, promo_ends_at, ...p }) => {
+      const vigente = precoVigente(p.price_cents, promo_price_cents, promo_ends_at);
+      return {
+        ...p,
+        price_cents: vigente,
+        preco_original_cents: vigente < p.price_cents ? p.price_cents : null,
+      };
+    },
+  );
+  return { categorias: cats.data!, produtos, opcoes };
 }

@@ -2,9 +2,9 @@ import { BottomNav } from '@usefood/ui';
 import { useEffect, useState } from 'react';
 import { navegar } from '../rotas';
 
-type Aba = 'inicio' | 'pedidos' | 'favoritos' | 'perfil';
+type Aba = 'inicio' | 'pedidos' | 'favoritos' | 'ofertas' | 'perfil';
 
-/** Barra de baixo do app (BottomNav do design system): Início, Pedidos, Favoritos e Minha conta. */
+/** Barra de baixo do app (BottomNav do design system): Início, Pedidos, Favoritos, Ofertas e Minha conta. */
 export function BarraDoApp({ ativo, cidade }: { ativo: Aba; cidade: string | null }) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40">
@@ -30,6 +30,12 @@ export function BarraDoApp({ ativo, cidade }: { ativo: Aba; cidade: string | nul
               icon: 'coracao',
               href: '/delivery/favoritos',
               current: ativo === 'favoritos',
+            },
+            {
+              label: 'Ofertas',
+              icon: 'ofertas',
+              href: '/delivery/ofertas',
+              current: ativo === 'ofertas',
             },
             {
               label: 'Minha conta',

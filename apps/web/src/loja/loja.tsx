@@ -175,6 +175,9 @@ function PaginaDaLoja({
         name={p.name}
         description={p.description}
         priceLabel={preco(p)}
+        originalPriceLabel={
+          p.preco_original_cents ? formatarPreco(p.preco_original_cents) : undefined
+        }
         imageUrl={foto(p.photo_path)}
         quantity={quantidadeDoProduto(sacola, p.id)}
         onClick={() => setAberto(p)}
@@ -490,8 +493,20 @@ function PaginaDaLoja({
                               <span className="line-clamp-2 text-label font-bold text-ink">
                                 {p.name}
                               </span>
-                              <span className="text-label font-bold text-ink tabular-nums">
-                                {preco(p)}
+                              <span className="flex flex-wrap items-baseline gap-x-1.5">
+                                <span
+                                  className={cn(
+                                    'text-label font-bold tabular-nums',
+                                    p.preco_original_cents ? 'text-brand-text' : 'text-ink',
+                                  )}
+                                >
+                                  {preco(p)}
+                                </span>
+                                {p.preco_original_cents && (
+                                  <s className="text-micro text-ink-muted tabular-nums">
+                                    {formatarPreco(p.preco_original_cents)}
+                                  </s>
+                                )}
                               </span>
                             </span>
                             <span

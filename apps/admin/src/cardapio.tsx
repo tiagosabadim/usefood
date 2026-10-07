@@ -24,6 +24,8 @@ type Produto = Pick<
   | 'name'
   | 'description'
   | 'price_cents'
+  | 'promo_price_cents'
+  | 'promo_ends_at'
   | 'is_active'
   | 'position'
   | 'photo_path'
@@ -72,7 +74,7 @@ export function Cardapio({
       supabase
         .from('products')
         .select(
-          'id, category_id, name, description, price_cents, is_active, position, photo_path, station_id',
+          'id, category_id, name, description, price_cents, promo_price_cents, promo_ends_at, is_active, position, photo_path, station_id',
         )
         .eq('restaurant_id', loja.id)
         .order('position')

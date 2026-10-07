@@ -15,7 +15,14 @@ import { apagarFoto, baixarFoto, enviarFoto, urlDaFoto } from './foto';
 
 export type ProdutoEditavel = Pick<
   Tables<'products'>,
-  'id' | 'name' | 'description' | 'price_cents' | 'photo_path' | 'station_id'
+  | 'id'
+  | 'name'
+  | 'description'
+  | 'price_cents'
+  | 'photo_path'
+  | 'station_id'
+  | 'promo_price_cents'
+  | 'promo_ends_at'
 >;
 export type PracaResumo = Pick<Tables<'stations'>, 'id' | 'name'>;
 export type GrupoResumo = Pick<
@@ -56,6 +63,13 @@ export function EditorProduto({
   const [carregando, setCarregando] = useState(true);
   const [nome, setNome] = useState(produto.name);
   const [preco, setPreco] = useState(precoParaCampo(produto.price_cents));
+  // Promoção: preço menor (opcional) e até quando vale (opcional, fim do dia)
+  const [promo, setPromo] = useState(
+    produto.promo_price_cents ? precoParaCampo(produto.promo_price_cents) : '',
+  );
+  const [promoAte, setPromoAte] = useState(
+    produto.promo_ends_at ? produto.promo_ends_at.slice(0, 10) : '',
+  );
   const [descricao, setDescricao] = useState(produto.description ?? '');
   // Sem praça definida, o produto sai na praça padrão (a primeira)
   const [pracaId, setPracaId] = useState<string | null>(
@@ -111,6 +125,10 @@ export function EditorProduto({
   }, [supabase, produto.id]);
 
   const precoCentavos = lerPreco(preco);
+  const promoCentavos = promo.trim() ? lerPreco(promo) : null;
+  const promoInvalida =
+    Boolean(promo.trim()) &&
+    (promoCentavos === null || (precoCentavos !== null && promoCentavos >= precoCentavos));
   const tamanhosValidos = tamanhos.every((t) => t.nome.trim() && lerPreco(t.preco) !== null);
 
   function enquadrar(fonte: Blob) {
@@ -173,7 +191,7 @@ export function EditorProduto({
 
   async function salvar() {
     setTentou(true);
-    if (!nome.trim() || precoCentavos === null || !tamanhosValidos) return;
+    if (!nome.trim() || precoCentavos === null || !tamanhosValidos || promoInvalida) return;
     setErro('');
     setSalvando(true);
     try {
@@ -182,6 +200,9 @@ export function EditorProduto({
         .update({
           name: nome.trim(),
           price_cents: precoCentavos,
+          promo_price_cents: tamanhos.length ? null : promoCentavos,
+          promo_ends_at:
+            tamanhos.length || !promoCentavos || !promoAte ? null : `${promoAte}T23:59:59-03:00`,
           description: descricao.trim() || null,
           station_id: pracaId,
         })
@@ -318,6 +339,32 @@ export function EditorProduto({
           onChange={(e) => setPreco(e.target.value)}
           error={tentou && precoCentavos === null ? 'Ex.: 14,90' : undefined}
           hint={precoCentavos !== null ? formatarPreco(precoCentavos) : undefined}
+        />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField
+          label="Preço promocional (opcional)"
+          inputMode="decimal"
+          placeholder="Ex.: 24,90"
+          value={promo}
+          disabled={tamanhos.length > 0}
+          onChange={(e) => setPromo(e.target.value)}
+          error={tentou && promoInvalida ? 'Precisa ser menor que o preço.' : undefined}
+          hint={
+            tamanhos.length > 0
+              ? 'Produto com tamanhos: vale o preço de cada tamanho.'
+              : promoCentavos !== null
+                ? `Aparece em Ofertas no app, com ${formatarPreco(precoCentavos ?? 0)} riscado.`
+                : 'Deixe vazio para não ter promoção.'
+          }
+        />
+        <TextField
+          label="Promoção até (opcional)"
+          type="date"
+          value={promoAte}
+          disabled={tamanhos.length > 0 || !promo.trim()}
+          onChange={(e) => setPromoAte(e.target.value)}
+          hint="Sem data, a promoção vale até você tirar."
         />
       </div>
       <TextField
