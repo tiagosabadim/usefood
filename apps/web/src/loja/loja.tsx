@@ -499,7 +499,7 @@ function PaginaDaLoja({
               </section>
             ) : (
               <>
-                {!filtro && destaques.length > 2 && (
+                {!filtro && destaques.length >= (marcados.length ? 1 : 3) && (
                   <section aria-labelledby="t-destaques" className="flex flex-col gap-3">
                     <h2 id="t-destaques" className="font-display text-title-section text-ink">
                       Destaques
