@@ -116,6 +116,70 @@ export function Cardapio({
 
   const recarregar = () => setVersao((v) => v + 1);
   const [subcategoriaEm, setSubcategoriaEm] = useState<string | null>(null);
+  const [editandoCategoria, setEditandoCategoria] = useState<string | null>(null);
+  const [excluindoCategoria, setExcluindoCategoria] = useState<string | null>(null);
+
+  async function salvarCategoria(
+    id: string,
+    dados: { nome: string; cozinha: string | null; mae: string | null },
+  ): Promise<boolean> {
+    setErro('');
+    const { error } = await supabase
+      .from('categories')
+      .update({
+        name: dados.nome,
+        cuisine: (dados.cozinha || null) as Enums<'cuisine_type'> | null,
+        parent_id: dados.mae || null,
+      })
+      .eq('id', id);
+    if (error) {
+      setErro(
+        error.code === '22023'
+          ? error.message
+          : 'Não foi possível salvar a categoria. Tente de novo.',
+      );
+      return false;
+    }
+    setEditandoCategoria(null);
+    recarregar();
+    return true;
+  }
+
+  async function excluirCategoria(id: string): Promise<boolean> {
+    setErro('');
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    if (error) {
+      setErro(
+        error.code === '23503'
+          ? 'Esta categoria ainda tem produtos. Mova os produtos para outra categoria (no editor do produto) ou exclua-os antes.'
+          : 'Não foi possível excluir a categoria. Tente de novo.',
+      );
+      return false;
+    }
+    setExcluindoCategoria(null);
+    recarregar();
+    return true;
+  }
+
+  // Ordem: troca de lugar com a vizinha (entre as principais ou entre as subcategorias da mesma)
+  async function mover(categoria: Categoria, direcao: -1 | 1) {
+    const irmas = categorias
+      .filter((x) => (x.parent_id ?? null) === (categoria.parent_id ?? null))
+      .sort((a, b) => a.position - b.position);
+    const i = irmas.findIndex((x) => x.id === categoria.id);
+    const j = i + direcao;
+    if (i < 0 || j < 0 || j >= irmas.length) return;
+    const nova = [...irmas];
+    [nova[i], nova[j]] = [nova[j]!, nova[i]!];
+    setErro('');
+    const resultados = await Promise.all(
+      nova.map((x, posicao) =>
+        supabase.from('categories').update({ position: posicao }).eq('id', x.id),
+      ),
+    );
+    if (resultados.some((r) => r.error)) setErro('Não foi possível mudar a ordem. Tente de novo.');
+    recarregar();
+  }
 
   // Principais na ordem, cada uma seguida das subcategorias
   const ordenadas = categorias
@@ -286,9 +350,78 @@ export function Cardapio({
                     <span className="text-caption text-ink-muted">
                       {itens.length === 1 ? '1 produto' : `${itens.length} produtos`}
                     </span>
+                    {podeEditar && (
+                      <span className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          className="h-9 px-2"
+                          aria-label={`Subir ${categoria.name}`}
+                          onClick={() => void mover(categoria, -1)}
+                        >
+                          ↑
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="h-9 px-2"
+                          aria-label={`Descer ${categoria.name}`}
+                          onClick={() => void mover(categoria, 1)}
+                        >
+                          ↓
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="h-9 px-3 text-brand-text"
+                          onClick={() => {
+                            setExcluindoCategoria(null);
+                            setEditandoCategoria(
+                              editandoCategoria === categoria.id ? null : categoria.id,
+                            );
+                          }}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="h-9 px-3 text-danger"
+                          onClick={() => {
+                            setEditandoCategoria(null);
+                            setExcluindoCategoria(
+                              excluindoCategoria === categoria.id ? null : categoria.id,
+                            );
+                          }}
+                        >
+                          Excluir
+                        </Button>
+                      </span>
+                    )}
                   </div>
                 }
               >
+                {editandoCategoria === categoria.id && (
+                  <EditarCategoria
+                    categoria={categoria}
+                    principais={categorias.filter((x) => !x.parent_id && x.id !== categoria.id)}
+                    temSubcategorias={categorias.some((x) => x.parent_id === categoria.id)}
+                    onSalvar={(dados) => salvarCategoria(categoria.id, dados)}
+                    onCancelar={() => setEditandoCategoria(null)}
+                  />
+                )}
+                {excluindoCategoria === categoria.id && (
+                  <ExcluirCategoria
+                    nome={categoria.name}
+                    produtos={
+                      itens.length +
+                      produtos.filter((p) =>
+                        categorias.some(
+                          (x) => x.parent_id === categoria.id && x.id === p.category_id,
+                        ),
+                      ).length
+                    }
+                    subcategorias={categorias.filter((x) => x.parent_id === categoria.id).length}
+                    onExcluir={() => excluirCategoria(categoria.id)}
+                    onCancelar={() => setExcluindoCategoria(null)}
+                  />
+                )}
                 {itens.length > 0 && (
                   <ul className="flex flex-col divide-y divide-line">
                     {itens.map((produto) => (
@@ -559,5 +692,139 @@ function NovaSubcategoria({
         Cancelar
       </Button>
     </form>
+  );
+}
+
+/** Editar categoria: nome, categoria no app e "dentro de" (subcategoria de outra ou principal). */
+function EditarCategoria({
+  categoria,
+  principais,
+  temSubcategorias,
+  onSalvar,
+  onCancelar,
+}: {
+  categoria: Categoria;
+  principais: Categoria[];
+  temSubcategorias: boolean;
+  onSalvar: (dados: {
+    nome: string;
+    cozinha: string | null;
+    mae: string | null;
+  }) => Promise<boolean>;
+  onCancelar: () => void;
+}) {
+  const [nome, setNome] = useState(categoria.name);
+  const [cozinha, setCozinha] = useState(categoria.cuisine ?? '');
+  const [mae, setMae] = useState(categoria.parent_id ?? '');
+  const [salvando, setSalvando] = useState(false);
+  async function enviar(evento: FormEvent) {
+    evento.preventDefault();
+    setSalvando(true);
+    await onSalvar({ nome: nome.trim(), cozinha: cozinha || null, mae: mae || null });
+    setSalvando(false);
+  }
+  return (
+    <form
+      onSubmit={enviar}
+      className="flex flex-col gap-4 rounded-lg border border-line bg-canvas p-4"
+    >
+      <TextField
+        label="Nome da categoria"
+        required
+        maxLength={60}
+        value={nome}
+        onChange={(e) => setNome(e.target.value)}
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <SelectField
+          label="Categoria no app"
+          options={[
+            { value: '', label: mae ? 'Igual à categoria de cima' : 'Nenhuma' },
+            ...COZINHAS.map((z) => ({ value: z.valor, label: z.rotulo })),
+          ]}
+          value={cozinha}
+          onChange={setCozinha}
+        />
+        <SelectField
+          label="Dentro de"
+          hint={
+            temSubcategorias
+              ? 'Esta categoria tem subcategorias, por isso fica como principal.'
+              : undefined
+          }
+          disabled={temSubcategorias}
+          options={[
+            { value: '', label: 'Nenhuma (categoria principal)' },
+            ...principais.map((p) => ({ value: p.id, label: p.name })),
+          ]}
+          value={mae}
+          onChange={setMae}
+        />
+      </div>
+      <div className="flex gap-3">
+        <Button type="submit" loading={salvando} disabled={!nome.trim()}>
+          Salvar
+        </Button>
+        <Button variant="ghost" onClick={onCancelar}>
+          Cancelar
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+/** Excluir categoria: só sem produtos; as subcategorias vazias saem junto. */
+function ExcluirCategoria({
+  nome,
+  produtos,
+  subcategorias,
+  onExcluir,
+  onCancelar,
+}: {
+  nome: string;
+  produtos: number;
+  subcategorias: number;
+  onExcluir: () => Promise<boolean>;
+  onCancelar: () => void;
+}) {
+  const [excluindo, setExcluindo] = useState(false);
+  return (
+    <div
+      role="alert"
+      className="flex flex-col gap-3 rounded-lg border border-danger bg-danger-soft p-4"
+    >
+      {produtos > 0 ? (
+        <p className="text-body text-danger">
+          "{nome}" tem {produtos === 1 ? '1 produto' : `${produtos} produtos`}
+          {subcategorias > 0 ? ' (contando as subcategorias)' : ''}. Mova os produtos para outra
+          categoria, pelo campo Categoria no editor do produto, ou exclua-os antes.
+        </p>
+      ) : (
+        <p className="text-body text-danger">
+          Excluir a categoria "{nome}"?
+          {subcategorias > 0
+            ? ` As ${subcategorias === 1 ? 'subcategoria vazia sai' : `${subcategorias} subcategorias vazias saem`} junto.`
+            : ''}
+        </p>
+      )}
+      <div className="flex gap-3">
+        {produtos === 0 && (
+          <Button
+            variant="danger"
+            loading={excluindo}
+            onClick={async () => {
+              setExcluindo(true);
+              await onExcluir();
+              setExcluindo(false);
+            }}
+          >
+            Sim, excluir
+          </Button>
+        )}
+        <Button variant="ghost" onClick={onCancelar}>
+          {produtos > 0 ? 'Entendi' : 'Cancelar'}
+        </Button>
+      </div>
+    </div>
   );
 }
