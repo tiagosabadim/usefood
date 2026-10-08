@@ -216,6 +216,29 @@ export function Vitrine({ cidade }: { cidade: string }) {
             aria-label="Categorias"
             className="flex gap-4 overflow-x-auto px-5 pb-1 [scrollbar-width:none]"
           >
+            <button
+              type="button"
+              aria-pressed={!categoria}
+              onClick={() => setCategoria(null)}
+              className="flex w-16 shrink-0 flex-col items-center gap-1.5 focus-visible:outline-none"
+            >
+              <span
+                className={cn(
+                  'flex size-16 items-center justify-center rounded-pill transition',
+                  !categoria ? 'bg-brand text-brand-ink' : 'bg-brand-soft text-brand-text',
+                )}
+              >
+                <Icon name="tudo" size={30} />
+              </span>
+              <span
+                className={cn(
+                  'text-micro font-semibold',
+                  !categoria ? 'text-brand-text' : 'text-ink',
+                )}
+              >
+                Tudo
+              </span>
+            </button>
             {categorias.map((c) => {
               const ativa = categoria === c;
               return (

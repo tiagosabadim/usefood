@@ -21,7 +21,7 @@ import {
   urlDaFoto,
 } from '@usefood/pedidos';
 import { Button, CartList, Icon, Panel, ProductRow, Sheet, cn, type IconName } from '@usefood/ui';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { gravarSacola, lerSacola } from '../guardado';
 import { navegar, voltar } from '../rotas';
 import { BarraDaLoja, BarraDoApp } from '../vitrine/barra';
@@ -147,8 +147,8 @@ function PaginaDaLoja({
   const [vendoSacola, setVendoSacola] = useState(false);
   const [fechando, setFechando] = useState(false);
   const [busca, setBusca] = useState('');
-  const [secaoAtiva, setSecaoAtiva] = useState<string | null>(null);
-  const abas = useRef<HTMLDivElement>(null);
+  // Categoria escolhida nos círculos (null = Tudo)
+  const [filtro, setFiltro] = useState<string | null>(null);
 
   useEffect(() => gravarSacola(loja.id, sacola), [loja.id, sacola]);
 
@@ -172,29 +172,6 @@ function PaginaDaLoja({
       semAcento(`${p.name} ${p.description ?? ''}`).includes(termo),
     );
   }, [busca, cardapio.produtos]);
-
-  // A aba acompanha a seção que está na tela
-  useEffect(() => {
-    if (encontrados) return;
-    const observador = new IntersectionObserver(
-      (entradas) => {
-        const visivel = entradas.find((e) => e.isIntersecting);
-        if (visivel) setSecaoAtiva(visivel.target.id.replace('cat-', ''));
-      },
-      { rootMargin: '-140px 0px -65% 0px' },
-    );
-    categorias.forEach((c) => {
-      const el = document.getElementById(`cat-${c.id}`);
-      if (el) observador.observe(el);
-    });
-    return () => observador.disconnect();
-  }, [categorias, encontrados]);
-
-  useEffect(() => {
-    const aba = abas.current?.querySelector<HTMLElement>(`[data-aba="${secaoAtiva}"]`);
-    if (aba && abas.current)
-      abas.current.scrollTo({ left: aba.offsetLeft - 20, behavior: 'smooth' });
-  }, [secaoAtiva]);
 
   const preco = (p: ProdutoDoCardapio) => {
     const tamanhos = cardapio.opcoes.get(p.id)?.tamanhos ?? [];
@@ -466,33 +443,46 @@ function PaginaDaLoja({
             </label>
             {!encontrados && (
               <div
-                ref={abas}
-                role="tablist"
+                role="group"
                 aria-label="Categorias"
-                className="flex gap-2 overflow-x-auto pb-3 [scrollbar-width:none]"
+                className="flex gap-3 overflow-x-auto pb-3 [scrollbar-width:none]"
               >
-                {categorias.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    role="tab"
-                    data-aba={c.id}
-                    aria-selected={secaoAtiva === c.id}
-                    onClick={() =>
-                      document
-                        .getElementById(`cat-${c.id}`)
-                        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    }
-                    className={cn(
-                      'h-9 shrink-0 rounded-pill px-4 text-label font-bold whitespace-nowrap transition',
-                      secaoAtiva === c.id
-                        ? 'bg-brand text-brand-ink'
-                        : 'border border-line bg-surface text-ink',
-                    )}
-                  >
-                    {c.name}
-                  </button>
-                ))}
+                {[
+                  { id: null as string | null, name: 'Tudo', icone: 'tudo' as IconName },
+                  ...categorias.map((c) => ({
+                    id: c.id as string | null,
+                    name: c.name,
+                    icone: (c.cuisine ?? 'cardapio') as IconName,
+                  })),
+                ].map((c) => {
+                  const ativa = filtro === c.id;
+                  return (
+                    <button
+                      key={c.id ?? 'tudo'}
+                      type="button"
+                      aria-pressed={ativa}
+                      onClick={() => setFiltro(c.id)}
+                      className="flex w-[4.25rem] shrink-0 flex-col items-center gap-1.5 focus-visible:outline-none"
+                    >
+                      <span
+                        className={cn(
+                          'flex size-14 items-center justify-center rounded-pill transition',
+                          ativa ? 'bg-brand text-brand-ink' : 'bg-brand-soft text-brand-text',
+                        )}
+                      >
+                        <Icon name={c.icone} size={26} />
+                      </span>
+                      <span
+                        className={cn(
+                          'w-full truncate text-center text-micro font-semibold',
+                          ativa ? 'text-brand-text' : 'text-ink',
+                        )}
+                      >
+                        {c.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -509,7 +499,7 @@ function PaginaDaLoja({
               </section>
             ) : (
               <>
-                {destaques.length > 2 && (
+                {!filtro && destaques.length > 2 && (
                   <section aria-labelledby="t-destaques" className="flex flex-col gap-3">
                     <h2 id="t-destaques" className="font-display text-title-section text-ink">
                       Destaques
@@ -562,28 +552,32 @@ function PaginaDaLoja({
                     </ul>
                   </section>
                 )}
-                {secoes.map(({ categoria: c, grupos }) => (
-                  <section
-                    key={c.id}
-                    id={`cat-${c.id}`}
-                    aria-labelledby={`t-${c.id}`}
-                    className="flex scroll-mt-36 flex-col"
-                  >
-                    <h2 id={`t-${c.id}`} className="font-display text-title-section text-ink">
-                      {c.name}
-                    </h2>
-                    {grupos.map((g) => (
-                      <div key={g.sub?.id ?? 'diretos'} className="flex flex-col">
-                        {g.sub && (
-                          <h3 className="pt-4 text-label font-bold text-ink-muted">{g.sub.name}</h3>
-                        )}
-                        <ul className="flex flex-col divide-y divide-line">
-                          {g.produtos.map(linha)}
-                        </ul>
-                      </div>
-                    ))}
-                  </section>
-                ))}
+                {secoes
+                  .filter((s) => !filtro || s.categoria.id === filtro)
+                  .map(({ categoria: c, grupos }) => (
+                    <section
+                      key={c.id}
+                      id={`cat-${c.id}`}
+                      aria-labelledby={`t-${c.id}`}
+                      className="flex scroll-mt-36 flex-col"
+                    >
+                      <h2 id={`t-${c.id}`} className="font-display text-title-section text-ink">
+                        {c.name}
+                      </h2>
+                      {grupos.map((g) => (
+                        <div key={g.sub?.id ?? 'diretos'} className="flex flex-col">
+                          {g.sub && (
+                            <h3 className="pt-4 text-label font-bold text-ink-muted">
+                              {g.sub.name}
+                            </h3>
+                          )}
+                          <ul className="flex flex-col divide-y divide-line">
+                            {g.produtos.map(linha)}
+                          </ul>
+                        </div>
+                      ))}
+                    </section>
+                  ))}
               </>
             )}
           </div>

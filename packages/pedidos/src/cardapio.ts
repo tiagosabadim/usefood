@@ -1,6 +1,9 @@
 import type { AppSupabaseClient, Tables } from '@usefood/db';
 
-export type CategoriaDoCardapio = Pick<Tables<'categories'>, 'id' | 'name' | 'parent_id'>;
+export type CategoriaDoCardapio = Pick<
+  Tables<'categories'>,
+  'id' | 'name' | 'parent_id' | 'cuisine'
+>;
 
 /** Seção do cardápio: a categoria principal, com os produtos dela e depois um grupo por subcategoria. */
 export interface SecaoDoCardapio {
@@ -107,7 +110,7 @@ export async function carregarCardapio(
   const [cats, prods, tamanhos, ligacoes, grupos, itens, combos] = await Promise.all([
     supabase
       .from('categories')
-      .select('id, name, parent_id')
+      .select('id, name, parent_id, cuisine')
       .eq('restaurant_id', lojaId)
       .eq('is_active', true)
       .order('position')
