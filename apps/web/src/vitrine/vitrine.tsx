@@ -11,6 +11,7 @@ import { CartaoDeOferta, type Oferta } from './ofertas';
 import type { Database, Enums } from '@usefood/db';
 
 type PratoDaCategoria = Database['public']['Functions']['vitrine_por_categoria']['Returns'][number];
+type PratoDaSemana = Database['public']['Functions']['vitrine_mais_pedidos']['Returns'][number];
 import {
   distanciaKm,
   gravarFavoritos,
@@ -41,6 +42,7 @@ export function Vitrine({ cidade }: { cidade: string }) {
   const [favoritos, setFavoritos] = useState<string[]>(lerFavoritos);
   const [local, setLocal] = useState<Local | null>(localGuardado);
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
+  const [maisPedidos, setMaisPedidos] = useState<PratoDaSemana[]>([]);
   const [pratosDaCategoria, setPratosDaCategoria] = useState<PratoDaCategoria[]>([]);
   const [erro, setErro] = useState('');
   const endereco = lerConta().enderecos[0];
@@ -57,6 +59,9 @@ export function Vitrine({ cidade }: { cidade: string }) {
     void supabase
       .rpc('vitrine_ofertas', { p_marca: site.brand, p_cidade: cidade })
       .then(({ data }) => setOfertas(data ?? []));
+    void supabase
+      .rpc('vitrine_mais_pedidos', { p_marca: site.brand, p_cidade: cidade })
+      .then(({ data }) => setMaisPedidos(data ?? []));
     void supabase.rpc('vitrine_cidades', { p_marca: site.brand }).then(({ data }) => {
       const c = data?.find((x) => x.slug === cidade);
       // Só guarda a cidade no aparelho quando ela existe de verdade
@@ -137,6 +142,10 @@ export function Vitrine({ cidade }: { cidade: string }) {
     ),
     ...fechadas,
   ].slice(0, 10);
+
+  const vendidosNaSemana = maisPedidos.filter((p) => p.vendidos_semana > 0);
+  const ranking = vendidosNaSemana.length >= 4;
+  const listaDaSemana = ranking ? vendidosNaSemana : maisPedidos;
 
   const alternarFavorito = (slug: string) => {
     const nova = favoritos.includes(slug)
@@ -434,6 +443,23 @@ export function Vitrine({ cidade }: { cidade: string }) {
               </Secao>
             )}
 
+            {!buscando && !categoria && listaDaSemana.length > 0 && (
+              <Secao titulo={ranking ? 'Mais pedidos da semana' : 'Sugestões da cidade'}>
+                <ul className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
+                  {listaDaSemana.map((p, i) => (
+                    <li key={p.produto_id} className="w-40 shrink-0 snap-start">
+                      <CartaoDePrato
+                        prato={p}
+                        selo={ranking ? `${i + 1}º` : p.destaque ? 'Destaque' : undefined}
+                        foto={foto(p.foto_path)}
+                        onAbrir={() => abrirLoja(p.loja_slug, p.produto_id)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </Secao>
+            )}
+
             <div id="todos" className="flex scroll-mt-32 flex-col gap-7">
               <ListaDeLojas
                 titulo={categoria ? rotuloDaCozinha(categoria) : 'Abertos agora'}
@@ -623,5 +649,68 @@ function LinhaDaLoja({
         </svg>
       </button>
     </li>
+  );
+}
+
+/** Cartão de prato da home (mais pedidos ou sugestões): foto, selo, nome, preço e a loja. */
+function CartaoDePrato({
+  prato: p,
+  selo,
+  foto,
+  onAbrir,
+}: {
+  prato: PratoDaSemana;
+  selo?: string;
+  foto?: string;
+  onAbrir: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onAbrir}
+      className="flex w-full flex-col gap-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+    >
+      <span className="relative block aspect-[4/3] w-full overflow-hidden rounded-lg bg-surface-strong">
+        {foto ? (
+          <img
+            src={foto}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 size-full object-cover"
+          />
+        ) : (
+          <span className="absolute inset-0 flex items-center justify-center text-ink-muted">
+            <Icon name="cardapio" size={28} />
+          </span>
+        )}
+        {selo && (
+          <span className="absolute top-2 left-2 rounded-pill bg-brand px-2 py-0.5 text-micro font-black text-brand-ink">
+            {selo}
+          </span>
+        )}
+      </span>
+      <span className="flex flex-col gap-0.5">
+        <span className="line-clamp-1 text-label font-bold text-ink">{p.produto}</span>
+        <span className="flex flex-wrap items-baseline gap-x-1.5">
+          <span
+            className={cn(
+              'text-label font-black tabular-nums',
+              p.preco_original_cents ? 'text-brand-text' : 'text-ink',
+            )}
+          >
+            {formatarPreco(p.preco_cents)}
+          </span>
+          {p.preco_original_cents && (
+            <s className="text-micro text-ink-muted tabular-nums">
+              {formatarPreco(p.preco_original_cents)}
+            </s>
+          )}
+        </span>
+        <span className="truncate text-caption text-ink-muted">
+          {p.loja_nome}
+          {p.loja_aberta ? '' : ' · fechada agora'}
+        </span>
+      </span>
+    </button>
   );
 }

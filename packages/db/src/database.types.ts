@@ -2071,6 +2071,21 @@ export type Database = {
           tempo_min: number
         }[]
       }
+      vitrine_mais_pedidos: {
+        Args: { p_cidade: string; p_marca: string }
+        Returns: {
+          destaque: boolean
+          foto_path: string | null
+          loja_aberta: boolean
+          loja_nome: string
+          loja_slug: string
+          preco_cents: number
+          preco_original_cents: number | null
+          produto: string
+          produto_id: string
+          vendidos_semana: number
+        }[]
+      }
       vitrine_ofertas: {
         Args: { p_cidade: string; p_marca: string }
         Returns: {
