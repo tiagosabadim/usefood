@@ -109,7 +109,16 @@ export function MinhaConta({
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-5 px-5 py-6">
+    <main
+      className={cn(
+        'mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-5 px-5',
+        modo === 'tudo' ? 'pt-[max(1.5rem,calc(env(safe-area-inset-top)+0.75rem))]' : 'pt-6',
+        // a barra de baixo é fixa: o fim da página não pode ficar escondido atrás dela
+        base === '/delivery' || modo !== 'tudo'
+          ? 'pb-[calc(6rem+env(safe-area-inset-bottom))]'
+          : 'pb-[max(1.5rem,env(safe-area-inset-bottom))]',
+      )}
+    >
       {modo === 'tudo' && (
         <button
           type="button"
@@ -120,7 +129,7 @@ export function MinhaConta({
         </button>
       )}
       {modo !== 'tudo' ? (
-        <div className="-mx-5 -mt-6">
+        <div className="sticky top-0 z-30 -mx-5 -mt-6">
           <TopoDoApp
             titulo={modo === 'pedidos' ? 'Meus pedidos' : 'Minha conta'}
             voltarPara={inicio}

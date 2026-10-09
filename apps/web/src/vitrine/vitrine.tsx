@@ -473,7 +473,10 @@ export function Vitrine({ cidade }: { cidade: string }) {
               </Secao>
             )}
 
-            <div id="todos" className="flex scroll-mt-32 flex-col gap-7">
+            <div
+              id="todos"
+              className="flex scroll-mt-[calc(8rem+env(safe-area-inset-top))] flex-col gap-7"
+            >
               <ListaDeLojas
                 titulo={categoria ? rotuloDaCozinha(categoria) : 'Abertos agora'}
                 lojas={abertas}

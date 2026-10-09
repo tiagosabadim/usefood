@@ -57,7 +57,7 @@ export function MolduraDaMarca({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col bg-canvas">
       <header className="tema-escuro bg-canvas">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4 lg:px-8">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-5 pt-[max(1rem,calc(env(safe-area-inset-top)+0.5rem))] pb-4 lg:px-8">
           <a
             href="/"
             aria-label="Início"

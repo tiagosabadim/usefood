@@ -21,7 +21,7 @@ import {
   urlDaFoto,
 } from '@usefood/pedidos';
 import { Button, CartList, Icon, Panel, ProductRow, Sheet, cn, type IconName } from '@usefood/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { gravarSacola, lerSacola } from '../guardado';
 import { navegar, voltar } from '../rotas';
 import { BarraDaLoja, BarraDoApp } from '../vitrine/barra';
@@ -88,12 +88,14 @@ export function Loja({
 
   if (!supabase || estado.tipo === 'carregando') {
     return (
-      <main className="mx-auto max-w-2xl px-5 py-10 text-body text-ink-muted">Abrindo a loja…</main>
+      <main className="mx-auto max-w-2xl px-5 pt-[max(2.5rem,calc(env(safe-area-inset-top)+1.5rem))] pb-10 text-body text-ink-muted">
+        Abrindo a loja…
+      </main>
     );
   }
   if (estado.tipo === 'nao-encontrada') {
     return (
-      <main className="mx-auto flex max-w-xl flex-col gap-3 px-5 py-16">
+      <main className="mx-auto flex max-w-xl flex-col gap-3 px-5 pt-[max(4rem,calc(env(safe-area-inset-top)+2rem))] pb-16">
         <h1 className="font-display text-display text-ink">Loja não encontrada</h1>
         <p className="text-body text-ink-muted">
           Confira o endereço. Lojas em cadastro ou fora do ar não aparecem.
@@ -126,6 +128,21 @@ function PaginaDaLoja({
   const cidadeDoApp = cidadeGuardada();
   const volta = noApp ? (cidadeDoApp ? `/delivery/${cidadeDoApp}` : '/delivery') : null;
   const [aba, setAba] = useState<'cardapio' | 'sobre'>('cardapio');
+  // App instalado: depois que a capa sai da tela, uma faixa da cor do fundo fica atrás do horário e
+  // da bateria, e a busca gruda logo abaixo dela (nada passa por trás da barra de status)
+  const capa = useRef<HTMLDivElement>(null);
+  const faixa = useRef<HTMLDivElement>(null);
+  const [capaSaiu, setCapaSaiu] = useState(false);
+  useEffect(() => {
+    const medir = () => {
+      const alturaDoStatus = faixa.current?.offsetHeight ?? 0; // 0 fora do app instalado
+      const fimDaCapa = (capa.current?.getBoundingClientRect().bottom ?? 0) - 28; // o cartão sobe 28px na capa
+      setCapaSaiu(alturaDoStatus > 0 && fimDaCapa < alturaDoStatus);
+    };
+    medir();
+    window.addEventListener('scroll', medir, { passive: true });
+    return () => window.removeEventListener('scroll', medir);
+  }, []);
   const [favorita, setFavorita] = useState(() => lerFavoritos().includes(loja.slug));
   const [sacola, setSacola] = useState<ItemCarrinho[]>(() => lerSacola(loja.id));
   // Veio de um prato na vitrine (/loja?produto=…): a janela do produto já abre
@@ -302,15 +319,29 @@ function PaginaDaLoja({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col pb-44 lg:px-8 lg:pb-12">
+      <div
+        ref={faixa}
+        aria-hidden="true"
+        className={cn(
+          'pointer-events-none fixed inset-x-0 top-0 z-30 h-[env(safe-area-inset-top)] bg-canvas transition-opacity duration-200',
+          capaSaiu ? 'opacity-100' : 'opacity-0',
+        )}
+      />
       {loja.status !== 'ativo' && (
         // Só a equipe enxerga loja fora do ar (está logada); o cliente vê "Loja não encontrada"
-        <p role="status" className="bg-sun px-5 py-3 text-body text-sun-ink lg:mt-4 lg:rounded-md">
+        <p
+          role="status"
+          className="bg-sun px-5 pt-[max(0.75rem,calc(env(safe-area-inset-top)+0.5rem))] pb-3 text-body text-sun-ink lg:mt-4 lg:rounded-md"
+        >
           <strong>Prévia:</strong> só você está vendo. Para os clientes acessarem, publique a loja
           em Loja online no painel.
         </p>
       )}
 
-      <div className="relative aspect-[4/3] max-h-[22rem] w-full overflow-hidden bg-surface-strong lg:mt-4 lg:aspect-[4/1] lg:rounded-lg">
+      <div
+        ref={capa}
+        className="relative aspect-[4/3] max-h-[22rem] w-full overflow-hidden bg-surface-strong lg:mt-4 lg:aspect-[4/1] lg:rounded-lg"
+      >
         {loja.cover_path && (
           <img src={foto(loja.cover_path)!} alt="" className="size-full object-cover" />
         )}
@@ -427,7 +458,7 @@ function PaginaDaLoja({
         )}
       >
         <div className="min-w-0">
-          <div className="sticky top-0 z-20 mt-1 flex flex-col gap-3 bg-canvas px-5 pt-3 lg:mt-0 lg:px-0">
+          <div className="sticky top-[env(safe-area-inset-top)] z-20 mt-1 flex flex-col gap-3 bg-canvas px-5 pt-3 lg:mt-0 lg:px-0">
             <label className="relative block">
               <span className="sr-only">Buscar no cardápio</span>
               <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-ink-muted">
@@ -559,7 +590,7 @@ function PaginaDaLoja({
                       key={c.id}
                       id={`cat-${c.id}`}
                       aria-labelledby={`t-${c.id}`}
-                      className="flex scroll-mt-36 flex-col"
+                      className="flex scroll-mt-[calc(9rem+env(safe-area-inset-top))] flex-col"
                     >
                       <h2 id={`t-${c.id}`} className="font-display text-title-section text-ink">
                         {c.name}

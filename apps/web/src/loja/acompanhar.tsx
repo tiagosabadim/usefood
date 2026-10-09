@@ -71,13 +71,13 @@ export function Acompanhar({ token, voltar }: { token: string; voltar: string })
 
   if (pedido === undefined)
     return (
-      <main className="mx-auto max-w-xl px-5 py-10 text-body text-ink-muted">
+      <main className="mx-auto max-w-xl px-5 pt-[max(2.5rem,calc(env(safe-area-inset-top)+1.5rem))] pb-10 text-body text-ink-muted">
         Abrindo o seu pedido…
       </main>
     );
   if (pedido === null) {
     return (
-      <main className="mx-auto flex max-w-xl flex-col gap-4 px-5 py-10">
+      <main className="mx-auto flex max-w-xl flex-col gap-4 px-5 pt-[max(2.5rem,calc(env(safe-area-inset-top)+1.5rem))] pb-10">
         <h1 className="font-display text-title-screen text-ink">Pedido não encontrado</h1>
         <p className="text-body text-ink-muted">Confira o link que você recebeu.</p>
       </main>
@@ -86,7 +86,7 @@ export function Acompanhar({ token, voltar }: { token: string; voltar: string })
 
   const cancelado = pedido.situacao === 'cancelado';
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-5 px-5 py-6">
+    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-5 px-5 pt-[max(1.5rem,calc(env(safe-area-inset-top)+0.75rem))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <button
         type="button"
         className="self-start text-label text-ink-muted"
