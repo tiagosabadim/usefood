@@ -1,7 +1,7 @@
 import { useAppContext } from '@usefood/app';
 import { COZINHAS, formatarPreco, rotuloDaCozinha } from '@usefood/core';
 import { urlDaFoto } from '@usefood/pedidos';
-import { Alert, Icon, StoreCard, cn, type IconName } from '@usefood/ui';
+import { Alert, Icon, ProductRow, StoreCard, cn, type IconName } from '@usefood/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { lerConta } from '../guardado';
 import { PedidoEmAndamento } from '../loja/pedido-em-andamento';
@@ -445,14 +445,27 @@ export function Vitrine({ cidade }: { cidade: string }) {
 
             {!buscando && !categoria && listaDaSemana.length > 0 && (
               <Secao titulo={ranking ? 'Mais pedidos da semana' : 'Sugestões da cidade'}>
-                <ul className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
-                  {listaDaSemana.map((p, i) => (
-                    <li key={p.produto_id} className="w-40 shrink-0 snap-start">
-                      <CartaoDePrato
-                        prato={p}
-                        selo={ranking ? `${i + 1}º` : p.destaque ? 'Destaque' : undefined}
-                        foto={foto(p.foto_path)}
-                        onAbrir={() => abrirLoja(p.loja_slug, p.produto_id)}
+                <ul className="mx-5 flex flex-col divide-y divide-line rounded-lg bg-surface px-4">
+                  {listaDaSemana.slice(0, 8).map((p, i) => (
+                    <li key={p.produto_id}>
+                      <ProductRow
+                        name={p.produto}
+                        description={`${p.loja_nome}${p.loja_aberta ? '' : ' · fechada agora'}`}
+                        priceLabel={formatarPreco(p.preco_cents)}
+                        originalPriceLabel={
+                          p.preco_original_cents ? formatarPreco(p.preco_original_cents) : undefined
+                        }
+                        imageUrl={foto(p.foto_path)}
+                        badge={
+                          ranking
+                            ? `${i + 1}º`
+                            : p.preco_original_cents
+                              ? `-${Math.round(((p.preco_original_cents - p.preco_cents) / p.preco_original_cents) * 100)}%`
+                              : p.destaque
+                                ? 'Destaque'
+                                : undefined
+                        }
+                        onClick={() => abrirLoja(p.loja_slug, p.produto_id)}
                       />
                     </li>
                   ))}
@@ -649,68 +662,5 @@ function LinhaDaLoja({
         </svg>
       </button>
     </li>
-  );
-}
-
-/** Cartão de prato da home (mais pedidos ou sugestões): foto, selo, nome, preço e a loja. */
-function CartaoDePrato({
-  prato: p,
-  selo,
-  foto,
-  onAbrir,
-}: {
-  prato: PratoDaSemana;
-  selo?: string;
-  foto?: string;
-  onAbrir: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onAbrir}
-      className="flex w-full flex-col gap-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-    >
-      <span className="relative block aspect-[4/3] w-full overflow-hidden rounded-lg bg-surface-strong">
-        {foto ? (
-          <img
-            src={foto}
-            alt=""
-            loading="lazy"
-            className="absolute inset-0 size-full object-cover"
-          />
-        ) : (
-          <span className="absolute inset-0 flex items-center justify-center text-ink-muted">
-            <Icon name="cardapio" size={28} />
-          </span>
-        )}
-        {selo && (
-          <span className="absolute top-2 left-2 rounded-pill bg-brand px-2 py-0.5 text-micro font-black text-brand-ink">
-            {selo}
-          </span>
-        )}
-      </span>
-      <span className="flex flex-col gap-0.5">
-        <span className="line-clamp-1 text-label font-bold text-ink">{p.produto}</span>
-        <span className="flex flex-wrap items-baseline gap-x-1.5">
-          <span
-            className={cn(
-              'text-label font-black tabular-nums',
-              p.preco_original_cents ? 'text-brand-text' : 'text-ink',
-            )}
-          >
-            {formatarPreco(p.preco_cents)}
-          </span>
-          {p.preco_original_cents && (
-            <s className="text-micro text-ink-muted tabular-nums">
-              {formatarPreco(p.preco_original_cents)}
-            </s>
-          )}
-        </span>
-        <span className="truncate text-caption text-ink-muted">
-          {p.loja_nome}
-          {p.loja_aberta ? '' : ' · fechada agora'}
-        </span>
-      </span>
-    </button>
   );
 }
